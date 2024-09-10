@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
@@ -68,3 +69,13 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/d
 ### `npm run build` fails to minify
 
 This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+=======
+# WebsiteTechnology
+Website chuyên bán các công nghệ phần mềm
+
+Cách thành viên:
+Lê Nguyễn Quốc Hưng - 3121410240 
+Đặng Tuấn Kiệt - 3122410195
+Hoàng Gia Bách - 3121410065
+Phúc Khai - 3121410124
+>>>>>>> 549e91bd98698d4639c80c600ce838cafe757e92

@@ -1,15 +1,12 @@
+import axios from "axios";
 import React, { useEffect, useRef, useState } from "react";
 import ReactPaginate from "react-paginate";
-import PICTURE from "../../Assests/PICTURE";
+import { Link } from "react-router-dom";
 import "../Shop/Shop.scss";
 
 const Shop_Fake = ({ isGridView, searchItem, categoryFilters }) => {
-  const card_gtx_4080 = "card_gtx_4080";
-  const card_gtx_4090 = "card_gtx_4090";
-  const laptop = "laptop";
-  console.log(categoryFilters + "this is it");
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 3; // Số mục hàng hiển thị trên mỗi trang
+  const itemsPerPage = 3; // Number of items per page
   const [searchTerm, setSearchTerm] = useState(searchItem);
   const productRefs = {
     item: useRef(null),
@@ -19,105 +16,86 @@ const Shop_Fake = ({ isGridView, searchItem, categoryFilters }) => {
     picture: useRef(null),
   };
 
-  const productCategory = [
-    {
-      id: 1,
-      name: 'Screen Viewsonic VA2432-H-W 24" IPS 100Hz viền mỏng',
-      picture: PICTURE.laptop,
-      ProductCategory: "laptops",
-      Manufacturer: "NVIDIA",
-      Price: "$0_$20",
-      Line1: "GPU: GeForce RTX 4070 Laptop GPU",
-      Line2: "Memory: 16 GB DDR5-SDRAM",
-      Line3: "Storage: 1 TB SSD",
-      Line4: "CPU: Intel Core i9-13980HX",
-      Link:"/websiteDoAn/Products",
-      Pricey:"$16.199"
-    },
-    {
-      id: 2,
-      name: "NVIDIA GeForce RTX 4090",
-      picture: PICTURE.GeForce_RTX4090,
-      ProductCategory: "graphicsCards",
-      GPU: "GTX4090",
-      Manufacturer: "ASUS",
-      Price: "$0_$20",
-      Line1: "Boost Clock Speed: 2.52 GHz",
-      Line2: "GPU Memory Size: 24 GB",
-      Line3: "Cooling System: Fan",
-      Link:"/websiteDoAn/Products_gtx_4090",
-      Pricey:"$18.199"
-    },
-    {
-      id: 3,
-      name: "NVIDIA GeForce RTX 4080",
-      picture: PICTURE.GeForce_RTX4080,
-      ProductCategory: "graphicsCards",
-      GPU: "GTX4080",
-      Manufacturer: "ACER",
-      Price: "$0_$20",
-      Line1: "Boost Clock Speed: 2535 MHz",
-      Line2: "GPU Memory Size: 16 GB",
-      Line3: "Cooling System: Active",
-      Link:"/websiteDoAn/Products_gtx_4080",
-      Pricey:"$17.899"
-    },
-    {
-      id: 4,
-      name: "NVIDIA GeForce RTX 4070Ti",
-      picture: PICTURE.GeForce_RTX4070Ti,
-      ProductCategory: "graphicsCards",
-      GPU: "GTX4070Ti",
-      Manufacturer: "NVIDIA",
-      Price: "$20_$50",
-      Line1: "Boost Clock Speed: 2670 MHz",
-      Line2: "GPU Memory Size: 12GB",
-      Line3: "Cooling System: Active",
-      Link:"/websiteDoAn/Products_gtx_4070Ti",
-      Pricey:"$17.199"
-    },
-    {
-      id: 5,
-      name: "NVIDIA GeForce RTX TiTan",
-      picture: PICTURE.nvidia_titan_rtx,
-      ProductCategory: "graphicsCards",
-      GPU: "GTX_Titan",
-      Manufacturer: "NVIDIA",
-      Price: "Above$50",
-      Line1: "Boost Clock Speed: 3770 MHz",
-      Line2: "GPU Memory Size: 24GB",
-      Line3: "Cooling System: Advance",
-      Link:"/websiteDoAn/Products_gtx_Titan",
-      Pricey:"$152.199"
-    },
-    {
-      id: 6,
-      name: "NVIDIA GeForce RTX 4060",
-      picture: PICTURE.GeForce_RTX4060,
-      ProductCategory: "graphicsCards",
-      GPU: "GTX4060",
-      Manufacturer: "NVIDIA",
-      Price: "$0_$20",
-      Line1: "Boost Clock Speed: 2.54 GHz",
-      Line2: "GPU Memory Size: 8 GB",
-      Line3: "Cooling System: Fan",
-      Link:"/websiteDoAn/Products_gtx_4060",
-      Pricey:"$15.199"
-    },
-  ];
+  /*-------- BEGIN: Import data product in Store --------*/
+  const [products, setProduct] = useState([]);
+  
+  useEffect(() => {
+    handleShow();
+  }, []);
+
+  const handleShow = async () => {
+    try {
+      const response = await axios.get("http://localhost:8080/api/products");
+      if (response.status === 200) {
+        setProduct(response.data);
+        console.log(response.data);
+      } else {
+        throw new Error(`Error fetching products: ${response.status}`);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+  /*-------- END: Import data product in Store --------*/
 
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
 
-  const filteredItems = productCategory.filter(
-    (item) =>
-      item.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
+  const filteredItems = products.filter((item) => {
+    // Check search term
+    const matchesSearch = item.productName
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
+
+    // Check category filters
+    const matchesFilter = Object.entries(categoryFilters).some(
+      ([key, value]) => {
+        if (value) {
+          // Only check activated filters
+          switch (key) {
+            // Categorize
+            case "gpu":
+              return item.category.categoryName === "GPU";
+            case "laptop":
+              return item.category.categoryName === "Laptop";
+            // Price
+            case "$500":
+              return item.unitPrice >= 500 && item.unitPrice < 1000;
+            case "$1000":
+              return item.unitPrice >= 1000 && item.unitPrice <= 2000;
+            case "$2000":
+              return item.unitPrice >= 2000;
+            // GPU
+            case "RTX4090":
+              return item.gpu === "GeForce RTX4090";
+            case "RTX4080":
+              return item.gpu === "GeForce RTX4080";
+            case "RTX4070":
+              return item.gpu === "GeForce RTX4070";
+            case "RTX4060":
+              return item.gpu === "GeForce RTX4060";
+            case "RTX4050":
+              return item.gpu === "GeForce RTX4050";
+            // Manufacturer
+            case "NVIDIA":
+              return item.manufacturer.manufacturerName === "NVIDIA";
+            case "ACER":
+              return item.manufacturer.manufacturerName === "ACER";
+            case "ASUS":
+              return item.manufacturer.manufacturerName === "ASUS";
+          }
+        }
+        return false;
+      }
+    );
+
+    // Return items that match the search term and at least one filter
+    return (
+      matchesSearch &&
       (Object.values(categoryFilters).every((filter) => !filter) ||
-        categoryFilters[item.ProductCategory] ||
-        categoryFilters[item.GPU] ||
-        categoryFilters[item.Manufacturer] ||
-        categoryFilters[item.Price])
-  );
+        matchesFilter)
+    );
+  });
 
   const currentItems = filteredItems.slice(startIndex, endIndex);
 
@@ -133,92 +111,88 @@ const Shop_Fake = ({ isGridView, searchItem, categoryFilters }) => {
 
   return (
     <div>
-      <div>
-        {currentItems.map((item) => (
-          <div
-            key={item.id}
-            className={`${
-              isGridView ? "load-more-container-column" : "load-more-product"
-            }`}
-          >
-            <div className="call-out search-label">Featured</div>
-            <div ref={productRefs.container} id="product-container">
+      {currentItems.map((item) => (
+        <div
+          key={item.id}
+          className={`${
+            isGridView ? "load-more-container-column" : "load-more-product"
+          }`}
+        >
+          <div className="call-out search-label">Featured</div>
+          <div ref={productRefs.container} className="product-container">
+            <div
+              className={`${
+                isGridView ? "load-more-column" : "product-container"
+              }`}
+              ref={productRefs.item}
+              id="product-item"
+            >
+              <div className="img-col-lg" ref={productRefs.picture}>
+                <img
+                  className={`${isGridView ? "load-more-img-lg" : "img-lg"}`}
+                  id="product-img"
+                  src={`data:image/png;base64,${item.product_image.find(img => img.isMainImage)?.imageData || ''}`}
+                  alt={item.productName}
+                />
+              </div>
               <div
                 className={`${
-                  isGridView ? "load-more-column" : "product-container"
+                  isGridView ? "load-more-column-product" : "detail-col"
                 }`}
-                ref={productRefs.item}
-                id="product-item"
+                ref={productRefs.detail}
+                id="product-detail"
               >
-                <div className="img-col-lg" ref={productRefs.picture}>
-                  <img
-                    src={item.picture}
-                    alt=""
-                    className={`${isGridView ? "load-more-img-lg" : "img-lg"}`}
-                    id="product-img"
-                  />
+                <h2 className="product-name">{item.productName}</h2>
+                <div className="specs-contain">
+                  <ul>
+                    <li>
+                      <div className="specs p-medium">CPU: {item.cpu}</div>
+                    </li>
+                    <li>
+                      <div className="specs p-medium">
+                        Screen: {item.screen}
+                      </div>
+                    </li>
+                    <li>
+                      <div className="specs p-medium">RAM: {item.ram}</div>
+                    </li>
+                  </ul>
                 </div>
-                <div
-                  className={`${
-                    isGridView ? "load-more-column-product" : "detail-col"
-                  }`}
-                  ref={productRefs.detail}
-                  id="product-detail"
-                >
-                  <h2 className="product-name">{item.name}</h2>
-                  <div className="specs-contain">
-                    <ul>
-                      <li>
-                        <div className="specs p-medium">{item.Line1}</div>
-                      </li>
-                      <li>
-                        <div className="specs p-medium">{item.Line2}</div>
-                      </li>
-                      <li>
-                        <div className="specs p-medium">{item.Line3}</div>
-                      </li>
-
-                      {item.Line4 && (
-                        <li>
-                          <div className="specs p-medium">{item.Line4}</div>
-                        </li>
-                      )}
-                    </ul>
-                    {/* <span className="bundle-icon" style={{margin:5 , display:"inline-flex" , alignItems:"center" , justifyContent:"flex-start" ,left:0}}><span ><AiOutlineGift size={30}/></span>Special Offer</span> */}
-                  </div>
+              </div>
+              <div
+                className={`${
+                  isGridView ? "load-more-column-buy" : "buy-col-lg"
+                }`}
+              >
+                <div className="price">
+                  ${item.unitPrice}
+                  <span className="decimal">00</span>
                 </div>
-                <div
-                  className={`${
-                    isGridView ? "load-more-column-buy" : "buy-col-lg"
-                  }`}
-                >
-                  <div className="price">
-                    {item.Pricey}<span className="decimal">00</span>
-                  </div>
-                  <div className="buy-link">
-                    <a
-                      href={item.Link}
-                      className="link-btn featured-buy-link brand-green"
-                    >
-                      Add to Cart
-                    </a>
-                  </div>
-                  <div className="buy-bfp">
-                    <button className="buy-from-partner featured-buy-link no-brand">
-                      Buy from Partners
-                    </button>
-                  </div>
-                  <div>
-                    <button className="featured-buy-link compare link-regular">
-                      Compare
-                    </button>
-                  </div>
+                <div className="buy-link">
+                  <Link className="link-btn featured-buy-link brand-green">
+                    Add to Cart
+                  </Link>
+                </div>
+                <div className="buy-bfp">
+                  <Link
+                    to={{
+                      pathname: `/websiteDoAn/ProductDetail/${item.id}`,
+                    }}
+                    className="buy-from-partner featured-buy-link no-brand"
+                  >
+                    Detail Product
+                  </Link>
+                </div>
+                <div>
+                  <button className="featured-buy-link compare link-regular">
+                    Compare
+                  </button>
                 </div>
               </div>
             </div>
           </div>
-        ))}
-      </div>
+        </div>
+      ))}
 
       <ReactPaginate
         pageCount={Math.ceil(filteredItems.length / itemsPerPage)}

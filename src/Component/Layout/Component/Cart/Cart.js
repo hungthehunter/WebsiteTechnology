@@ -1,52 +1,53 @@
-import React, { useState } from "react";
-import { CiCircleRemove } from "react-icons/ci";
-import PICTURE from "../../../Assests/PICTURE";
+import axios from "axios";
+import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import "../Cart/Cart.scss";
 
-function Cart({ showCart,laptopOff}) {
-  const [isContentVisible, setIsContentVisible] = useState(true);
-  const toggleContentVisibility = () => {
-    setIsContentVisible(!isContentVisible);
-  };
-  const hello=laptopOff;
-  console.log("this is 1: ",hello)
+function Cart({ showCart, id }) {
+  const [product, setProduct] = useState(null);
+
+  useEffect(() => {
+    const loadProduct = async () => {
+      try {
+        const response = await axios.get(`http://localhost:8080/api/products/${id}`);
+        setProduct(response.data);
+        console.log(response.data);
+      } catch (error) {
+        console.error("Error fetching product:", error);
+      }
+    };
+    loadProduct();
+  }, [id]);
+
+  // Find the main image
+  const mainImage = product?.product_image?.find(img => img.isMainImage)?.imageData;
 
   return (
     <div className="Cart">
       <div className={showCart ? "cart-section active" : "cart-section"}>
         <div className="cart-white">
           <div className="cart-tool">
-            <div className="cart-heading">List of products choosed:</div>
-            <div className="remove-icon">
-              <CiCircleRemove size={30} onClick={toggleContentVisibility}></CiCircleRemove>
-            </div>
+            <div className="cart-heading">Thêm vào giỏ hàng thành công</div>
           </div>
           <ul>
             <li>
-              <div className={`cart-inform ${isContentVisible ? 'hidden' : ''}`}>
-                <h1 className="cart-inform-heading">Your cart is Empty</h1>
+              <div className="cart-item">
+                {mainImage ? (
+                  <img
+                    src={`data:image/png;base64,${mainImage}`}
+                    className="cart-img"
+                    alt={product?.productName || "Product"}
+                  />
+                ) : (
+                  <p>No main image available</p>
+                )}
+                <h3 className="cart-desc">{product?.productName}</h3>
               </div>
             </li>
             <li>
-            <div className={`cart-item ${isContentVisible ? '' : 'hidden'}`}>
-      <img src={PICTURE.laptop} className="cart-img" alt="Laptop" />
-      <h3 className="cart-desc">Viewsonic VA2432-H-W 24" IPS 100Hz slim bezel monitor</h3>
-      <h4 className="cart-desc">x2.550.000₫</h4>
-    </div>
-            </li>
-            <li>
-              <div className={`cart-item ${isContentVisible ? '' : 'hidden'}`}>
-                <img src={PICTURE.GeForce_RTX4080} className="cart-img" alt="RTX 4080" />
-                <h3 className="cart-desc">GeForce RTX4080</h3>
-                <h4 className="cart-desc">x 5.550.000₫</h4>
-              </div>
-            </li>
-            <li>
-              <div className={`cart-item ${isContentVisible ? '' : 'hidden'}`}>
-                <img src={PICTURE.GeForce_RTX4090} className="cart-img" alt="RTX 4090" />
-                <h3 className="cart-desc">GeForce RTX4090</h3>
-                <h4 className="cart-desc">x 3.550.000₫</h4>
-              </div>
+              <Link type="button" className="button" to={{ pathname: `/websiteDoAn/Invoice` }}>
+                Xem giỏ hàng
+              </Link>
             </li>
           </ul>
         </div>

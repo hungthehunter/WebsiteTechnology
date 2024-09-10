@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { BsSlashLg } from "react-icons/bs";
 import { FaHome } from "react-icons/fa";
+import { Link } from "react-router-dom";
 import PICTURE from "../../Assests/PICTURE";
 import "../Products/Products.scss";
 function Products() {
@@ -22,7 +23,7 @@ function Products() {
                 <ol>
                   <li>
                  
-                  <a href="/">
+                  <Link to="/">
         < FaHome  style={{color:"blue",paddingRight:4}} size={20} ></ FaHome>
         <span>Home Page           <span><BsSlashLg style={{marginLeft:0,marginRight:0}}></BsSlashLg></span>
               
@@ -30,7 +31,7 @@ function Products() {
                     </span></span>
 
                    
-                    </a>
+                    </Link>
 
                    
             
@@ -446,75 +447,75 @@ function Products() {
                     <ul className="list-post">
                       <li className="item-post fade-box">
                         <div className="img-post">
-                          <a
+                          <Link
                             className="aspect-ratio"
-                            href="https://gvn360.com/cong-nghe/galax-rtx-4090-la-gpu-dau-tien-co-hdmi-retimer-de-truyen-du-lieu-duong-dai/"
+                            to="https://gvn360.com/cong-nghe/galax-rtx-4090-la-gpu-dau-tien-co-hdmi-retimer-de-truyen-du-lieu-duong-dai/"
                             
                           >
                             <img
                               src={PICTURE.cardnew}
                               alt="Galax RTX 4090 là GPU đầu tiên có HDMI Retimer để truyền dữ liệu đường dài"
                             ></img>
-                          </a>
+                          </Link>
                         </div>
                         <div className="info-post">
                           <h3>
-                          <a href="https://gvn360.com/cong-nghe/galax-rtx-4090-la-gpu-dau-tien-co-hdmi-retimer-de-truyen-du-lieu-duong-dai/">Galax RTX 4090 là GPU đầu tiên có HDMI Retimer để truyền dữ liệu đường dài</a>
+                          <Link to="https://gvn360.com/cong-nghe/galax-rtx-4090-la-gpu-dau-tien-co-hdmi-retimer-de-truyen-du-lieu-duong-dai/">Galax RTX 4090 là GPU đầu tiên có HDMI Retimer để truyền dữ liệu đường dài</Link>
                           </h3>
                         </div>
                       </li>
                       <li className="item-post fade-box">
                         <div className="img-post">
-                          <a
+                          <Link
                             className="aspect-ratio"
-                            href="https://gearvn.com/blogs/cong-nghe/cpu-z-khong-con-la-cong-cu-benchmark-cpu-ly-tuong-nua"
+                            to="https://gearvn.com/blogs/cong-nghe/cpu-z-khong-con-la-cong-cu-benchmark-cpu-ly-tuong-nua"
                           >
                             <img
                               src={PICTURE.cpu}
                               alt="CPU-Z không còn là công cụ benchmark CPU lý tưởng nữa"
                             ></img>
-                          </a>
+                          </Link>
                         </div>
                         <div className="info-post">
                           <h3>
-                          <a href="https://www.bing.com/search?pglt=41&q=CPU-Z+kh%C3%B4ng+c%C3%B2n+l%C3%A0+c%C3%B4ng+c%E1%BB%A5+benchmark+CPU+l%C3%BD+t%C6%B0%E1%BB%9Fng+n%E1%BB%AFa&cvid=93dbdc53dcf0417ab0bbc272dd8a0ab0&gs_lcrp=EgZjaHJvbWUyBggAEEUYOTIGCAEQRRg80gEIMTAxMmowajGoAgCwAgA&FORM=ANAB01&PC=CNNDDB">CPU-Z không còn là công cụ benchmark CPU lý tưởng nữa</a>
+                          <Link to="https://www.bing.com/search?pglt=41&q=CPU-Z+kh%C3%B4ng+c%C3%B2n+l%C3%A0+c%C3%B4ng+c%E1%BB%A5+benchmark+CPU+l%C3%BD+t%C6%B0%E1%BB%9Fng+n%E1%BB%AFa&cvid=93dbdc53dcf0417ab0bbc272dd8a0ab0&gs_lcrp=EgZjaHJvbWUyBggAEEUYOTIGCAEQRRg80gEIMTAxMmowajGoAgCwAgA&FORM=ANAB01&PC=CNNDDB">CPU-Z không còn là công cụ benchmark CPU lý tưởng nữa</Link>
                           </h3>
                         </div>
                       </li>
                       <li className="item-post fade-box">
                         <div className="img-post">
-                          <a
+                          <Link
                             className="aspect-ratio"
-                            href="https://gearvn.com/blogs/cong-nghe/elon-musk-ra-mat-chatbot-ai-grok-biet-tau-hai-y-nhu-chu-cua-no"
+                            to="https://gearvn.com/blogs/cong-nghe/elon-musk-ra-mat-chatbot-ai-grok-biet-tau-hai-y-nhu-chu-cua-no"
                           >
                             <img
                               src={PICTURE.ai}
                               alt="Elon Musk ra mắt chatbot AI Grok biết tấu hài y như chủ của nó"
                             ></img>
-                          </a>
+                          </Link>
                         </div>
                         <div className="info-post">
                           <h3>
-                          <a href="https://gearvn.com/blogs/cong-nghe/elon-musk-ra-mat-chatbot-ai-grok-biet-tau-hai-y-nhu-chu-cua-no">Elon Musk ra mắt chatbot AI Grok biết tấu hài y như chủ của nó</a>
+                          <Link to="https://gearvn.com/blogs/cong-nghe/elon-musk-ra-mat-chatbot-ai-grok-biet-tau-hai-y-nhu-chu-cua-no">Elon Musk ra mắt chatbot AI Grok biết tấu hài y như chủ của nó</Link>
                           </h3>
                         </div>
                       </li>
                       <li className="item-post fade-box">
                         <div className="img-post">
-                          <a
+                          <Link
                             className="aspect-ratio"
-                            href="https://gvn360.com/cong-nghe/galax-rtx-4090-la-gpu-dau-tien-co-hdmi-retimer-de-truyen-du-lieu-duong-dai/"
+                            to="https://gvn360.com/cong-nghe/galax-rtx-4090-la-gpu-dau-tien-co-hdmi-retimer-de-truyen-du-lieu-duong-dai/"
                           >
                             <img
                               src={PICTURE.flag}
                               alt="
                               Việt Nam đặt mục tiêu trở thành quốc gia sản xuất bóng bán dẫn"
                             ></img>
-                          </a>
+                          </Link>
                         </div>
                         <div className="info-post">
                           <h3>
-                          <a href="https://gearvn.com/blogs/cong-nghe/viet-nam-dat-muc-tieu-tro-thanh-quoc-gia-san-xuat-bong-ban-dan">Galax RTX 4090 là GPU đầu tiên có HDMI Retimer để truyền dữ liệu đường dài</a>
+                          <Link to="https://gearvn.com/blogs/cong-nghe/viet-nam-dat-muc-tieu-tro-thanh-quoc-gia-san-xuat-bong-ban-dan">Galax RTX 4090 là GPU đầu tiên có HDMI Retimer để truyền dữ liệu đường dài</Link>
                           </h3>
                         </div>
                       </li>

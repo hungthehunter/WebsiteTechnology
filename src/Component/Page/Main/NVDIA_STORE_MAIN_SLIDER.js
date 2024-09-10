@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-
+import { Link } from 'react-router-dom';
 const SLIDER = ({ images, activeSlide, onChangeSlide }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -33,7 +33,10 @@ const SLIDER = ({ images, activeSlide, onChangeSlide }) => {
             <div className="slider text-brand">
               <span>
                 <b className="text-brand-ad">{image.brand}</b>
+               
               </span>
+              <br></br>
+              <b className="text-brand-ad">{image.brand1}</b>
             </div>
             <div className="slider text-heading">
               <span>
@@ -41,9 +44,9 @@ const SLIDER = ({ images, activeSlide, onChangeSlide }) => {
               </span>
             </div>
             <div className="slider text-choose">
-              <a href={image.link} className="btn brand-green-btn green-success">
+              <Link to={image.link} className="slider btn brand-green-btn green-success" style={{fontSize:20}}>
                 Shop Now
-              </a>
+              </Link>
             </div>
           </div>
         </div>

@@ -1,99 +1,127 @@
-import React, { useEffect, useState } from "react";
-import PICTURE from "../../Assests/PICTURE";
-import "./LoginSignup.css";
-
+import axios from "axios";
+import React, { useState } from "react";
+import { FaSquarePhone } from "react-icons/fa6";
+import { MdDriveFileRenameOutline, MdEmail } from "react-icons/md";
+import { RiLockPasswordFill } from "react-icons/ri";
+import { Link, useNavigate } from "react-router-dom";
+import "./LoginSignup.scss";
 const LoginSignup = () => {
-  const [action, setAction] = useState("Log In");
+  let navigate = useNavigate();
+  const [user, setUser] = useState({
+    fullname: "",
+    mobile: "",
+    email: "",
+    password:"",
+  });
+  const handleRegister = async (e) => {
+    e.preventDefault();
+    await axios.post("http://localhost:8080/api/v1/auth/signup", user);
+    navigate("/websiteDoAn/Login");
+  };
 
-  useEffect(()=>{
-    if(action==="Log In"){
-    }
-  })
+  const {fullname,mobile, email,password } = user;
+
+  function onInputChange(e) {
+    const { name, value } = e.target;
+    setUser(prevState => ({
+        ...prevState,
+        [name]: value
+    }));
+}
+
+
   return (
-    <div>
+    <div className="account-section">
       <div className="box">
-        <div className="square"></div>
-        <div className="square"></div>
-        <div className="square"></div>
-        <div className="square"></div>
-        <div className="square"></div>
-        <div className="square"></div>
-        <div className="square"></div>
-        <div className="square"></div>
-        <div className="square"></div>
-        <div className="square"></div>
 
         <div className="login-container">
-          {/* (title) */}
-          <div className="header">
-            <div className="text">{action}</div>
-            <div className="underline"></div>
+        {/* onSubmit={(e) => onSubmit(e)} */}
+          <form  method="POST" className="inputs" onSubmit={handleRegister}>
+            {/* (title) */}
+            <div className="header">
+              <div className="text">Create Your Account</div>
+              <div className="underline"></div>
+            </div>
+
+            {/* import section */}
+
+   
+              <div className="input">
+              <MdEmail size={20} className="logo"/>
+                <input type="text" placeholder="Email" name="email" required 
+                value={email}
+                onChange={(e) => onInputChange(e)}
+               
+                />
+              </div>
+
+              <div className="input">
+              <MdDriveFileRenameOutline size={20} className="logo"/>
+                <input type="text" placeholder="Full Name" name="fullname" required 
+
+                value={fullname}
+                  onChange={(e) => onInputChange(e)}
+                 
+                />
+              </div>
+
+              <div className="input">
+              <RiLockPasswordFill size={20} className="logo"/>
+                <input
+                  type="text"
+                  placeholder="password"
+                  name="password"
+                  required
+                  value={password}
+                  onChange={(e) => onInputChange(e)}
+               
+                />
+              </div>
+
+              <div className="input">
+              <FaSquarePhone size={20} className="logo"/>
+                <input
+                  type="text"
+                  placeholder="Phone number"
+                  name="mobile"
+                  required
+                  value={mobile}
+                  onChange={(e) => onInputChange(e)}
+               
+                />
+              </div>
+              {/* <div className="forgot-password">
+                Already has account? <Link to="/websiteDoAn/Login"><span>click here</span></Link>
+              </div> */}
+
+<div className="forgot-password">
+Already has account? <Link to="/websiteDoAn/Login"><span>click here</span></Link>
           </div>
 
-          {/* import section */}
-          <div className="inputs">
-            {action === "Log In" ? (
-              <div></div>
-            ) : (
-              <div className="input" style={{ visibility: "visible" }}>
-                <img src={PICTURE.email} alt="email"></img>
-                <input type="text" placeholder="Email"></input>
-              </div>
-            )}
-            <div className="input" style={{ display: "none" }}>
-              <img src={PICTURE.email} alt="email"></img>
-              <input type="text" placeholder="Email"></input>
-            </div>
 
-            <div className="input">
-              <img src={PICTURE.user} alt="name"></img>
-              <input type="text" placeholder="Name"></input>
-            </div>
+              <div className="submit-container">
 
-            <div className="input">
-              <img src={PICTURE.password} alt="password"></img>
-              <input type="text" placeholder="Password"></input>
-            </div>
 
-            {action === "Sign Up" ? (
-              <div></div>
-            ) : (
-              <div className="forgot-password">
-                Forget password? <span>click here</span>
-              </div>
-            )}
+            <button    className="submit" type="submit" >
+        Create Account
+            </button>
 
-            <div className="submit-container">
-              <div
-                className={action === "Log In" ? "submit gray" : "submit"}
-                onClick={() => setAction("Sign Up")}
-              >
-                Sign Up
               </div>
-              <a href="/"> 
-              <div
-                className={action === "Sign Up" ? "submit gray" : "submit"}
-                onClick={() => setAction("Log In")}
-              >
-                
-                Log In
-               
-              </div>
-              </a>
-            </div>
+           
+
             <div className="footer">
               <span>
-                <a>Terms</a>
+                <Link>Terms</Link>
               </span>
               <span>
-                <a>Privacy</a>
+                <Link>Privacy</Link>
               </span>
               <span>
-                <a>Docs</a>
+                <Link>Docs</Link>
               </span>
               <span className="contact">Contact Github Support</span>
             </div>
-          </div>
+          </form>
         </div>
       </div>
     </div>

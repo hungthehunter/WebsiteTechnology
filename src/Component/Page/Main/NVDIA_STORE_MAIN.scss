@@ -1,3 +1,4 @@
+.NVIDIA_STORE_MAIN{
 /* Reset CSS */
 * {
     padding: 0;
@@ -548,7 +549,7 @@ opacity: 1;
 #slider {
     position: relative;
 
-    margin-top: 110px;
+    margin-top: 90px;
     max-height: 398px;
     height: 301px;
     background-color: #000;
@@ -576,36 +577,13 @@ object-fit: cover;
     margin-top: 81px;
     display: none;
     height: inherit;
-    /* animation:sliderchange 1s infinite linear 4s; */
-    /* min-height: 300px; */
-    /* transition: transform .6s ease-in-out,-webkit-transform .6s ease-in-out; */
-    /* background-color: #000; */
-    /* z-index: 1; */
+    
 }
 
-/* #slider .slider-item:nth-child(1){
-    animation:sliderchange 4s infinite linear;
 
-}
-#slider .slider-item:nth-child(2){
-    animation:sliderchange 4s infinite linear;
-
-}
-#slider .slider-item:nth-child(3){
-    animation:sliderchange 4s infinite linear;
-
-}
-#slider .slider-item:nth-child(4){
-    animation:sliderchange 4s infinite linear;
-
-} */
 
 
 #slider .slider-img {
-    /* width: inherit;
-max-width: 1280px;
-height: inherit;
-object-fit: cover; */
     position: relative;
     height: inherit;
     width: 100%;
@@ -615,7 +593,9 @@ object-fit: cover; */
 
 #slider .text-content {
     position: absolute;
-    top: 30px;
+    display: flex;
+    flex-direction: column;
+    top: 0px;
     left: 90px;
 }
 
@@ -626,12 +606,12 @@ object-fit: cover; */
 }
 
 #slider .text-brand-ad {
-    font-size: 25px;
+    font-size: 48px;
 }
 
 #slider .text-heading {
     color: #fff;
-    font-size: 48px;
+    font-size: 25px;
     letter-spacing: -0.02em;
     line-height: 1em;
 }
@@ -781,7 +761,7 @@ flex-direction: column;
 }
 
 .outer-promoBanner .promoText {
-    left: 95%;
+    left: 35%;
     position: relative;
     width: 72%;
 }
@@ -1060,4 +1040,5 @@ font-weight: 400;
 }
 #btn-hardware:hover #mobile-hardward{
     display: block;
+}
 }

@@ -1,7 +1,9 @@
+import 'bootstrap/dist/css/bootstrap.min.css';
 import classNames from "classnames/bind";
 import Header from "../Header";
 import styles from "./DefaultLayout.module.scss";
 import Sidebar from "./Sidebar";
+
 const cx=classNames.bind(styles)
 function DefaultLayout({ children }) {
 

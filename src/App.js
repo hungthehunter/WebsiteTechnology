@@ -1,8 +1,8 @@
 import { Fragment } from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
+import "../node_modules/bootstrap/dist/css/bootstrap.min.css";
 import DefaultLayout from "./Component/Layout/Component/DefaultLayout";
 import { publicRoutes } from "./routes";
-
 function App() {
   // const RouterComponent = process.env.NODE_ENV === 'production' ? HashRouter : BrowserRouter;
 
@@ -11,7 +11,6 @@ function App() {
       <div className="App">
         <Routes >
           {publicRoutes.map((route, index) => {
-            console.log(`Mapping route: ${route.path}`);
             const Page = route.component;
 
             let Layout = DefaultLayout;

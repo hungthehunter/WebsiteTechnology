@@ -5,9 +5,8 @@ import { BiLogOut } from "react-icons/bi";
 import { BsHouseDoor } from "react-icons/bs";
 import { IoPeopleOutline } from "react-icons/io5";
 import { LuPhoneCall } from "react-icons/lu";
-import { RiAdminFill } from "react-icons/ri";
+import { Link } from "react-router-dom";
 import icon from "../../../../Assests/ICON";
-import Toggle from "../../../../Button/Toggle";
 import styles from "./Sidebar.module.scss";
 const cx = classNames.bind(styles);
 function Sidebar({ show }) {
@@ -37,7 +36,7 @@ const buttonChange=()=>{
 
 
   return (
-    <aside className={cx("wrapper")} >
+    <side className={cx("wrapper")} >
       <div ref={sidebarColor} className={cx('sidebar', { 'active': show })}>
         <ul className={cx("sidebar-information", "flex-start")} >
           <li>
@@ -53,48 +52,49 @@ const buttonChange=()=>{
           </li>
       
           <li>
-            <a href="/" style={{ color: fontColor }}>
+            <Link to="/websiteDoAn" style={{ color: fontColor }}>
               {" "}
               <span>
                 <BsHouseDoor size={45} className={cx("icon")}></BsHouseDoor>
               </span>
               Home
-            </a>
+            </Link>
           </li>
           <li>
-            <a href="/" style={{ color: fontColor }}>
+            <Link to="/websiteDoAn/Policy" style={{ color: fontColor }}>
               <IoPeopleOutline
                 size={45}
                 className={cx("icon")}
               ></IoPeopleOutline>
               About us
-            </a>
+            </Link>
           </li>
           <li>
-            <a href="/" style={{ color: fontColor }}>
+            <Link to="/websiteDoAn/Policy" style={{ color: fontColor }}>
               <span>
                 <LuPhoneCall size={45} className={cx("icon")}></LuPhoneCall>
               </span>
               Contact us
-            </a>
+            </Link>
           </li>
         </ul>
         <ul className={cx("sidebar-tool", "flex-end")}>
-<li>
-  <a href="/websiteDoAn/CustomerOrderDetail">
+{/* <li>
+  <Link to="/websiteDoAn/CustomerOrderDetail" style={{ color: fontColor }}>
     <span>
   <RiAdminFill 
   size={45}
   className={cx("icon")}
   style={{color:fontColor}}
+  
   ></RiAdminFill>
   </span>
   Admin
-  </a>
-</li>
+  </Link>
+</li> */}
         
           <li>
-            <a href="/Login" style={{ color: fontColor }}>
+            <Link to="/websiteDoAn/Login" style={{ color: fontColor }}>
               <span>
                 <BiLogOut
                   size={45}
@@ -104,14 +104,14 @@ const buttonChange=()=>{
                 ></BiLogOut>
               </span>
               Login
-            </a>
+            </Link>
           </li>
-          <li onChange={buttonChange}>
+          {/* <li onChange={buttonChange}>
             <Toggle props={toggle}/>
-          </li>
+          </li> */}
         </ul>
       </div>
-    </aside>
+    </side>
   );
 }
 export default Sidebar;

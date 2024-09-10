@@ -1,0 +1,87 @@
+/*nav-bar*/
+.navbar-list {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    list-style: none;
+    background-color: black;
+    padding: 15px 0 10px 0;
+    color: #fff;
+  }
+
+  .navbar-list img {
+    width: 270px;
+    .navbar-list img a:hover {
+      color: #000;
+    }
+  }
+
+  .navbar-list a {
+    font-size: 15px;
+    text-decoration: none;
+    margin-top: 20px;
+    cursor: pointer;
+  }
+
+  .navbar-list li {
+    margin-right: 30px;
+  }
+
+  .navbar-list .srch {
+    margin-bottom: 0;
+    margin-left: 3px;
+    font-size: 20px;
+  }
+
+  .navbar-list a:hover {
+    // color: #FFD400;
+  }
+
+  .logo {
+    cursor: pointer;
+    background-color: #000;
+  }
+
+  /* css từng elements trên navbar */
+
+  .left {
+    position: relative;
+    left: 15px;
+  }
+
+  .right {
+    display: flex;
+    justify-content: center;
+    position: relative;
+    align-items: center;
+    right: 10px;
+  }
+  .right li:nth-child(1) input {
+    height: 40px;
+    width: 400px;
+    border-radius: 3px;
+    border: none;
+    padding-left: 10px;
+  }
+
+  .right li:nth-child(1) i {
+    position: relative;
+    font-size: 20px;
+    color: #333;
+    cursor: pointer;
+    right: 32px;
+    top: 4px;
+  }
+
+  .right li:nth-child(2) {
+    position: relative;
+    top: 0px;
+  }
+
+  .right li:nth-child(2) i {
+    font-size: 25px;
+    margin-right: 5px;
+    position: relative;
+  }
+
+  

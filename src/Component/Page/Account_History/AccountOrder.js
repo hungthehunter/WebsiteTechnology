@@ -3,10 +3,9 @@ import TabContext from "@mui/lab/TabContext";
 import Box from "@mui/material/Box";
 import Tab from "@mui/material/Tab";
 import Tabs from "@mui/material/Tabs";
-import axios from "axios";
 import { useEffect, useState } from "react";
+import { getEmployeeById, getUserLogged, updateOrderById } from "../../Serivce/ApiService";
 import "./css/style.scss";
-import { getEmployeeById } from "./service/apiService";
 
 const AccountOrder = ({ setActiveComponent }) => {
   const [activeIndex, setActiveIndex] = useState(null);
@@ -45,11 +44,7 @@ const AccountOrder = ({ setActiveComponent }) => {
       return;
     }
     try {
-      const response = await axios.get("http://localhost:8080/api/v1/auth/me", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await getUserLogged(token)
       setUserId(response.data.id);
       setUser(response.data);
       console.log("Đây là id user", response.data.id);
@@ -79,10 +74,7 @@ const AccountOrder = ({ setActiveComponent }) => {
     };
 
     try {
-      const response = await axios.put(
-        `http://localhost:8080/api/orders/${id}`,
-        updatedOrder
-      );
+      const response = await updateOrderById(id,updatedOrder);
       if (response.status === 200) {
         alert("Product updated successfully");
         loadUserHistoryProduct();

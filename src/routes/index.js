@@ -1,22 +1,3 @@
-import AdminAccess from "../Component/Layout/Component/Admin/Admin Dashboard/Access.js";
-import AdminAddAccess from "../Component/Layout/Component/Admin/Admin Dashboard/AddAccess.js";
-import AdminAddCategory from "../Component/Layout/Component/Admin/Admin Dashboard/AddCategory.js";
-import AdminAddManufacturer from "../Component/Layout/Component/Admin/Admin Dashboard/AddManufacturer.js";
-import AdminAddStaff from "../Component/Layout/Component/Admin/Admin Dashboard/AddStaff.js";
-import AdminCategory from "../Component/Layout/Component/Admin/Admin Dashboard/Category.js";
-import AdminChart from "../Component/Layout/Component/Admin/Admin Dashboard/Chart.js";
-import AdminCustomer from "../Component/Layout/Component/Admin/Admin Dashboard/Customer.js";
-import AdminEditAccess from "../Component/Layout/Component/Admin/Admin Dashboard/EditAccess.js";
-import AdminEditOrder from "../Component/Layout/Component/Admin/Admin Dashboard/EditOrder.js";
-import AdminEditStaff from "../Component/Layout/Component/Admin/Admin Dashboard/EditStaff.js";
-import { default as AdminDecentralization, default as AdminManufacturer } from "../Component/Layout/Component/Admin/Admin Dashboard/Manufacturer.js";
-import AdminOrder from "../Component/Layout/Component/Admin/Admin Dashboard/Order.js";
-import AdminProduct from "../Component/Layout/Component/Admin/Admin Dashboard/Product.js";
-import AdminRole from "../Component/Layout/Component/Admin/Admin Dashboard/Role.js";
-import AdminStaff from "../Component/Layout/Component/Admin/Admin Dashboard/Staff.js";
-import AdminViewCustomer from "../Component/Layout/Component/Admin/Admin Dashboard/ViewCustomer.js";
-import AdminViewStaff from "../Component/Layout/Component/Admin/Admin Dashboard/ViewStaff.js";
-import { default as AdminDashboard, default as AdminPage } from "../Component/Layout/Component/Admin/Admin Dashboard/index.js";
 import BodyOnly from "../Component/Layout/Component/BodyOnly/index.js";
 import HeaderOnly from "../Component/Layout/Component/HeaderOnly/index.js";
 import AccountAddress from "../Component/Page/Account_History/AccountAddress.js";
@@ -25,6 +6,33 @@ import AccountHeader from "../Component/Page/Account_History/AccountHeader.js";
 import AccountOrder from "../Component/Page/Account_History/AccountOrder.js";
 import AccountProductHistory from "../Component/Page/Account_History/AccountProductHistory.js";
 import AccountHistory from "../Component/Page/Account_History/index.js";
+import AdminAccess from "../Component/Page/Admin/Admin Dashboard/Access.js";
+import AdminAddAccess from "../Component/Page/Admin/Admin Dashboard/AddAccess.js";
+import AdminAddCategory from "../Component/Page/Admin/Admin Dashboard/AddCategory.js";
+import AdminAddManufacturer from "../Component/Page/Admin/Admin Dashboard/AddManufacturer.js";
+import AdminAddStaff from "../Component/Page/Admin/Admin Dashboard/AddStaff.js";
+import AdminCategory from "../Component/Page/Admin/Admin Dashboard/Category.js";
+import AdminChart from "../Component/Page/Admin/Admin Dashboard/Chart.js";
+import AdminCustomer from "../Component/Page/Admin/Admin Dashboard/Customer.js";
+import AdminEditAccess from "../Component/Page/Admin/Admin Dashboard/EditAccess.js";
+import AdminEditCategory from "../Component/Page/Admin/Admin Dashboard/EditCategory.js";
+import AdminEditManufacturer from "../Component/Page/Admin/Admin Dashboard/EditManufacturer.js";
+import AdminEditOrder from "../Component/Page/Admin/Admin Dashboard/EditOrder.js";
+import AdminEditStaff from "../Component/Page/Admin/Admin Dashboard/EditStaff.js";
+import { default as AdminDecentralization, default as AdminManufacturer } from "../Component/Page/Admin/Admin Dashboard/Manufacturer.js";
+import AdminOrder from "../Component/Page/Admin/Admin Dashboard/Order.js";
+import AdminProduct from "../Component/Page/Admin/Admin Dashboard/Product.js";
+import AdminRole from "../Component/Page/Admin/Admin Dashboard/Role.js";
+import AdminStaff from "../Component/Page/Admin/Admin Dashboard/Staff.js";
+import AdminViewCategory from "../Component/Page/Admin/Admin Dashboard/ViewCategory.js";
+import AdminViewCustomer from "../Component/Page/Admin/Admin Dashboard/ViewCustomer.js";
+import AdminViewManufacturer from "../Component/Page/Admin/Admin Dashboard/ViewManufacturer.js";
+import AdminViewStaff from "../Component/Page/Admin/Admin Dashboard/ViewStaff.js";
+import { default as AdminDashboard, default as AdminPage } from "../Component/Page/Admin/Admin Dashboard/index.js";
+import CartPage from "../Component/Page/Cart/Cart.js";
+import CartItem from "../Component/Page/Cart/CartItem/CartItem.js";
+import CartList from "../Component/Page/Cart/CartList/CartList.js";
+import OrderDetail from "../Component/Page/Cart/OrderDetail/OrderDetail.js";
 import CustomerOrderDetail from "../Component/Page/Customer/CustomerOrderDetail.js";
 import ErrorPage from "../Component/Page/Error/404.js";
 import Invoice from "../Component/Page/Invoice/index.js";
@@ -35,11 +43,13 @@ import Policy from "../Component/Page/Policy/index.js";
 import ProductDetail from "../Component/Page/Products/DetailProducts/product-detail-card-slider-master/index.js";
 import Products from "../Component/Page/Products/Products.js";
 import ImageUpload from "../Component/Page/Products/index.js";
+import ProductReview from "../Component/Page/Review/Review.js";
 import Search from "../Component/Page/Search/index.js";
 import Service from "../Component/Page/Service/Service.js";
 import Shop from '../Component/Page/Shop/index.js';
 import SuccessOrder from "../Component/Page/Success/index.js";
 import Test from "../Component/Page/Test/Test.js";
+
 const publicRoutes = [
   {
     path: "/websiteDoAn",
@@ -106,9 +116,6 @@ const publicRoutes = [
   component: ImageUpload,
   layout: BodyOnly
 },
-
-
-
 
 {
   path: "/websiteDoAn/AdminDashboard",
@@ -219,6 +226,21 @@ const publicRoutes = [
   layout: BodyOnly
 },
 {
+  path: "/websiteDoAn/AdminAddCategory",
+  component: AdminAddCategory,
+  layout: BodyOnly
+},
+{
+  path:"/websiteDoAn/AdminEditCategory",
+  component: AdminEditCategory,
+  layout: BodyOnly
+},
+{
+  path:"/websiteDoAn/AdminViewCategory",
+  component: AdminViewCategory,
+  layout: BodyOnly
+},
+{
   path: "/websiteDoAn/AdminManufacturer",
   component: AdminManufacturer,
   layout: BodyOnly
@@ -229,8 +251,13 @@ const publicRoutes = [
   layout: BodyOnly
 },
 {
-  path: "/websiteDoAn/AdminAddCategory",
-  component: AdminAddCategory,
+  path: "/websiteDoAn/AdminEditManufacturer",
+  component: AdminEditManufacturer,
+  layout: BodyOnly
+},
+{
+  path: "/websiteDoAn/AdminViewManufacturer",
+  component: AdminViewManufacturer,
   layout: BodyOnly
 },
 {
@@ -275,6 +302,36 @@ component: SuccessOrder,
 },
 
 {
+  path:"/websiteDoAn/Review",
+  component: ProductReview,
+  layout: BodyOnly
+},
+
+/*--- Cart ---*/
+{
+  path:"/websiteDoAn/CartPage",
+  component:CartPage,
+},
+
+{
+  path:"/websiteDoAn/CartItem",
+  component: CartItem,
+  layout: BodyOnly
+},
+
+{
+  path:"/websiteDoAn/CartList",
+  component: CartList,
+  layout: BodyOnly
+},
+
+{
+  path:"/websiteDoAn/OrderDetail",
+  component: OrderDetail,
+  layout: BodyOnly
+},
+
+{
   path: "/websiteDoAn/*",
   component: ErrorPage,
 },
@@ -283,3 +340,4 @@ component: SuccessOrder,
 const privateRoutes = {};
 
 export { privateRoutes, publicRoutes };
+

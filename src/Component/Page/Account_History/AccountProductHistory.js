@@ -1,6 +1,6 @@
-import axios from "axios";
 import Pako from "pako";
 import { useEffect, useState } from "react";
+import { getCartById, getUserLogged } from "../../Serivce/ApiService";
 import "./css/style.scss";
 
 const decompressAndDisplayImage = (compressedBase64) => {
@@ -45,11 +45,7 @@ const AccountProductHistory = ({ setActiveComponent }) => {
     }
 
     try {
-      const response = await axios.get("http://localhost:8080/api/v1/auth/me", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await getUserLogged(token);
       setUserId(response.data.id);
     } catch (error) {
       console.error("Failed to fetch user information:", error);
@@ -58,7 +54,7 @@ const AccountProductHistory = ({ setActiveComponent }) => {
 
   const loadUserHistoryProduct = async () => {
     try {
-      const result = await axios.get(`http://localhost:8080/api/carts/cart/${userId}`);
+      const result = await getCartById(userId);
       console.log(result.data); 
       const allProducts = result.data.flatMap(cart => cart.products || []);
       setHistoryProducts(allProducts);

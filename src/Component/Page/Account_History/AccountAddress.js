@@ -2,6 +2,7 @@ import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } 
 import axios from "axios";
 import * as React from 'react';
 import { useEffect, useState } from "react";
+import { createAddress, getUserLogged } from '../../Serivce/ApiService';
 import "./css/style.scss";
 
 const AccountAddress = ({ setActiveComponent }) => {
@@ -46,14 +47,7 @@ const AccountAddress = ({ setActiveComponent }) => {
 
   const GetUserAccount = async (token) => {
     try {
-      const result = await axios.get(
-        "http://localhost:8080/api/v1/auth/me",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const result = await getUserLogged(token);
       setAddress(result.data.addresses);
       setUserId(result.data.id); // Lưu trữ userId
     } catch (error) {
@@ -98,18 +92,10 @@ const AccountAddress = ({ setActiveComponent }) => {
     });
   };
 
-  const handleAddAddress = async () => {
+  const handleAddAddress = async (newAddress) => {
     const token = localStorage.getItem("authToken");
     try {
-      const result = await axios.post(
-        `http://localhost:8080/api/address`,
-        newAddress,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("authToken")}`
-          }
-        }
-      );
+      const result = await createAddress(newAddress)
       GetUserAccount(token);
     } catch (error) {
       console.error("Failed to add address:", error);

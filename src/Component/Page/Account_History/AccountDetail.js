@@ -7,8 +7,8 @@ import {
   MenuItem,
   Select
 } from "@mui/material";
-import axios from "axios";
 import React, { useEffect, useState } from "react";
+import { getUserLogged, updateUserLogged } from "../../Serivce/ApiService";
 import "./css/style.scss";
 
 const AccountDetail = () => {
@@ -83,11 +83,8 @@ const AccountDetail = () => {
 
   const GetUserAccount = async (token) => {
     try {
-      const result = await axios.get("http://localhost:8080/api/v1/auth/me", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const result = await getUserLogged(token);
+      
       const { dateofbirth } = result.data;
       const birthDate = new Date(dateofbirth);
       setEmail(result.data.email);
@@ -104,9 +101,7 @@ const AccountDetail = () => {
 
   const handleSaveChange = async () => {
     try {
-      const token = localStorage.getItem("authToken");
       const birthDate = new Date(birthYear, birthMonth - 1, birthDay);
-
       const updatedData = {
         email,
         fullname,
@@ -115,11 +110,7 @@ const AccountDetail = () => {
         dateofbirth: birthDate.toISOString(),
       };
 
-      await axios.put(`http://localhost:8080/api/v1/admin/update/${id}`, updatedData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      await updateUserLogged(updatedData)
 
       // Set success alert
       setAlertMessage('Account details updated successfully!');

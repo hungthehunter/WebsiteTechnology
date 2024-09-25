@@ -131,7 +131,7 @@ const Shop_Fake = ({ isGridView, searchItem, categoryFilters }) => {
                 <img
                   className={`${isGridView ? "load-more-img-lg" : "img-lg"}`}
                   id="product-img"
-                  src={`data:image/png;base64,${item.product_image.find(img => img.isMainImage)?.imageData || ''}`}
+                  src={`${item.product_image.find(img => img.mainImage)?.url || ''}`}
                   alt={item.productName}
                 />
               </div>

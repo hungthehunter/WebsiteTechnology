@@ -15,6 +15,25 @@ import axios from "axios";
 import React, { useEffect, useState } from "react";
 
 const AdminAddProduct = ({ setActiveComponent, showAlert }) => {
+  const defaultSpecifications = [
+    { specificationName: "CPU", specificationData: "" },
+    { specificationName: "RAM", specificationData: "" },
+    { specificationName: "Hard Drive", specificationData: "" },
+    { specificationName: "Graphics Card", specificationData: "" },
+    { specificationName: "Screen", specificationData: "" },
+    { specificationName: "Port", specificationData: "" },
+    { specificationName: "Keyboard", specificationData: "" },
+    { specificationName: "LAN", specificationData: "" },
+    { specificationName: "Wireless", specificationData: "" },
+    { specificationName: "Bluetooth", specificationData: "" },
+    { specificationName: "Operating System", specificationData: "" },
+    { specificationName: "Battery", specificationData: "" },
+    { specificationName: "Weight", specificationData: "" },
+    { specificationName: "Color", specificationData: "" },
+    { specificationName: "Size", specificationData: "" },
+    { specificationName: "Relationship", specificationData: "" },
+  ];
+
   const [formData, setFormData] = useState({
     productName: "",
     cpu: "",
@@ -39,6 +58,7 @@ const AdminAddProduct = ({ setActiveComponent, showAlert }) => {
     promotion: {
       id: null,
     },
+    specification: defaultSpecifications, // Khởi tạo với các specification mặc định
   });
 
   const [categories, setCategories] = useState([]);
@@ -75,6 +95,25 @@ const AdminAddProduct = ({ setActiveComponent, showAlert }) => {
         console.error("Error fetching promotions", error);
       });
   }, []);
+
+  const handleAddSpecification = () => {
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      specification: [...prevFormData.specification, { specificationName: "", specificationData: "" }],
+    }));
+  };
+
+  const handleSpecificationChange = (index, field, value) => {
+    const newSpecifications = [...formData.specification];
+    newSpecifications[index] = {
+      ...newSpecifications[index],
+      [field]: value,
+    };
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      specification: newSpecifications,
+    }));
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -128,7 +167,7 @@ const AdminAddProduct = ({ setActiveComponent, showAlert }) => {
       formDataToSend.append("images", file);
     });
 
-     axios
+    axios
       .post("http://localhost:8080/api/products", formDataToSend)
       .then((response) => {
         showAlert("Add product successfully.", "success");
@@ -340,6 +379,33 @@ const AdminAddProduct = ({ setActiveComponent, showAlert }) => {
                   </FormControl>
                 </Grid>
 
+                {/* Specifications */}
+                {formData.specification.map((spec, index) => (
+                  <Grid item xs={12} md={6} key={index}>
+                    <TextField
+                      fullWidth
+                      label="Specification Name"
+                      value={spec.specificationName}
+                      onChange={(e) => handleSpecificationChange(index, 'specificationName', e.target.value)}
+                      margin="normal"
+                    />
+                    <TextField
+                      fullWidth
+                      label="Specification Data"
+                      value={spec.specificationData}
+                      onChange={(e) => handleSpecificationChange(index, 'specificationData', e.target.value)}
+                      margin="normal"
+                    />
+                  </Grid>
+                ))}
+
+                <Grid item xs={12}>
+                  <Button variant="outlined" onClick={handleAddSpecification}>
+                    Add Specification
+                  </Button>
+                </Grid>
+
+                {/* Main image */}
                 <Grid item xs={12} md={6}>
                   <Typography variant="body1" gutterBottom>
                     Upload Main Image

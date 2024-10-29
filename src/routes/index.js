@@ -19,7 +19,10 @@ import AdminEditCategory from "../Component/Page/Admin/Admin Dashboard/EditCateg
 import AdminEditManufacturer from "../Component/Page/Admin/Admin Dashboard/EditManufacturer.js";
 import AdminEditOrder from "../Component/Page/Admin/Admin Dashboard/EditOrder.js";
 import AdminEditStaff from "../Component/Page/Admin/Admin Dashboard/EditStaff.js";
-import { default as AdminDecentralization, default as AdminManufacturer } from "../Component/Page/Admin/Admin Dashboard/Manufacturer.js";
+import {
+  default as AdminDecentralization,
+  default as AdminManufacturer,
+} from "../Component/Page/Admin/Admin Dashboard/Manufacturer.js";
 import AdminOrder from "../Component/Page/Admin/Admin Dashboard/Order.js";
 import AdminProduct from "../Component/Page/Admin/Admin Dashboard/Product.js";
 import AdminRole from "../Component/Page/Admin/Admin Dashboard/Role.js";
@@ -28,14 +31,15 @@ import AdminViewCategory from "../Component/Page/Admin/Admin Dashboard/ViewCateg
 import AdminViewCustomer from "../Component/Page/Admin/Admin Dashboard/ViewCustomer.js";
 import AdminViewManufacturer from "../Component/Page/Admin/Admin Dashboard/ViewManufacturer.js";
 import AdminViewStaff from "../Component/Page/Admin/Admin Dashboard/ViewStaff.js";
-import { default as AdminDashboard, default as AdminPage } from "../Component/Page/Admin/Admin Dashboard/index.js";
+import {
+  default as AdminDashboard,
+  default as AdminPage,
+} from "../Component/Page/Admin/Admin Dashboard/index.js";
 import CartPage from "../Component/Page/Cart/Cart.js";
 import CartItem from "../Component/Page/Cart/CartItem/CartItem.js";
 import CartList from "../Component/Page/Cart/CartList/CartList.js";
 import OrderDetail from "../Component/Page/Cart/OrderDetail/OrderDetail.js";
-import CustomerOrderDetail from "../Component/Page/Customer/CustomerOrderDetail.js";
 import ErrorPage from "../Component/Page/Error/404.js";
-import Invoice from "../Component/Page/Invoice/index.js";
 import Login from "../Component/Page/LoginSignup/Login.js";
 import SignUp from "../Component/Page/LoginSignup/LoginSignup.js";
 import NVDIA_STORE_MAIN from "../Component/Page/Main/NVDIA_STORE_MAIN.js";
@@ -44,297 +48,256 @@ import ProductDetail from "../Component/Page/Products/DetailProducts/product-det
 import Products from "../Component/Page/Products/Products.js";
 import ImageUpload from "../Component/Page/Products/index.js";
 import ProductReview from "../Component/Page/Review/Review.js";
-import Search from "../Component/Page/Search/index.js";
-import Service from "../Component/Page/Service/Service.js";
-import Shop from '../Component/Page/Shop/index.js';
+import Shop from "../Component/Page/Shop/index.js";
 import SuccessOrder from "../Component/Page/Success/index.js";
-import Test from "../Component/Page/Test/Test.js";
 
 const publicRoutes = [
   {
     path: "/websiteDoAn",
     component: NVDIA_STORE_MAIN,
   },
-  
-    {
-      path: "/websiteDoAn/Service",
-      component: Service,
-    },
-    {
-      path: "/websiteDoAn/Shop",
-      component: Shop,
-    },
-    {
-      path: "/websiteDoAn/SignUp",
-      component: SignUp,
-      layout: HeaderOnly,
-    },
-    {
-      path: "/websiteDoAn/Search",
-      component: Search,
-    }, 
   {
-    path:"/websiteDoAn/Main",
+    path: "/websiteDoAn/Shop",
+    component: Shop,
+  },
+  {
+    path: "/websiteDoAn/SignUp",
+    component: SignUp,
+    layout: HeaderOnly,
+  },
+
+  {
+    path: "/websiteDoAn/Main",
     component: NVDIA_STORE_MAIN,
   },
   {
-    path:"/websiteDoAn/Products",
-    component: Products
+    path: "/websiteDoAn/Products",
+    component: Products,
   },
 
+  {
+    path: "/websiteDoAn/Policy",
+    component: Policy,
+  },
 
+  {
+    path: "/websiteDoAn/Login",
+    component: Login,
+    layout: HeaderOnly,
+  },
+  {
+    path: "/websiteDoAn/ImageUpload",
+    component: ImageUpload,
+    layout: BodyOnly,
+  },
 
-{
-  path:"/websiteDoAn/Policy",
-  component: Policy
-},
+  {
+    path: "/websiteDoAn/AdminDashboard",
+    component: AdminDashboard,
+    layout: BodyOnly,
+  },
+  {
+    path: "/websiteDoAn/AdminPage",
+    component: AdminPage,
+    layout: BodyOnly,
+  },
+  {
+    path: "/websiteDoAn/AdminCustomer",
+    component: AdminCustomer,
+    layout: BodyOnly,
+  },
+  {
+    path: "/websiteDoAn/AdminProduct",
+    component: AdminProduct,
+    layout: BodyOnly,
+  },
 
+  {
+    path: "/websiteDoAn/AdminOrder",
+    component: AdminOrder,
+    layout: BodyOnly,
+  },
 
-{
-  path:"/websiteDoAn/CustomerOrderDetail",
-  component: CustomerOrderDetail,
-  layout: BodyOnly
-},
+  {
+    path: "/websiteDoAn/AdminStaff",
+    component: AdminStaff,
+    layout: BodyOnly,
+  },
 
+  {
+    path: "/websiteDoAn/AdminDecentralization",
+    component: AdminDecentralization,
+    layout: BodyOnly,
+  },
 
+  {
+    path: "/websiteDoAn/AdminViewCustomer",
+    component: AdminViewCustomer,
+    layout: BodyOnly,
+  },
 
-{
-  path:"/websiteDoAn/Test",
-  component: Test
-},
+  {
+    path: "/websiteDoAn/ProductDetail/:id",
+    component: ProductDetail,
+  },
+  {
+    path: "/websiteDoAn/Access",
+    component: AdminAccess,
+    layout: BodyOnly,
+  },
 
+  {
+    path: "/websiteDoAn/AddAccess",
+    component: AdminAddAccess,
+    layout: BodyOnly,
+  },
 
+  {
+    path: "/websiteDoAn/EditAccess",
+    component: AdminEditAccess,
+    layout: BodyOnly,
+  },
 
+  {
+    path: "/websiteDoAn/Role",
+    component: AdminRole,
+    layout: BodyOnly,
+  },
 
-{
-  path: "/websiteDoAn/Login",
-  component: Login,
-  layout: HeaderOnly,
-},
-{
-  path: "/websiteDoAn/ImageUpload",
-  component: ImageUpload,
-  layout: BodyOnly
-},
+  {
+    path: "/websiteDoAn/AdminEditOrder",
+    component: AdminEditOrder,
+    layout: BodyOnly,
+  },
+  {
+    path: "/websiteDoAn/AdminAddStaff",
+    component: AdminAddStaff,
+    layout: BodyOnly,
+  },
+  {
+    path: "/websiteDoAn/AdminViewStaff",
+    component: AdminViewStaff,
+    layout: BodyOnly,
+  },
+  {
+    path: "/websiteDoAn/AdminEditStaff",
+    component: AdminEditStaff,
+    layout: BodyOnly,
+  },
+  {
+    path: "/websiteDoAn/AdminCategory",
+    component: AdminCategory,
+    layout: BodyOnly,
+  },
+  {
+    path: "/websiteDoAn/AdminAddCategory",
+    component: AdminAddCategory,
+    layout: BodyOnly,
+  },
+  {
+    path: "/websiteDoAn/AdminEditCategory",
+    component: AdminEditCategory,
+    layout: BodyOnly,
+  },
+  {
+    path: "/websiteDoAn/AdminViewCategory",
+    component: AdminViewCategory,
+    layout: BodyOnly,
+  },
+  {
+    path: "/websiteDoAn/AdminManufacturer",
+    component: AdminManufacturer,
+    layout: BodyOnly,
+  },
+  {
+    path: "/websiteDoAn/AdminAddManufacturer",
+    component: AdminAddManufacturer,
+    layout: BodyOnly,
+  },
+  {
+    path: "/websiteDoAn/AdminEditManufacturer",
+    component: AdminEditManufacturer,
+    layout: BodyOnly,
+  },
+  {
+    path: "/websiteDoAn/AdminViewManufacturer",
+    component: AdminViewManufacturer,
+    layout: BodyOnly,
+  },
+  {
+    path: "/websiteDoAn/AdminChart",
+    component: AdminChart,
+    layout: BodyOnly,
+  },
 
-{
-  path: "/websiteDoAn/AdminDashboard",
-  component: AdminDashboard,
-  layout: BodyOnly
+  {
+    path: "/websiteDoAn/AccountHistory",
+    component: AccountHistory,
+  },
 
-},
-{
-  path: "/websiteDoAn/AdminPage",
-  component: AdminPage,
-  layout: BodyOnly
+  {
+    path: "/websiteDoAn/SuccessOrder",
+    component: SuccessOrder,
+  },
 
-},
-{
-  path: "/websiteDoAn/AdminCustomer",
-  component: AdminCustomer,
-  layout: BodyOnly
+  {
+    path: "/websiteDoAn/AccountDetail",
+    component: AccountDetail,
+  },
+  {
+    path: "/websiteDoAn/AccountHeader",
+    component: AccountHeader,
+  },
 
-},
-{
-  path: "/websiteDoAn/AdminProduct",
-  component: AdminProduct,
-  layout: BodyOnly
-},
+  {
+    path: "/websiteDoAn/AccountProductHistory",
+    component: AccountProductHistory,
+  },
 
-{
-  path: "/websiteDoAn/AdminOrder",
-  component: AdminOrder,
-  layout: BodyOnly
-},
+  {
+    path: "/websiteDoAn/AccountAddress",
+    component: AccountAddress,
+  },
 
-{
-  path: "/websiteDoAn/AdminStaff",
-  component: AdminStaff,
-  layout: BodyOnly
-},
+  {
+    path: "/websiteDoAn/AccountOrder",
+    component: AccountOrder,
+  },
 
-{
-  path: "/websiteDoAn/AdminDecentralization",
-  component: AdminDecentralization,
-  layout: BodyOnly
-},
+  {
+    path: "/websiteDoAn/Review",
+    component: ProductReview,
+    layout: BodyOnly,
+  },
 
-{
-  path: "/websiteDoAn/AdminViewCustomer",
-  component: AdminViewCustomer,
-  layout: BodyOnly
-},
+  /*--- Cart ---*/
+  {
+    path: "/websiteDoAn/CartPage",
+    component: CartPage,
+  },
 
-{
-  path: "/websiteDoAn/ProductDetail/:id",
-  component: ProductDetail,
- 
-},
+  {
+    path: "/websiteDoAn/CartItem",
+    component: CartItem,
+    layout: BodyOnly,
+  },
 
-{
-  path: "/websiteDoAn/Invoice",
-  component: Invoice,
-},
+  {
+    path: "/websiteDoAn/CartList",
+    component: CartList,
+    layout: BodyOnly,
+  },
 
-{
-  path: "/websiteDoAn/Access",
-  component: AdminAccess,
-  layout: BodyOnly
-},
+  {
+    path: "/websiteDoAn/OrderDetail",
+    component: OrderDetail,
+    layout: BodyOnly,
+  },
 
-{
-  path: "/websiteDoAn/AddAccess",
-  component: AdminAddAccess,
-  layout: BodyOnly
-},
-
-{
- path: "/websiteDoAn/EditAccess",
- component: AdminEditAccess,
- layout: BodyOnly
-},
-
-{
-  path: "/websiteDoAn/Role",
-  component: AdminRole,
-  layout: BodyOnly
-},
-
-{
-  path: "/websiteDoAn/AdminEditOrder",
-  component: AdminEditOrder,
-  layout: BodyOnly
-},
-{
-  path: "/websiteDoAn/AdminAddStaff",
-  component: AdminAddStaff,
-  layout: BodyOnly
-},
-{
-  path: "/websiteDoAn/AdminViewStaff",
-  component: AdminViewStaff,
-  layout: BodyOnly
-},
-{
-  path: "/websiteDoAn/AdminEditStaff",
-  component: AdminEditStaff,
-  layout: BodyOnly
-},
-{
-  path: "/websiteDoAn/AdminCategory",
-  component: AdminCategory,
-  layout: BodyOnly
-},
-{
-  path: "/websiteDoAn/AdminAddCategory",
-  component: AdminAddCategory,
-  layout: BodyOnly
-},
-{
-  path:"/websiteDoAn/AdminEditCategory",
-  component: AdminEditCategory,
-  layout: BodyOnly
-},
-{
-  path:"/websiteDoAn/AdminViewCategory",
-  component: AdminViewCategory,
-  layout: BodyOnly
-},
-{
-  path: "/websiteDoAn/AdminManufacturer",
-  component: AdminManufacturer,
-  layout: BodyOnly
-},
-{
-  path: "/websiteDoAn/AdminAddManufacturer",
-  component: AdminAddManufacturer,
-  layout: BodyOnly
-},
-{
-  path: "/websiteDoAn/AdminEditManufacturer",
-  component: AdminEditManufacturer,
-  layout: BodyOnly
-},
-{
-  path: "/websiteDoAn/AdminViewManufacturer",
-  component: AdminViewManufacturer,
-  layout: BodyOnly
-},
-{
-  path: "/websiteDoAn/AdminChart",
-  component: AdminChart,
-  layout: BodyOnly
-},
-
-{
-  path:"/websiteDoAn/AccountHistory",
-  component: AccountHistory,
-},
-
-{
-path:"/websiteDoAn/SuccessOrder",
-component: SuccessOrder,
-
-},
-
-{
-  path:"/websiteDoAn/AccountDetail",
-  component: AccountDetail
-},
-{
-  path:"/websiteDoAn/AccountHeader",
-  component: AccountHeader
-},
-
-{
-  path:"/websiteDoAn/AccountProductHistory",
-  component: AccountProductHistory,
-},
-
-{
-  path:"/websiteDoAn/AccountAddress",
-  component: AccountAddress,
-},
-
-{
-  path:"/websiteDoAn/AccountOrder",
-  component: AccountOrder,
-},
-
-{
-  path:"/websiteDoAn/Review",
-  component: ProductReview,
-  layout: BodyOnly
-},
-
-/*--- Cart ---*/
-{
-  path:"/websiteDoAn/CartPage",
-  component:CartPage,
-},
-
-{
-  path:"/websiteDoAn/CartItem",
-  component: CartItem,
-  layout: BodyOnly
-},
-
-{
-  path:"/websiteDoAn/CartList",
-  component: CartList,
-  layout: BodyOnly
-},
-
-{
-  path:"/websiteDoAn/OrderDetail",
-  component: OrderDetail,
-  layout: BodyOnly
-},
-
-{
-  path: "/websiteDoAn/*",
-  component: ErrorPage,
-},
+  {
+    path: "/websiteDoAn/*",
+    component: ErrorPage,
+  },
 ];
 
 const privateRoutes = {};

@@ -1,3 +1,4 @@
+import { keyframes } from '@emotion/react';
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -21,7 +22,12 @@ const dummyCartProduct = {
   shortDescription: "Handcrafted genuine leather wallet with multiple card slots and RFID protection."
 };
 
-export default function CartItem({ maxWidth }) {
+const fadeIn = keyframes`
+  from { opacity: 0; }
+  to { opacity: 1; }
+`;
+
+export default function CartItem({ cart }) { // Giảm kích thước tối đa
   const [open, setOpen] = useState(false);
   const [cartProduct, setCartProduct] = useState(dummyCartProduct);
   const theme = useTheme();
@@ -31,7 +37,7 @@ export default function CartItem({ maxWidth }) {
     setCartProduct(prev => ({
       ...prev,
       quantity: prev.quantity + 1,
-      total: (prev.quantity + 1) * prev.price
+      total: (prev.quantity + 1) * prev.price,
     }));
   };
 
@@ -40,10 +46,11 @@ export default function CartItem({ maxWidth }) {
       setOpen(true);
       return;
     }
+    
     setCartProduct(prev => ({
       ...prev,
       quantity: prev.quantity - 1,
-      total: (prev.quantity - 1) * prev.price
+      total: (prev.quantity - 1) * prev.price,
     }));
   };
 
@@ -51,104 +58,151 @@ export default function CartItem({ maxWidth }) {
   const handleConfirmDelete = () => {
     toast.success('Product removed from cart successfully!');
     setOpen(false);
-    // Add logic to remove product from cart
   };
 
   return (
-    <Box className="wrapper" sx={{ 
-      backgroundColor: '#1E1E1E', 
-      p: 1, // Giảm padding xuống 8px (theme.spacing(1))
-      borderRadius: 2, 
-      mb: 1, // Giảm margin bottom
-      position: 'relative',
-    }}>
-      <Tooltip title="Delete item" placement="top">
+    <Box 
+      className="wrapper" 
+      sx={{ 
+        backgroundColor: '#0F0F0F',
+        p: 3, 
+        borderRadius: 2, 
+        mb: 2,
+        position: 'relative',
+        animation: `${fadeIn} 0.5s ease-in`,
+      }}
+    >
+      <Tooltip title="Delete item" placement="left">
         <IconButton 
-          size="small" 
+          size="medium" 
           className="deleteBtn" 
           onClick={() => setOpen(true)} 
           sx={{  
             color: '#FF5252',
             position: 'absolute',
-            top: 50,
-            right: 4,
-            zIndex: 1
+            top: '50%',
+            left: 10,
+            transform: 'translateY(-50%)', // Căn giữa biểu tượng thùng rác
+            transition: 'color 0.3s',
+            '&:hover': {
+              color: '#FFA500',
+            },
           }}
         >
-          <FontAwesomeIcon icon={faTrash} fontSize={12} />
+          <FontAwesomeIcon icon={faTrash} fontSize={20} />
         </IconButton>
       </Tooltip>
-      <Grid container spacing={1} alignItems="center"> {/* Giảm spacing xuống 1 */}
-        <Grid item xs={12} sm={8}>
-          <Link to={`/detail/${cartProduct.id}`} style={{ textDecoration: 'none' }}>
-            <Stack direction="row" spacing={1} alignItems="center"> {/* Giảm spacing xuống 1 */}
-              <Box
-                component="img"
-                src={cartProduct.image}
-                sx={{ width: maxWidth * 0.7, height: maxWidth * 0.7, objectFit: 'cover', borderRadius: 1 }} 
-              />
-              <Stack spacing={0.5} alignItems="flex-start"> {/* Giữ spacing 0.5 cho text */}
-                <Typography
-                  variant={isMobile ? "body2" : "body1"}
-                  color="#4CAF50"
-                  className="text"
-                  sx={{ textTransform: 'uppercase', fontWeight: 'bold' }}
-                >
-                  {cartProduct.name}
-                </Typography>
-                <Typography variant={isMobile ? "caption" : "body2"} color="#FFD54F">
-                  ${cartProduct.price}
-                </Typography>
-                <Typography
-                  variant="caption"
-                  color="#E0E0E0"
-                  className="text"
-                  sx={{ textTransform: 'capitalize', maxWidth: 300 }}
-                >
-                  {cartProduct.shortDescription}
-                </Typography>
-              </Stack>
-            </Stack>
+
+      <Grid container spacing={2} alignItems="center">
+        <Grid 
+          item xs={12} sm={4} 
+          sx={{ 
+            textAlign: 'center', 
+            display: 'flex', 
+            justifyContent: 'center' 
+          }}
+        >
+          <Link to={`/detail/${cart.id}`} style={{ textDecoration: 'none' }}>
+            <Box
+              component="img"
+              src={cart.product.product_image.find((img) => img.mainImage)?.url}
+              sx={{ 
+                width: isMobile ? '90px' : '150px', // Giảm kích thước ảnh
+                height: isMobile ? '90px' : '150px',
+                objectFit: 'cover', 
+                borderRadius: 1,
+                transition: 'transform 0.3s',
+                '&:hover': {
+                  transform: 'scale(1.05) rotate(2deg)',
+                },
+              }} 
+            />
           </Link>
         </Grid>
-        <Grid item xs={12} sm={4}>
-        <Stack direction="row" justifyContent="space-between" alignItems="center" spacing={1}>
-          <div className="quantity-control">
-            <ButtonGroup variant="contained" size="small">
+
+        <Grid item xs={12} sm={5}>
+          <Stack spacing={1}>
+            <Typography
+              variant={isMobile ? "body1" : "h5"}
+              color="#76B900"
+              sx={{ textTransform: 'uppercase', fontWeight: 'bold' }}
+            >
+              {cart.product.productName}
+            </Typography>
+            <Typography variant="h6" color="#FFD700">
+              ${cart.product.unitPrice.toFixed(2)}
+            </Typography>
+          </Stack>
+        </Grid>
+
+        <Grid item xs={12} sm={3}>
+          <Stack 
+            direction="column" 
+            justifyContent="center" 
+            alignItems="center" 
+            spacing={1}
+          >
+            <ButtonGroup variant="outlined" size="medium">
               <Button 
                 onClick={reduceQuantity} 
-                className="decrease"
+                sx={{ 
+                  backgroundColor: '#76B900',
+                  color: '#000',
+                  '&:hover': { backgroundColor: '#A4D17A' },
+                  transition: 'transform 0.2s',
+                  '&:hover': { 
+                    backgroundColor: '#A4D17A',
+                    transform: 'scale(1.05)',
+                  },
+                }}
               >
                 -
               </Button>
               <Button 
                 disabled 
-                className="quantity"
+                sx={{ 
+                  backgroundColor: '#E1E1E1',
+                  color: '#000 !important',
+                  minWidth: 40, 
+                }}
               >
-                {cartProduct.quantity}
+                {cart.quantity}
               </Button>
               <Button 
                 onClick={increaseQuantity} 
-                className="increase"
+                sx={{ 
+                  backgroundColor: '#76B900',
+                  color: '#000',
+                  '&:hover': { backgroundColor: '#A4D17A' },
+                  transition: 'transform 0.2s',
+                  '&:hover': { 
+                    backgroundColor: '#A4D17A',
+                    transform: 'scale(1.05)',
+                  },
+                }}
               >
                 +
               </Button>
             </ButtonGroup>
-          </div>
-          <Typography variant={isMobile ? "body2" : "body1"} fontWeight="bold" color="#FFD54F">
-            ${cartProduct.total.toLocaleString()}
-          </Typography>
-        </Stack>
+            <Typography 
+              variant={isMobile ? "body1" : "h6"} 
+              fontWeight="bold" 
+              color="#FFD700"
+            >
+              ${cartProduct.total.toFixed(2)}
+            </Typography>
+          </Stack>
+        </Grid>
       </Grid>
-      </Grid>
+
       <Dialog
         open={open}
         onClose={handleClose}
         aria-labelledby="alert-dialog-title"
         aria-describedby="alert-dialog-description"
       >
-        <DialogTitle id="alert-dialog-title">
-          {"Please confirm your action"}
+        <DialogTitle id="alert-dialog-title" sx={{ color: '#76B900' }}>
+          Confirm Deletion
         </DialogTitle>
         <DialogContent>
           <Typography variant="body2">
@@ -156,8 +210,14 @@ export default function CartItem({ maxWidth }) {
           </Typography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose}>Cancel</Button>
-          <Button onClick={handleConfirmDelete} autoFocus>
+          <Button onClick={handleClose} sx={{ color: '#76B900' }}>
+            Cancel
+          </Button>
+          <Button 
+            onClick={handleConfirmDelete} 
+            sx={{ color: '#FF5252' }} 
+            autoFocus
+          >
             Delete
           </Button>
         </DialogActions>

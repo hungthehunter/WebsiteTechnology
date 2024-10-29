@@ -1,6 +1,10 @@
+import { Box } from '@mui/material';
+import { ThemeProvider, createTheme } from '@mui/material/styles';
 import axios from "axios";
 import { useEffect, useRef, useState } from "react";
+import { useDispatch, useSelector } from 'react-redux';
 import { useLocation, useNavigate } from "react-router-dom";
+import { addressThunk, orderThunk, productThunk, userThunk } from '../../../../services/redux/thunks/thunk';
 import AdminAccess from "./Access";
 import AdminAddAccess from "./AddAccess";
 import AdminAddCategory from "./AddCategory";
@@ -32,10 +36,49 @@ import AdminViewCustomer from "./ViewCustomer";
 import AdminViewManufacturer from "./ViewManufacturer";
 import AdminViewProduct from "./ViewProduct";
 import AdminViewStaff from "./ViewStaff";
+// Tạo theme tùy chỉnh
+const theme = createTheme({
+  palette: {
+    primary: {
+      main: '#2a2185', // Màu chính cho theme
+    },
+    secondary: {
+      main: '#f50057', // Màu phụ cho theme
+    },
+  },
+});
 function AdminPage() {
+  /*------- Dispatch function -------*/
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        await Promise.all([
+          dispatch(orderThunk.getAllOrders()).unwrap(),
+          dispatch(addressThunk.getAllAddresses()).unwrap(),
+          dispatch(userThunk.getAllUsers()).unwrap(),
+          dispatch(productThunk.getAllProduct()).unwrap(),
+        ]);
+      } catch (error) {
+        console.error("Failed to fetch data:", error);
+      }
+    };
+  
+    fetchData();
+  }, [dispatch]);
+  
+
+  /*------- Data function -------*/
+  const listOrder = useSelector((state) => state.order.listOrder);
+  const listUser = useSelector((state) => state.user.listUser);
+  const listProduct = useSelector((state) => state.product.listProduct);
+
   /*------- Page function -------*/
+
   const [activeIndex, setActiveIndex] = useState(null);
-  const [menuActive, setMenuActive] = useState(false);
+
+  const [menuActive, setMenuActive] = useState(true);
   const [activeComponent, setActiveComponent] = useState({
     name: "AdminDashboard",
     props: {},
@@ -345,29 +388,31 @@ function AdminPage() {
   }, [navigate]); // Removed location from dependencies
 
   return (
-    <div className="adminDashboard">
-      <div className="container">
-        <SidebarAdmin
-          activeIndex={activeIndex}
-          handleMouseOver={handleMouseOver}
-          setActiveComponent={setActiveComponent}
-          setMenuActive={menuActive}
-        />
-
-        <div className={`main ${menuActive ? "active" : ""}`}>
-          <AdminHeader
-            toggleMenu={toggleMenu}
-            menuActive={menuActive}
-            openSnackbar={openSnackbar}
-            alertMessage={alertMessage}
-            alertType={alertType}
-            handleCloseSnackbar={handleCloseSnackbar}
+    <ThemeProvider theme={theme}> {/* Thêm ThemeProvider */}
+      <Box className="adminDashboard">
+        <Box className="container">
+          <SidebarAdmin
+            activeIndex={activeIndex}
+            handleMouseOver={handleMouseOver}
+            setActiveComponent={setActiveComponent}
+            menuActive={menuActive} // Truyền menuActive
           />
 
-          {getActiveComponent(activeComponent)}
-        </div>
-      </div>
-    </div>
+          <Box className={`main ${menuActive ? "active" : ""}`}>
+            <AdminHeader
+              toggleMenu={toggleMenu}
+              menuActive={menuActive}
+              openSnackbar={openSnackbar}
+              alertMessage={alertMessage}
+              alertType={alertType}
+              handleCloseSnackbar={handleCloseSnackbar}
+            />
+
+            {getActiveComponent(activeComponent)}
+          </Box>
+        </Box>
+      </Box>
+    </ThemeProvider>
   );
 }
 export default AdminPage;

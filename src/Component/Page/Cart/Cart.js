@@ -1,70 +1,132 @@
 import { Box, Typography, useMediaQuery, useTheme } from '@mui/material';
-import React, { useEffect } from 'react';
-import { toast } from 'react-hot-toast';
+import { motion } from 'framer-motion';
+import React from 'react';
+import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import "./Cart.scss";
 import CartList from './CartList/CartList.js';
 import OrderDetail from './OrderDetail/OrderDetail.js';
-
 export default function CartPage() {
   const navigate = useNavigate();
+  const listCartItems = useSelector((state) => state.cart.listCartItems)
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-
-  useEffect(() => {
-    if (false) {
-      navigate('/');
-      return () => {
-        toast.error('You are not logged in');
-      };
-    }
-  }, [navigate]);
-
   return (
-    <Box 
-      component="section" 
-      className="cart" 
-      sx={{ 
-        backgroundColor: '#121212', 
-        color: '#fff', 
-        minHeight: '100vh',
-        width: '100%',
-        maxWidth: '100%',
-        overflowX: 'hidden',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        paddingTop: '50px',
-      }}
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
     >
-      <Box sx={{ 
-        width: '100%', 
-        maxWidth: '1200px', // Adjust this value as needed
-        px: 2, 
-        py: 4,
-        boxSizing: 'border-box'
-      }}>
-        <Typography variant={isMobile ? "h5" : "h4"} textTransform="uppercase" gutterBottom fontWeight="bold" color="#fff">
-          Your Order
-        </Typography>
-        <Typography variant={isMobile ? "h6" : "h5"} color="gray" textTransform="uppercase" mb={3}>
-          There are 3 item(s) in your cart
-        </Typography>
-        <Box sx={{ 
-          display: 'flex', 
-          flexDirection: isMobile ? 'column' : 'row',
-          gap: 3,
+      <Box 
+        component="section" 
+        sx={{ 
+          backgroundColor: '#000',  // Đảm bảo nền đen hoàn toàn cho toàn bộ section
+          color: '#fff', 
+          minHeight: '100vh',
           width: '100%',
-          justifyContent: 'flex-start'
-        }}>
-          <Box sx={{ flex: isMobile ? '1 1 auto' : '0 0 65%', width: '100%', maxWidth: '800px' }}>
-            <CartList maxHeight={isMobile ? 'auto' : '600px'} maxWidthItem={isMobile ? 80 : 120} />
-          </Box>
-          <Box sx={{ flex: isMobile ? '1 1 auto' : '0 0 35%', width: '100%', maxWidth: '400px' }}>
-            <OrderDetail />
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'flex-start',
+          paddingTop: '80px',
+          paddingBottom: '50px',
+        }}
+      >
+        <Box 
+          sx={{ 
+            width: '100%', 
+            maxWidth: '1200px', 
+            px: isMobile ? 2 : 4, 
+            py: 4,
+            boxSizing: 'border-box',
+          }}
+        >
+          {/* Tiêu đề đơn hàng */}
+          <motion.div
+            initial={{ x: -100, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
+            <Typography 
+              variant={isMobile ? "h5" : "h4"} 
+              textTransform="uppercase" 
+              gutterBottom 
+              fontWeight="bold" 
+              color="#76B900" 
+              sx={{ textAlign: isMobile ? 'center' : 'left' }}
+            >
+              Your Order
+            </Typography>
+
+            <Typography 
+              variant={isMobile ? "subtitle1" : "h6"} 
+              color="#B0B0B0" 
+              textTransform="uppercase" 
+              mb={4} 
+              sx={{ textAlign: isMobile ? 'center' : 'left' }}
+            >
+              There are {listCartItems?.length} item(s) in your cart
+            </Typography>
+          </motion.div>
+
+          {/* Bố cục chính của giỏ hàng */}
+          <Box 
+            sx={{ 
+              display: 'flex', 
+              flexDirection: isMobile ? 'column' : 'row', 
+              gap: isMobile ? 4 : 3, 
+              width: '100%',
+             
+              justifyContent: 'space-between', 
+              alignItems: isMobile ? 'center' : 'flex-start',
+            }}
+          >
+            {/* Danh sách sản phẩm */}
+            <motion.div
+              whileHover={{ 
+                scale: 1.02, 
+                boxShadow: '0 0 15px rgba(118, 185, 0, 0.5)' 
+              }}
+              transition={{ duration: 0.3 }}
+            >
+              <Box 
+                sx={{ 
+                  flex: isMobile ? '1 1 auto' : '0 0 65%', 
+                  width: '100%', 
+                  minWidth: '800px', 
+                  backgroundColor: '#0F0F0F',  // Nền đen xám cho danh sách sản phẩm
+                  borderRadius: 2, 
+                  p: 3, 
+                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.5)',
+                }}
+              >
+                <CartList maxHeight={isMobile ? 'auto' : '600px'} maxWidthItem={isMobile ? 90 : 130} />
+              </Box>
+            </motion.div>
+
+            {/* Chi tiết đơn hàng */}
+            <motion.div
+              whileHover={{ 
+                scale: 1.02, 
+                boxShadow: '0 0 15px rgba(118, 185, 0, 0.5)' 
+              }}
+              transition={{ duration: 0.3 }}
+            >
+              <Box 
+                sx={{ 
+                  flex: isMobile ? '1 1 auto' : '0 0 35%', 
+                  width: '100%', 
+                  maxWidth: '400px', 
+                  backgroundColor: '#0F0F0F',  // Nền đen xám cho chi tiết đơn hàng
+                  borderRadius: 2, 
+                  p: 3, 
+                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.5)',
+                }}
+              >
+                <OrderDetail />
+              </Box>
+            </motion.div>
           </Box>
         </Box>
       </Box>
-    </Box>
+    </motion.div>
   );
 }

@@ -1,3 +1,4 @@
+import { Box, Button, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material';
 import { useEffect, useState } from "react";
 import { deleteCategoryId, getAllCategory } from "../../../Serivce/ApiService";
 import "./assets/css/style.scss";
@@ -27,10 +28,10 @@ function AdminCategory({ setActiveComponent, showAlert }) {
   const handleInputSearch = (event) => {
     const searchTerm = event.target.value;
     setSearchTerm(searchTerm);
-    const filteredUsers = category.filter((category) =>
+    const filteredCategories = category.filter((category) =>
       category.username.toLowerCase().includes(searchTerm.toLowerCase())
     );
-    setFilteredUsers(filteredUsers);
+    setFilteredUsers(filteredCategories);
   };
 
   //Category: Check category exist
@@ -45,7 +46,7 @@ function AdminCategory({ setActiveComponent, showAlert }) {
   // Set element User
 
   const [category, setCategory] = useState([]);
-  const [filteredUsers, setFilteredUsers] = useState([]);
+  const [filteredCategories, setFilteredUsers] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [products, setProducts] = useState("");
 
@@ -55,7 +56,7 @@ function AdminCategory({ setActiveComponent, showAlert }) {
     try {
       const result = await getAllCategory();
       setCategory(result.data);
-      setFilteredUsers(result.data); // Initialize filteredUsers with all category
+      setFilteredUsers(result.data); // Initialize filteredCategories with all category
     } catch (error) {
       console.error("Failed to load category:", error);
     }
@@ -94,106 +95,65 @@ function AdminCategory({ setActiveComponent, showAlert }) {
     }
   };
   return (
-    <div>
-      {/* ================ Order Details List ================= */}
-      <div className="details_table details">
-        <div className="table recentOrders">
-          <div className="cardHeader">
-            <h2>Recent Category</h2>
-            <a
-              href="#"
-              className="btn"
-              onClick={() =>
-                setActiveComponent({
-                  name: "AdminAddCategory",
-                })
-              }
-            >
-              + Add new Category
-            </a>
-          </div>
-          <table>
-            <thead>
-              <tr>
-                <th scope="col" style={{ textAlign: "start" }}>
-                  Id
-                </th>
-                <th scope="col" style={{ textAlign: "start" }}>
-                  Category Image
-                </th>
-                <th scope="col" style={{ textAlign: "start" }}>
-                  Category Name
-                </th>
-
-               
-                <th scope="col" style={{ textAlign: "end" }}>
-                  Action
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredUsers.map((category, index) => (
-                <tr key={index}>
-                  <td style={{ textAlign: "start" }}>{category.id}</td>
-                  <td style={{ textAlign: "start" }}>
-                    <img
-                      src={category.imageCloud.url}
-                      alt={category.name}
-                      width="50"
-                      style={{ objectFit: "cover" }} // Optional: Adjust image fit within the width
-                    />
-                  </td>
-                  <td style={{ textAlign: "start" }}>{category.name}</td>
-                  <td style={{ textAlign: "end" }}>
-                  <button
-                      className="status viewing mx-2"
-                      onClick={() =>
-                        setActiveComponent({
-                          name: "AdminViewCategory",
-                          props: { id: category.id },
-                        })
-                      }
-                    >
-                     View
-                    </button>
-                  <button
-                      className="status editing mx-2"
-                      onClick={() =>
-                        setActiveComponent({
-                          name: "AdminEditCategory",
-                          props: { id: category.id },
-                        })
-                      }
-                    >
-                      Edit
-                    </button>
-                    <button
-                      className="status deleting mx-2"
-                      onClick={() =>
-                        handleDelete(category.id, category.categoryName)
-                      }
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
+    <Box sx={{ padding: 2 }}>
+      <Box 
+        sx={{ 
+          width: '100%', 
+          height: '80vh',
+          overflowY: 'auto',
+          boxShadow: 3, 
+          borderRadius: 2, 
+          padding: 3, 
+          backgroundColor: 'white', 
+          margin: '0 auto', 
+        }}
+      >
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
+          <Typography variant="h4" gutterBottom sx={{ fontSize: '2.5rem' }}>
+            Recent Category
+          </Typography>
+          <Button variant="contained" color="primary" onClick={() => setActiveComponent({ name: "AdminAddCategory" })}>
+            + Add New Category
+          </Button>
+        </Box>
+        <TableContainer component={Paper}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell style={{ textAlign: "start" , fontSize: '1.5rem'}}>Id</TableCell>
+                <TableCell style={{ textAlign: "start", fontSize: '1.5rem' }}>Category Image</TableCell>
+                <TableCell style={{ textAlign: "start", fontSize: '1.5rem' }}>Category Name</TableCell>
+                <TableCell style={{ textAlign: "end", fontSize: '1.5rem' }}>Action</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {filteredCategories.map((category, index) => (
+                <TableRow key={index}>
+                  <TableCell style={{ textAlign: "start" , fontSize: '1.3rem'}}>{category.id}</TableCell>
+                  <TableCell style={{ textAlign: "start", fontSize: '1.3rem' }}>
+                    <img src={category.imageCloud.url} alt={category.name} width="50" style={{ objectFit: "cover" }} />
+                  </TableCell>
+                  <TableCell style={{ textAlign: "start", fontSize: '1.3rem' }}>{category.name}</TableCell>
+                  <TableCell style={{ textAlign: "end", fontSize: '1.3rem' }}>
+                    <Button variant="outlined" onClick={() => setActiveComponent({ name: "AdminViewCategory", props: { id: category.id } })}>View</Button>
+                    <Button variant="outlined" onClick={() => setActiveComponent({ name: "AdminEditCategory", props: { id: category.id } })}>Edit</Button>
+                    <Button variant="outlined" color="error" onClick={() => handleDelete(category.id, category.categoryName)}>Delete</Button>
+                  </TableCell>
+                </TableRow>
               ))}
-              {filteredUsers.length === 0 && (
-                <tr className="nouser">
-                  <td
-                    colSpan={5}
-                    className="inform"
-                    style={{ textAlign: "center", paddingTop: 100 }}
-                  >
+              {filteredCategories.length === 0 && (
+                <TableRow className="nouser">
+                  <TableCell colSpan={4} className="inform" style={{ textAlign: "center", paddingTop: 100 }}>
                     No category found
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               )}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Box>
+    </Box>
   );
 }
+
 export default AdminCategory;

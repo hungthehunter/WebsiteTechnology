@@ -74,105 +74,78 @@ function AdminEditCustomer({ id, setActiveComponent, showAlert }) {
   };
 
   return (
-    <div>
-      {/* ================ Form add user ================= */}
-      <div className="details_table details">
-        <div className="table recentOrders">
-          <div className="cardHeader">
-            <h2>Information for new User</h2>
-          </div>
-          <form onSubmit={handleSubmit} style={{ paddingTop: 15 }}>
-            <div className="mb-3">
-              <label htmlFor="Name" className="form-label">
-                Full Name
-              </label>
-              <input
-                type="text"
-                className="form-control"
-                placeholder="Enter full name"
-                name="username"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-              />
-            </div>
-            <div className="mb-3">
-              <label htmlFor="Mobile" className="form-label">
-                Mobile
-              </label>
-              <input
-                type="number"
-                className="form-control"
-                placeholder="Enter phoneNumber phone"
-                name="phoneNumber"
-                value={phoneNumber}
-                onChange={(e) => setPhoneNumber(e.target.value)}
-              />
-            </div>
-            <div className="mb-3">
-              <label htmlFor="email" className="form-label">
-                Email
-              </label>
-              <input
-                type="text"
-                className="form-control"
-                placeholder="Enter your phoneNumber phone"
-                name="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </div>
-            <div className="mb-3">
-              <label htmlFor="adress" className="form-label">
-                address
-              </label>
-              <input
-                type="text"
-                className="form-control"
-                placeholder="Enter password"
-                name="address"
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
-              />
-            </div>
-
-            <div className="mb-3">
-              <label htmlFor="status" className="form-label">
-                status
-              </label>
-              <select id="status" value={status} onChange={handleChange}>
-                <option value="true">Hoạt động</option>
-                <option value="false">Đã xóa</option>
-              </select>
-            </div>
-
-            <div className="mb-3">
-              <label htmlFor="password" className="form-label">
-                Password
-              </label>
-              <input
-                type="text"
-                className="form-control"
-                placeholder="Enter password"
-                name="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </div>
-            <button type="submit" className="status viewing mx-2">
-              Confirm
-            </button>
-
-            <button
-              type="button"
-              className="status deleting mx-2"
-              onClick={() => setActiveComponent({ name: "AdminCustomer" })}
-            >
-              Return Customer
-            </button>
-          </form>
-        </div>
-      </div>
-    </div>
+    <Box sx={{ padding: 4 }}>
+      <Typography variant="h4" sx={{ marginBottom: 2 }}>
+        Information for New User
+      </Typography>
+      <form onSubmit={handleSubmit}>
+        <TextField
+          label="Full Name"
+          variant="outlined"
+          fullWidth
+          margin="normal"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
+        <TextField
+          label="Mobile"
+          variant="outlined"
+          fullWidth
+          margin="normal"
+          type="number"
+          value={phoneNumber}
+          onChange={(e) => setPhoneNumber(e.target.value)}
+        />
+        <TextField
+          label="Email"
+          variant="outlined"
+          fullWidth
+          margin="normal"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
+        <TextField
+          label="Address"
+          variant="outlined"
+          fullWidth
+          margin="normal"
+          value={address}
+          onChange={(e) => setAddress(e.target.value)}
+        />
+        <FormControl fullWidth margin="normal">
+          <InputLabel id="status-label">Status</InputLabel>
+          <Select
+            labelId="status-label"
+            value={status}
+            onChange={(e) => setStatus(e.target.value)}
+          >
+            <MenuItem value="true">Hoạt động</MenuItem>
+            <MenuItem value="false">Đã xóa</MenuItem>
+          </Select>
+          <FormHelperText>Choose the status of the user</FormHelperText>
+        </FormControl>
+        <TextField
+          label="Password"
+          variant="outlined"
+          fullWidth
+          margin="normal"
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+        <Box sx={{ marginTop: 2 }}>
+          <Button type="submit" variant="contained" color="primary" sx={{ marginRight: 2 }}>
+            Confirm
+          </Button>
+          <Button
+            variant="outlined"
+            onClick={() => setActiveComponent({ name: "AdminCustomer" })}
+          >
+            Return Customer
+          </Button>
+        </Box>
+      </form>
+    </Box>
   );
 }
 export default AdminEditCustomer;

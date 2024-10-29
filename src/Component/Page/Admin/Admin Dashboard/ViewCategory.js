@@ -1,4 +1,4 @@
-import { Description as DescriptionIcon, LocationOn as LocationOnIcon, Web as WebIcon } from "@mui/icons-material";
+import { Description as DescriptionIcon, Laptop as LaptopChromebook, Web as WebIcon } from "@mui/icons-material";
 import { Avatar, Box, Button, Card, CardContent, CardHeader, Container, Divider, Grid, List, ListItem, ListItemText, Typography } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import { getCategoryById } from "./service/AdminService"; // Assuming you have a service function to get category details
@@ -41,6 +41,7 @@ function AdminViewCategory({ id, setActiveComponent, showAlert }) {
                     alignItems: 'center',
                     justifyContent: 'center',
                     overflow: 'hidden',
+                    borderRadius: 0 
                   }}
                 >
                   {category.imageCloud?.url ? (
@@ -58,7 +59,7 @@ function AdminViewCategory({ id, setActiveComponent, showAlert }) {
                   )}
                 </Avatar>
                 <Typography variant="h6" sx={{ mt: 2 }}>
-                  {category.name}
+                  {category.name || 'N/A'}
                 </Typography>
                 <Typography variant="subtitle1" color="text.secondary">
                   Category ID: {id}
@@ -80,16 +81,16 @@ function AdminViewCategory({ id, setActiveComponent, showAlert }) {
                   <WebIcon sx={{ mr: 2 }} />
                   <ListItemText
                     primary="Promotion"
-                    secondary={category.promotion || 'N/A'}
+                    secondary={category.promotion ? category.promotion.name : 'N/A'} // Render tên khuyến mãi
                     primaryTypographyProps={{ variant: "h6" }}
                   />
                 </ListItem>
                 <Divider />
                 <ListItem>
-                  <LocationOnIcon sx={{ mr: 2 }} />
+                <LaptopChromebook sx={{ mr: 2 }} />
                   <ListItemText
-                    primary="Location"
-                    secondary={category.product || 'N/A'}
+                    primary="Products"
+                    secondary={Array.isArray(category.products) &&  category.products.length > 0 ? category.products.map(product => product.productName).join(', ') : 'N/A'} // Render tên sản phẩm
                     primaryTypographyProps={{ variant: "h6" }}
                   />
                 </ListItem>

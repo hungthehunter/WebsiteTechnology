@@ -1,27 +1,8 @@
-import Pako from "pako";
 import { useEffect, useState } from "react";
 import { getCartById, getUserLogged } from "../../Serivce/ApiService";
 import "./css/style.scss";
 
-const decompressAndDisplayImage = (compressedBase64) => {
-  if (!compressedBase64) return "";
 
-  try {
-    const binaryString = atob(compressedBase64);
-    const binaryData = new Uint8Array(binaryString.length);
-    for (let i = 0; i < binaryString.length; i++) {
-      binaryData[i] = binaryString.charCodeAt(i);
-    }
-
-    // Sử dụng pako để giải nén dữ liệu
-    const decompressedData = Pako.inflate(binaryData);
-    const blob = new Blob([decompressedData], { type: "image/png" });
-    return URL.createObjectURL(blob);
-  } catch (error) {
-    console.error("Failed to decompress image:", error);
-    return "";
-  }
-};
 
 const AccountProductHistory = ({ setActiveComponent }) => {
   const [userId, setUserId] = useState(null);
@@ -35,7 +16,7 @@ const AccountProductHistory = ({ setActiveComponent }) => {
     if (userId) {
       loadUserHistoryProduct();
     }
-  }, [userId]);
+  }, [loadUserHistoryProduct]);
 
   const fetchUserId = async () => {
     const token = localStorage.getItem("authToken");
@@ -102,9 +83,9 @@ const AccountProductHistory = ({ setActiveComponent }) => {
                     <td style={{ textAlign: "start" }}>
                       <img
                         src={
-                          decompressAndDisplayImage(
+                          
                             product.product_image?.find((img) => img.isMainImage)?.imageData || ""
-                          )
+                          
                         }
                         alt={product.productName}
                         width="50"

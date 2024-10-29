@@ -1,3 +1,4 @@
+import { Box, Button, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material';
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { getEmployees } from "../../../Serivce/ApiService";
@@ -67,89 +68,81 @@ function AdminStaff({ setActiveComponent ,showAlert}) {
       }
     }
   };
-  return (
-    <div >
  
-      {/* ================ Order Details List ================= */}
-      <div className="details_table details">
-        <div className="table recentOrders">
-          <div className="cardHeader">
-            <h2>Recent Employee</h2>
-            <a
-              href="#"
-              className="btn"
-              onClick={() => setActiveComponent({name:"AdminAddStaff"})}
-            >
-              + Add new Staff
-            </a>
-          </div>
-          <table>
-            <thead>
-              <tr>
-              <th scope="col" style={{ textAlign: "start" }}>
-                  Id
-                </th>
-                <th scope="col" style={{ textAlign: "start" }}>
-                  Name
-                </th>
-                <th scope="col" style={{ textAlign: "end" }}>
-                  Mobile
-                </th>
-                <th scope="col" style={{ textAlign: "end" }}>
-                  Email
-                </th>
-          
-                <th scope="col" style={{ textAlign: "end" }}>
-                  Action
-                </th>
-              </tr>
-            </thead>
-            <tbody>
+  return (
+    <Box sx={{ padding: 2 }}>
+      <Box 
+        sx={{ 
+          width: '100%', 
+          height: '80vh',
+          maxWidth: '100%', 
+          maxHeight: '80vh', 
+          overflowY: 'auto',
+          boxShadow: 3, 
+          borderRadius: 2, 
+          padding: 3, 
+          backgroundColor: 'white', 
+          margin: '0 auto', // Để căn giữa khung trong không gian của nó
+        }}
+      >
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
+          <Typography variant="h4" gutterBottom sx={{ fontSize: '2.5rem' }}>
+            Recent Employees
+          </Typography>
+          <Button variant="contained" color="primary" onClick={() => setActiveComponent({ name: "AdminAddStaff" })}>
+            + Add New Staff
+          </Button>
+        </Box>
+        <TableContainer component={Paper}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell style={{ textAlign: "start", fontSize: '1.5rem' }}>Id</TableCell>
+                <TableCell style={{ textAlign: "start", fontSize: '1.5rem' }}>Name</TableCell>
+                <TableCell style={{ textAlign: "end", fontSize: '1.5rem'}}>Mobile</TableCell>
+                <TableCell style={{ textAlign: "end", fontSize: '1.5rem'}}>Email</TableCell>
+                <TableCell style={{ textAlign: "end", fontSize: '1.5rem' }}>Role</TableCell>
+                <TableCell style={{ textAlign: "end", fontSize: '1.5rem'}}>Action</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
               {users.map((user, index) => (
-                <tr key={index}>
-                  <td style={{ textAlign: "start" }}>{user.id}</td>
-                  <td style={{ textAlign: "start" }}>{user.fullname}</td>
-                  <td style={{ textAlign: "end" }}>{user.mobile}</td>
-                  <td style={{ textAlign: "end" }}>{user.email}</td>
-                  
-                  <td style={{ textAlign: "end" }}>
-                    <button
-                     className="status viewing mx-2"
-                      onClick={() =>
-                        setActiveComponent({
-                          name: "AdminViewStaff",
-                          props: { id: user.id },
-                        })
-                      }
-
-
-            
-                    >
-                      View
-                    </button>
-
-                    <button
-                      className="status editing mx-2"
-                      onClick={() =>
-                        setActiveComponent({
-                          name: "AdminEditStaff",
-                          props: { id: user.id },
-                        })
-                      }
-                    >
-                      Edit
-                    </button>
-                    <button className="status deleting mx-2"
-                    onClick={()=>handleDelete(user.id)}
-                    >Delete</button>
-                  </td>
-                </tr>
+                <TableRow key={index}>
+                  <TableCell style={{ textAlign: "start", fontSize: '1.3rem' }}>{user.id}</TableCell>
+                  <TableCell style={{ textAlign: "start", fontSize: '1.3rem' }}>{user.fullname}</TableCell>
+                  <TableCell style={{ textAlign: "end", fontSize: '1.3rem' }}>{user.mobile}</TableCell>
+                  <TableCell style={{ textAlign: "end", fontSize: '1.3rem' }}>{user.email}</TableCell>
+                  <TableCell style={{ textAlign: "end", fontSize: '1.3rem' }}>
+                  <span className={`status ${user.role.toLowerCase()}`}>{user.role}</span>
+                </TableCell>
+                  <TableCell style={{ textAlign: "end", fontSize: '1.3rem' }}>
+                    <Button variant="outlined" onClick={() => setActiveComponent({ name: "AdminViewStaff", props: { id: user.id } })}>View</Button>
+                    <Button variant="outlined" onClick={() => setActiveComponent({ name: "AdminEditStaff", props: { id: user.id } })}>Edit</Button>
+                    <Button variant="outlined" color="error" onClick={() => handleDelete(user.id)}>Delete</Button>
+                  </TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
+            </TableBody>
+          </Table>
+        </TableContainer>
+        <style jsx>{`
+          .status {
+            padding: 4px 8px;
+            border-radius: 4px;
+            color: white;
+          }
+          .status.admin {
+            background-color: #2196f3;
+          }
+          .status.user {
+            background-color: #4caf50;
+          }
+          .status.guest {
+            background-color: #ff9800;
+          }
+        `}</style>
+      </Box>
+    </Box>
   );
 }
 export default AdminStaff;

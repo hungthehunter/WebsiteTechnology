@@ -1,11 +1,58 @@
+import { ThemeProvider } from "@emotion/react";
 import "@fortawesome/fontawesome-free/css/all.min.css";
-import { useState } from "react";
+import { Box, Button, Checkbox, FormControlLabel, Typography } from "@mui/material"; // Thêm các thành phần MUI cần thiết
+import CircularProgress from '@mui/material/CircularProgress';
+import { createTheme } from "@mui/material/styles";
+import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
+import { productThunk } from "../../../services/redux/thunks/thunk";
 import PICTURE from "../../Assests/PICTURE";
 import "../Shop/Shop.scss";
 import Shop_Fake from "./Shop_Fake";
+
+const theme = createTheme({
+  palette: {
+    primary: {
+      main: "#4CAF50", // Xanh lá
+    },
+    secondary: {
+      main: "#FFC107", // Vàng cho các ngôi sao
+    },
+    background: {
+      default: "#000000", // Đen
+      paper: "#1C1C1C", // Đen nhạt hơn cho các phần tử Paper
+    },
+    text: {
+      primary: "#FFFFFF", // Trắng cho text chính
+      secondary: "#B0B0B0", // Xám nhạt cho text phụ
+    },
+  },
+  typography: {
+    fontFamily: "Roboto, Arial, sans-serif",
+    h4: {
+      fontSize: "2.5rem",
+      fontWeight: 600,
+    },
+    h5: {
+      fontSize: "2rem",
+      fontWeight: 600,
+    },
+    h6: {
+      fontSize: "1.5rem",
+      fontWeight: 600,
+    },
+    body1: {
+      fontSize: "1.2rem",
+    },
+    body2: {
+      fontSize: "1.1rem",
+    },
+  },
+});
+
 function Shop() {
-  const [inputValue,setInputValue]= useState("");
+  const [inputValue, setInputValue] = useState("");
   const [isGridView, setGridView] = useState(true);
   const [placeholder, setPlaceholder] = useState('Example: Geforce RTX');
   const [searchItem, setSearchItem] = useState("");
@@ -22,19 +69,14 @@ function Shop() {
     $500: false,
     $1000: false,
     $2000: false,
-    GTX_Titan: false,
   });
 
-  {
-  }
+  const dispatch = useDispatch();
+  const isLoading = useSelector((state) => state.product.isLoading);
 
-  // const handleGridViewClick = () => {
-  //   setGridView(true);
-  // };
-
-  // const handleListViewClick = () => {
-  //   setGridView(false);
-  // };
+  useEffect(() => {
+    dispatch(productThunk.getAllProduct());
+  }, [dispatch]);
 
   //Handle Category checkbox
   const handleCategoryChange = (category) => {
@@ -44,23 +86,21 @@ function Shop() {
     }));
   };
 
-const handleClickButton=()=>{
-  setSearchItem(inputValue);
-}
+  const handleClickButton = () => {
+    setSearchItem(inputValue);
+  };
 
-const handleFocus = () => {
-  setPlaceholder('');
-};
+  const handleFocus = () => {
+    setPlaceholder('');
+  };
 
-const handleBlur = () => {
-  if (inputValue === '') {
-    setPlaceholder('Example: Geforce RTX');
-  }
-};
-
+  const handleBlur = () => {
+    if (inputValue === '') {
+      setPlaceholder('Example: Geforce RTX');
+    }
+  };
 
   const handleResetFilters = () => {
-    // Implement the logic to reset filters
     setCategoryFilters({
       gpu: false,
       laptop: false,
@@ -78,403 +118,261 @@ const handleBlur = () => {
   };
 
   return (
-    <>
-      <meta charSet="UTF-8" />
-      <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
-      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-      <title>Shop GeForce Graphics Cards, Laptops, and Systems</title>
-      <div className="Shop">
-        <div className="row">
-          <div id="content">
-            <div className="grid wide">
-              <h1 className="shop-header">
-                Shop GeForce Graphics Cards, Laptops, and Systems
-              </h1>
-              {/* <div class="container"> */}
-              <div className="container">
-                <form className="column grid__column-3  content-product">
-                  <div className="Reset-Filters">
-                    <input
-                      type="button"
-                      aria-label="Reset-Filters"
-                      className="gray-button button"
-                      onClick={handleResetFilters}
-                      defaultValue="Reset-Filters"
-                    />
-                  </div>
-                  <ul className="Filter-list">
-                    <fieldset className="filter-item">
-                      <legend htmlFor="" className="filter-title">
-                        Product Category
-                      </legend>
-
-                      <div className="filter-content">
-                        <ul className="filter-values">
-                          <li className="filter-value">
-                            <div className="c-checkbox">
-                              <input
-                                type="checkbox"
-                                className="small-button"
-                                id="laptops"
-                                checked={categoryFilters.laptop}
-                                onChange={() => handleCategoryChange("laptop")}
-                              />
-                              <label
-                                htmlFor="laptops"
-                                className="c-checkbox__label"
-                              >
-                                <span htmlFor="">Laptop</span>
-                              </label>
-                            </div>
-                          </li>
-                          <li className="filter-value">
-                            <div className="c-checkbox">
-                              <input
-                                type="checkbox"
-                                className="small-button"
-                                id="gpu"
-                                checked={categoryFilters.gpu}
-                                onChange={() =>
-                                  handleCategoryChange("gpu")
-                                }
-                              />
-                              <label
-                                htmlFor="gpu"
-                                className="c-checkbox__label"
-                              >
-                                <span htmlFor="">GPU</span>
-                              </label>
-                            </div>
-                          </li>
-                       
-                        </ul>
+    <ThemeProvider theme={theme}>
+      <>
+        <meta charSet="UTF-8" />
+        <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Shop GeForce Graphics Cards, Laptops, and Systems</title>
+        {isLoading ? (
+          <Box sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
+            height: '100vh',
+            width: '100vw',
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            backgroundColor: 'black',
+            zIndex: 9999
+          }}>
+            <CircularProgress size={60} thickness={4} color="primary" />
+            <Typography variant="h6" sx={{ mt: 2, color: '#4CAF50' }}>
+              PLEASE WAIT...
+            </Typography>
+          </Box>
+        ) : (
+          <div className="Shop">
+            <div className="row">
+              <div id="content">
+                <div className="grid wide">
+                  <Typography variant="h1" className="shop-header">
+                    Shop GeForce Graphics Cards, Laptops, and Systems
+                  </Typography>
+                  <div className="container">
+                    <form className="column grid__column-3 content-product">
+                      <div className="Reset-Filters">
+                        <Button
+                          variant="outlined"
+                          onClick={handleResetFilters}
+                          sx={{ color: 'gray' }}
+                        >
+                          Reset Filters
+                        </Button>
                       </div>
-                    </fieldset>
-                    <fieldset className="filter-item">
-                      <legend htmlFor="" className="filter-title">
-                        GPU
-                      </legend>
-
-                      <div className="filter-content">
-                        <ul className="filter-values">
-                          <li className="filter-value">
-                            <div className="c-checkbox">
-                              <input
-                                type="checkbox"
-                                className="small-button"
-                                id="RTX4090"
-                                checked={categoryFilters.RTX4090}
-                                onChange={() => handleCategoryChange("RTX4090")}
-                              />
-                              <label htmlFor="" className="c-checkbox__label">
-                                <span htmlFor="">RTX 4090</span>
-                              </label>
-                            </div>
-                          </li>
-                          <li className="filter-value">
-                            <div className="c-checkbox">
-                              <input
-                                type="checkbox"
-                                className="small-button"
-                                id="RTX4080"
-                                checked={categoryFilters.RTX4080}
-                                onChange={() => handleCategoryChange("RTX4080")}
-                              />
-                              <label htmlFor="" className="c-checkbox__label">
-                                <span htmlFor="">RTX 4080</span>
-                              </label>
-                              {/* <span className="float-right">(22)</span> */}
-                            </div>
-                          </li>
-                          <li className="filter-value">
-                            <div className="c-checkbox">
-                              <input
-                                type="checkbox"
-                                className="small-button"
-                                id="RTX4070Ti"
-                                checked={categoryFilters.GTX4070}
-                                onChange={() =>
-                                  handleCategoryChange("RTX4070")
-                                }
-                              />
-                              <label htmlFor="" className="c-checkbox__label">
-                                <span htmlFor="">RTX 4070</span>
-                              </label>
-                            </div>
-                          </li>
-                          
-                          <li className="filter-value">
-                            <div className="c-checkbox">
-                              <input
-                                type="checkbox"
-                                className="small-button"
-                                id="RTX4060"
-                                checked={categoryFilters.RTX4050}
-                                onChange={() => handleCategoryChange("RTX4050")}
-                              />
-                              <label htmlFor="" className="c-checkbox__label">
-                                <span htmlFor="">RTX 4050</span>
-                              </label>
-                            </div>
-                          </li>
-                        </ul>
-                      </div>
-                    </fieldset>
-                    <fieldset className="filter-item">
-                      <legend htmlFor="" className="filter-title">
-                        Manufacturer
-                      </legend>
-
-                      <div className="filter-content">
-                        <ul className="filter-values">
-                          <li className="filter-value">
-                            <div className="c-checkbox">
-                              <input
-                                type="checkbox"
-                                className="small-button"
-                                id="NVIDIA"
-                                checked={categoryFilters.NVIDIA}
-                                onChange={() => handleCategoryChange("NVIDIA")}
-                              />
-                              <label htmlFor="" className="c-checkbox__label">
-                                <span htmlFor="">NVIDIA</span>
-                              </label>
-                            </div>
-                          </li>
-                          <li className="filter-value">
-                            <div className="c-checkbox">
-                              <input
-                                type="checkbox"
-                                className="small-button"
-                                id="ACER"
-                                checked={categoryFilters.ACER}
-                                onChange={() => handleCategoryChange("ACER")}
-                              />
-                              <label htmlFor="" className="c-checkbox__label">
-                                <span htmlFor="">ACER</span>
-                              </label>
-                            </div>
-                          </li>
-
-                          <li className="filter-value">
-                            <div className="c-checkbox">
-                              <input
-                                type="checkbox"
-                                className="small-button"
-                                id="ASUS"
-                                checked={categoryFilters.ASUS}
-                                onChange={() => handleCategoryChange("ASUS")}
-                              />
-                              <label htmlFor="" className="c-checkbox__label">
-                                <span htmlFor="">ASUS</span>
-                              </label>
-                            </div>
-                          </li>
-
-                          <li className="filter-value">
-                            {/* <span className="title">Show More</span> */}
-                          </li>
-                        </ul>
-                      </div>
-                    </fieldset>
-                    <fieldset className="filter-item">
-                      <legend htmlFor="" className="filter-title">
-                        Price
-                      </legend>
-
-                      <div className="filter-content">
-                        <ul className="filter-values">
-                          <li className="filter-value">
-                            <div className="c-checkbox">
-                              <input
-                                type="checkbox"
-                                className="small-button"
-                                id="$500"
-                                checked={categoryFilters.$500}
-                                onChange={() => handleCategoryChange("$500")}
-                              />
-                              <label htmlFor="" className="c-checkbox__label">
-                                <span htmlFor="">Above $500</span>
-                              </label>
-                            </div>
-                          </li>
-                          <li className="filter-value">
-                            <div className="c-checkbox">
-                              <input
-                                type="checkbox"
-                                className="small-button"
-                                id="$1000"
-                                checked={categoryFilters.$1000}
-                                onChange={() => handleCategoryChange("$1000")}
-                              />
-                              <label htmlFor="" className="c-checkbox__label">
-                                <span htmlFor="">Above $1000</span>
-                              </label>
-                            </div>
-                          </li>
-                          <li className="filter-value">
-                            <div className="c-checkbox">
-                              <input
-                                type="checkbox"
-                                className="small-button"
-                                id="$2000"
-                                checked={categoryFilters.$2000}
-                                onChange={() =>
-                                  handleCategoryChange("$2000")
-                                }
-                              />
-                              <label htmlFor="" className="c-checkbox__label">
-                                <span htmlFor="">Above $2000</span>
-                              </label>
-                            </div>
-                          </li>
-
-                          <li className="filter-value">
-                            {/* <span className="title">Show More</span> */}
-                          </li>
-                        </ul>
-                      </div>
-                    </fieldset>
-                  </ul>
-                </form>
-                <div className="column grid__column-10">
-                  <div className="main-container">
-                    <div className="form-row">
-                      <div className="search-form">
-                        <input
-                          type="text"
-                          className="search-input"
-                          placeholder="Example: Geforce RTX"
-                          spellCheck="false"
-                          value={inputValue}
-                          onChange={(e)=> setInputValue(e.target.value)}
-                          onFocus={handleFocus}
-                          onBlur={handleBlur}
-                        />
-                        <button type="submit" className="submit-button" onClick={handleClickButton}>
-                          <i className="fa fa-search" aria-hidden="true" />
-                        </button>
-                      </div>
-                      {/* <div className="bounding-box">
-                <div className="sort-section">
-                  <label htmlFor="" className="sort-label">
-                    Sort by:
-                  </label>
-                  <div className="dropdown">
-                    <div className="select-btn">
-                      <span className="span-content">Featured Products</span>
-                      <span className="span-button">
-                        <i />
-                      </span>
-                    </div>
-                  </div>
-                </div>
-          <GridViewToggleButton
-           isGridView={isGridView}
-           handleGridViewClick={handleGridViewClick}
-           searchItem={searchItem}
-          />
-              </div> */}
-                      <div className="total-product-list">
-                        {/* <div className="total-product">221 results found</div> */}
-                      </div>
-                      <div className="featured-container">
-                        <div className="call-out search-label">New Product</div>
-                        <div className="product-main-container">
-                          <div className="img-col-lg">
-                            <div className="img-lg">
-                              <img src={PICTURE.GeForce_RTX4080} alt="" />
+                      <ul className="Filter-list">
+                        <fieldset className="filter-item">
+                          <legend className="filter-title">
+                            Product Category
+                          </legend>
+                          <div className="filter-content">
+                            <ul className="filter-values">
+                              <li className="filter-value">
+                                <FormControlLabel
+                                  control={
+                                    <Checkbox
+                                      checked={categoryFilters.laptop}
+                                      onChange={() => handleCategoryChange("laptop")}
+                                    />
+                                  }
+                                  label="Laptop"
+                                />
+                              </li>
+                              <li className="filter-value">
+                                <FormControlLabel
+                                  control={
+                                    <Checkbox
+                                      checked={categoryFilters.gpu}
+                                      onChange={() => handleCategoryChange("gpu")}
+                                    />
+                                  }
+                                  label="GPU"
+                                />
+                              </li>
+                            </ul>
+                          </div>
+                        </fieldset>
+                        <fieldset className="filter-item">
+                          <legend className="filter-title">GPU</legend>
+                          <div className="filter-content">
+                            <ul className="filter-values">
+                              {["RTX4090", "RTX4080", "RTX4070", "RTX4050"].map((gpu) => (
+                                <li className="filter-value" key={gpu}>
+                                  <FormControlLabel
+                                    control={
+                                      <Checkbox
+                                        checked={categoryFilters[gpu]}
+                                        onChange={() => handleCategoryChange(gpu)}
+                                      />
+                                    }
+                                    label={gpu}
+                                  />
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        </fieldset>
+                        <fieldset className="filter-item">
+                          <legend className="filter-title">Manufacturer</legend>
+                          <div className="filter-content">
+                            <ul className="filter-values">
+                              {["NVIDIA", "ACER", "ASUS"].map((manufacturer) => (
+                                <li className="filter-value" key={manufacturer}>
+                                  <FormControlLabel
+                                    control={
+                                      <Checkbox
+                                        checked={categoryFilters[manufacturer]}
+                                        onChange={() => handleCategoryChange(manufacturer)}
+                                      />
+                                    }
+                                    label={manufacturer}
+                                  />
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        </fieldset>
+                        <fieldset className="filter-item">
+                          <legend className="filter-title">Price</legend>
+                          <div className="filter-content">
+                            <ul className="filter-values">
+                              {["$500", "$1000", "$2000"].map((price) => (
+                                <li className="filter-value" key={price}>
+                                  <FormControlLabel
+                                    control={
+                                      <Checkbox
+                                        checked={categoryFilters[price]}
+                                        onChange={() => handleCategoryChange(price)}
+                                      />
+                                    }
+                                    label={`Above ${price}`}
+                                  />
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        </fieldset>
+                      </ul>
+                    </form>
+                    <div className="column grid__column-10">
+                      <div className="main-container">
+                        <div className="form-row">
+                          <div className="search-form">
+                            <input
+                              type="text"
+                              className="search-input"
+                              placeholder={placeholder}
+                              spellCheck="false"
+                              value={inputValue}
+                              onChange={(e) => setInputValue(e.target.value)}
+                              onFocus={handleFocus}
+                              onBlur={handleBlur}
+                            />
+                            <Button
+                              variant="contained"
+                              onClick={handleClickButton}
+                              sx={{ marginLeft: 1 }}
+                            >
+                              <i className="fa fa-search" aria-hidden="true" />
+                            </Button>
+                          </div>
+                          <div className="total-product-list">
+                            {/* <div className="total-product">221 results found</div> */}
+                          </div>
+                          <div className="featured-container">
+                            <div className="call-out search-label">New Product</div>
+                            <div className="product-main-container">
+                              <div className="img-col-lg">
+                                <div className="img-lg">
+                                  <img src={PICTURE.GeForce_RTX4080} alt="" />
+                                </div>
+                              </div>
+                              <div className="detail-main-col">
+                                <Typography variant="h2" className="product-name">
+                                  NVIDIA GeForce RTX 4080
+                                </Typography>
+                                <div className="specs-contain">
+                                  <ul>
+                                    <li>
+                                      <div className="specs p-medium">
+                                        Cooling System: Fan
+                                      </div>
+                                    </li>
+                                    <li>
+                                      <div className="specs p-medium">
+                                        Boost Clock Speed: 2.52GHz
+                                      </div>
+                                    </li>
+                                    <li>
+                                      <div className="specs p-medium">
+                                        Cooling System: Fan
+                                      </div>
+                                    </li>
+                                  </ul>
+                                </div>
+                              </div>
+                              <div className="buy-main-col-lg">
+                                <div className="price">
+                                  $17.899
+                                  <span className="decimal">00</span>
+                                </div>
+                                <div className="buy-link">
+                                  <Link
+                                    to="/websiteDoAn/Products_gtx_4090"
+                                    className="link-btn featured-buy-link brand-green"
+                                  >
+                                    Add to Cart
+                                  </Link>
+                                </div>
+                                <div className="buy-bfp">
+                                  <Button className="buy-from-partner featured-buy-link no-brand">
+                                    Detail Product
+                                  </Button>
+                                </div>
+                              
+                              </div>
                             </div>
                           </div>
-                          <div className="detail-main-col">
-                            <h2 className="product-name">
-                              NVIDIA GeForce RTX 4080
-                            </h2>
-                            <div className="specs-contain">
-                              <ul>
-                                <li>
-                                  <div className="specs p-medium">
-                                    Cooling System: Fan
-                                  </div>
-                                </li>
-                                <li>
-                                  <div className="specs p-medium">
-                                    Boost Clock Speed:2.52GHz
-                                  </div>
-                                </li>
-                                <li>
-                                  <div className="specs p-medium">
-                                    Cooling System: Fan
-                                  </div>
-                                </li>
-                              </ul>
-                            </div>
-                          </div>
-                          <div className="buy-main-col-lg">
-                            <div className="price">
-                              $17.899
-                              <span className="decimal">00</span>
-                            </div>
-                            <div className="buy-link">
-                              <Link
-                                to="/websiteDoAn/Products_gtx_4090"
-                                className="link-btn featured-buy-link brand-green"
-                              >
-                                Add to Cart
-                              </Link>
-                            </div>
-                            <div className="buy-bfp">
-                              <button className="buy-from-partner featured-buy-link no-brand">
-                                Buy from Partners
-                              </button>
-                            </div>
-                            <div>
-                              <button className="featured-buy-link compare link-regular">
-                                Compare
-                              </button>
-                            </div>
-                          </div>
+
+                          <Shop_Fake
+                            isGridView={isGridView}
+                            searchItem={searchItem}
+                            categoryFilters={categoryFilters}
+                            isLoading={isLoading}
+                          />
                         </div>
                       </div>
-
-                      <Shop_Fake
-                        isGridView={isGridView}
-                        searchItem={searchItem}
-                        categoryFilters={categoryFilters}
-                      />
                     </div>
                   </div>
+
+                  <footer id="footer">
+                    <div className="footer-wrapper">
+                      <div className="left-link">
+                        <div className="footer-item country-link">
+                          <Link to="">USA - United States</Link>{" "}
+                        </div>
+                        <div className="footer-item">
+                          {" "}
+                          <Link to="">Privacy</Link>
+                        </div>
+                        <div className="footer-item">
+                          <Link to="">Legal</Link>
+                        </div>
+                        <div className="footer-item">
+                          <Link to="">Contact</Link>
+                        </div>
+                      </div>
+                    </div>
+                  </footer>
                 </div>
               </div>
-
-              <footer id="footer">
-                <div className="footer-wrapper">
-                  <div className="left-link">
-                    <div className="footer-item country-link">
-                      <Link to="">USA - United States</Link>{" "}
-                    </div>
-                    <div className="footer-item">
-                      {" "}
-                      <Link to="">Privacy</Link>
-                    </div>
-                    <div className="footer-item">
-                      <Link to="">Legal</Link>
-                    </div>
-                    <div className="footer-item">
-                      <Link to="">Contact</Link>
-                    </div>
-                  </div>
-                  {/* <div className="right-link">
-          <button className="compare-btn">Compare 4/4</button>
-        </div> */}
-                </div>
-              </footer>
             </div>
           </div>
-        </div>
-      </div>
-    </>
+        )}
+      </>
+    </ThemeProvider>
   );
 }
 

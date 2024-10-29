@@ -6,7 +6,8 @@ import {
   InputLabel,
   MenuItem,
   Select,
-  TextField
+  TextField,
+  Typography,
 } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import { createCategory, getAllProduct, getAllPromotion } from "../../../Serivce/ApiService";
@@ -104,7 +105,9 @@ function AdminAddCategory({ setActiveComponent, showAlert }) {
 
   return (
     <Box sx={{ padding: 4 }}>
-      <h2>Information of New Category</h2>
+      <Typography variant="h4" gutterBottom>
+        Information of New Category
+      </Typography>
       <form id="editForm">
         <TextField
           fullWidth
@@ -174,28 +177,27 @@ function AdminAddCategory({ setActiveComponent, showAlert }) {
 
         {/* Image Upload */}
         <TextField
-  type="file"
-  fullWidth
-  margin="normal"
-  label="Category Image"
-  InputLabelProps={{
-    shrink: true,
-  }}
-  inputProps={{
-    accept: "image/*",
-  }}
-  onChange={handleImageChange}
-  InputProps={{
-    endAdornment: (
-      <InputAdornment position="end">
-        <Button variant="contained" component="span">
-          Upload
-        </Button>
-      </InputAdornment>
-    ),
-  }}
-/>
-
+          type="file"
+          fullWidth
+          margin="normal"
+          label="Category Image"
+          InputLabelProps={{
+            shrink: true,
+          }}
+          inputProps={{
+            accept: "image/*",
+          }}
+          onChange={handleImageChange}
+          InputProps={{
+            endAdornment: (
+              <InputAdornment position="end">
+                <Button variant="contained" component="span">
+                  Upload
+                </Button>
+              </InputAdornment>
+            ),
+          }}
+        />
 
         {/* Submit Button */}
         <Button

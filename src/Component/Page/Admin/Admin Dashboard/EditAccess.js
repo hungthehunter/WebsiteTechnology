@@ -6,6 +6,7 @@ import {
   FormHelperText,
   Grid,
   TextField,
+  Typography,
 } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -134,35 +135,28 @@ function AdminEditAccess({ setActiveComponent, id , showAlert}) {
   };
 
   return (
-    <div>
-      <div className="details_table details">
-        <div className="table recentOrders">
-          <div className="cardHeader">
-            <h2>Chỉnh sửa Quyền</h2>
-          </div>
+    <Box sx={{ padding: 4 }}>
+      <Box className="details_table">
+        <Box className="table recentOrders">
+          <Box className="cardHeader">
+            <Typography variant="h4">Chỉnh sửa Quyền</Typography>
+          </Box>
 
           <form className="form-account" onSubmit={handleSubmit}>
             <FormHelperText sx={{ fontSize: "18px", fontWeight: "bold", color: "black" }}>
               Role Name
             </FormHelperText>
-            <div className="form__line-wrap">
-              <TextField
-                placeholder="Example: Assignment"
-                value={roleName}
-                onChange={handleRoleNameChange}
-                error={Boolean(roleNameError)}
-                helperText={roleNameError}
-                fullWidth
-              />
-            </div>
+            <TextField
+              placeholder="Example: Assignment"
+              value={roleName}
+              onChange={handleRoleNameChange}
+              error={Boolean(roleNameError)}
+              helperText={roleNameError}
+              fullWidth
+              sx={{ marginBottom: 3 }}
+            />
 
-            <Box
-              sx={{
-                display: "flex",
-                flexDirection: "column",
-                gap: 3,
-              }}
-            >
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
               <FormHelperText sx={{ fontSize: "18px", fontWeight: "bold" }}>
                 Allowance Access
               </FormHelperText>
@@ -185,7 +179,7 @@ function AdminEditAccess({ setActiveComponent, id , showAlert}) {
               </Grid>
             </Box>
 
-            <div className="form__input-wrapper">
+            <Box sx={{ marginTop: 3 }}>
               <Button
                 type="submit"
                 variant="contained"
@@ -194,11 +188,11 @@ function AdminEditAccess({ setActiveComponent, id , showAlert}) {
               >
                 Cập nhật
               </Button>
-            </div>
+            </Box>
           </form>
-        </div>
-      </div>
-    </div>
+        </Box>
+      </Box>
+    </Box>
   );
 }
 

@@ -1,117 +1,257 @@
-import "@fortawesome/free-solid-svg-icons";
-import classNames from "classnames/bind";
+import {
+  Box,
+  Button,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  Typography,
+} from "@mui/material";
 import { useEffect, useRef, useState } from "react";
 import { BiLogOut } from "react-icons/bi";
-import { BsHouseDoor } from "react-icons/bs";
-import { IoPeopleOutline } from "react-icons/io5";
-import { LuPhoneCall } from "react-icons/lu";
-import { Link } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { Link as RouterLink } from "react-router-dom";
+import { cartThunk } from "../../../../../services/redux/thunks/thunk";
 import icon from "../../../../Assests/ICON";
-import styles from "./Sidebar.module.scss";
-const cx = classNames.bind(styles);
-function Sidebar({ show }) {
-  const [toggle, setToggle] = useState("true");
-const [color,setColor]=useState(false);
-const sidebarColor = useRef(null);
-const [fontColor,setFontColor]=useState(false);
-useEffect(() => {
-  if (sidebarColor.current) {
-    if(color && fontColor){
-      sidebarColor.current.style.backgroundColor ="#fff";
-      setFontColor(color ? 'black' : 'var(--sidebar-color)');
-    }else{
-      sidebarColor.current.style.backgroundColor ='var(--sidebar-color)';
+
+function Sidebar({ show, onClose }) {
+  const [toggle, setToggle] = useState(true);
+  const [color, setColor] = useState(false);
+  const dispatch = useDispatch();
+  const sidebarColor = useRef(null);
+  const userCurrentLogged = useSelector(
+    (state) => state.user.userCurrentLogged
+  );
+  const cartItems = useSelector((state) => state.cart.listCartItems || []);
+
+  useEffect(() => {
+    if (sidebarColor.current) {
+      sidebarColor.current.style.backgroundColor = color
+        ? "#fff"
+        : "var(--sidebar-color)";
     }
-    
-  }
-}, [color]);
+  }, [color]);
 
+  const handleDecreaseQuantity = (item) => {
+    if (!item) {
+      console.error("Invalid item data:", item.user);
+      return;
+    } else if (!item.product) {
+      console.error("Invalid item.product data:", item.product);
+      return;
+    }
 
-const buttonChange=()=>{
-  setToggle(!toggle);
-  setColor(!color);
-  setFontColor(!fontColor);
-}
+    const newQuantity = item.quantity - 1;
 
+    if (newQuantity <= 0) {
+      // Nếu số lượng <= 0, xóa sản phẩm khỏi giỏ hàng
+      handleRemoveFromCart(item.id);
+    } else {
+      // Cập nhật số lượng sản phẩm
+      const updatedCartData = {
+        quantity: newQuantity,
+        status: true,
+        user: {
+          id: userCurrentLogged.id,
+        },
+        product: {
+          id: item.product.id,
+        },
+      };
 
+      dispatch(
+        cartThunk.updateCartItem({ id: item.id, cartData: updatedCartData })
+      )
+        .then(() => {
+          dispatch(cartThunk.getUserCart(userCurrentLogged.id));
+        })
+        .catch((error) => {
+          console.error("Failed to update item quantity:", error);
+        });
+    }
+  };
+
+  const handleIncreaseQuantity = (item) => {
+    if (!item) {
+      console.error("Invalid item data:", item.user);
+      return;
+    } else if (!item.product) {
+      console.error("Invalid item.product data:", item.product);
+      return;
+    }
+
+    const newQuantity = item.quantity + 1;
+    const updatedCartData = {
+      quantity: newQuantity,
+      status: true,
+      user: {
+        id: userCurrentLogged.id,
+      },
+      product: {
+        id: item.product.id,
+      },
+    };
+
+    dispatch(
+      cartThunk.updateCartItem({ id: item.id, cartData: updatedCartData })
+    );
+  };
+
+  const handleRemoveFromCart = (itemId) => {
+    dispatch(cartThunk.removeFromCart(itemId))
+      .unwrap()
+      .then(() => {
+        dispatch(cartThunk.getUserCart(userCurrentLogged.id));
+      })
+      .catch((error) => {
+        console.error("Failed to remove item from cart:", error);
+      });
+  };
 
   return (
-    <side className={cx("wrapper")} >
-      <div ref={sidebarColor} className={cx('sidebar', { 'active': show })}>
-        <ul className={cx("sidebar-information", "flex-start")} >
-          <li>
-           
-            <div className={cx("logo-title")}>
-            <img src={icon.nvidia_notext} alt="logo" className={cx("logo")} />
-            <div className={cx("logo-text")}>
-            <span style={{ color: fontColor }}>Nvidia</span>
-            <span style={{ color: fontColor }}>The way it mean to play</span>
-            </div>
-              </div>
+    <>
+      {show && (
+        <Box
+          onClick={onClose}
+          sx={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100vw",
+            height: "100vh",
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            zIndex: 1000,
+          }}
+        />
+      )}
 
-          </li>
-      
-          <li>
-            <Link to="/websiteDoAn" style={{ color: fontColor }}>
-              {" "}
-              <span>
-                <BsHouseDoor size={45} className={cx("icon")}></BsHouseDoor>
-              </span>
-              Home
-            </Link>
-          </li>
-          <li>
-            <Link to="/websiteDoAn/Policy" style={{ color: fontColor }}>
-              <IoPeopleOutline
-                size={45}
-                className={cx("icon")}
-              ></IoPeopleOutline>
-              About us
-            </Link>
-          </li>
-          <li>
-            <Link to="/websiteDoAn/Policy" style={{ color: fontColor }}>
-              <span>
-                <LuPhoneCall size={45} className={cx("icon")}></LuPhoneCall>
-              </span>
-              Contact us
-            </Link>
-          </li>
-        </ul>
-        <ul className={cx("sidebar-tool", "flex-end")}>
-{/* <li>
-  <Link to="/websiteDoAn/CustomerOrderDetail" style={{ color: fontColor }}>
-    <span>
-  <RiAdminFill 
-  size={45}
-  className={cx("icon")}
-  style={{color:fontColor}}
-  
-  ></RiAdminFill>
-  </span>
-  Admin
-  </Link>
-</li> */}
-        
-          <li>
-            <Link to="/websiteDoAn/Login" style={{ color: fontColor }}>
-              <span>
-                <BiLogOut
-                  size={45}
-                  className={cx("icon")}
-                  style={{color: fontColor }}
-              
-                ></BiLogOut>
-              </span>
-              Login
-            </Link>
-          </li>
-          {/* <li onChange={buttonChange}>
-            <Toggle props={toggle}/>
-          </li> */}
-        </ul>
-      </div>
-    </side>
+      <Box
+        component="aside"
+        ref={sidebarColor}
+        sx={{
+          width: "300px",
+          backgroundColor: "var(--sidebar-color)",
+          position: "fixed",
+          top: 0,
+          height: "100vh",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "space-between",
+          padding: "0 10px",
+          paddingBottom: "40px",
+          right: show ? 0 : "-100%",
+          transition: "var(--tran-010)",
+          borderLeft: "1px solid lightgrey",
+          zIndex: 1000,
+        }}
+      >
+        <List sx={{ flex: 1, display: "flex", flexDirection: "column" }}>
+          <ListItem>
+            <Box sx={{ display: "flex", alignItems: "flex-start" }}>
+              <img
+                src={icon.nvidia_notext}
+                alt="logo"
+                style={{
+                  width: "60px",
+                  borderRadius: "6px",
+                  marginRight: "10px",
+                }}
+              />
+              <Box>
+                <Typography
+                  variant="h6"
+                  sx={{ color: "white", fontWeight: "bold" }}
+                >
+                  Nvidia
+                </Typography>
+                <Typography sx={{ color: "white" }}>
+                  The way it mean to play
+                </Typography>
+              </Box>
+            </Box>
+          </ListItem>
+          {cartItems && cartItems.length > 0 ? (
+            cartItems.map((item) => (
+              <ListItem key={item.id}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "flex-start",
+                    width: "100%",
+                  }}
+                >
+                  <img
+                    src={
+                      item?.product?.product_image?.find((img) => img.mainImage)
+                        ?.url || ""
+                    }
+                    alt={item?.product?.productName}
+                    style={{
+                      width: "60px",
+                      borderRadius: "6px",
+                      marginRight: "10px",
+                    }}
+                  />
+                  <Box sx={{ flex: 1 }}>
+                    <Typography variant="body1" sx={{ color: "white" }}>
+                      {item?.product?.productName}
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: "white" }}>
+                      ${item?.product?.unitPrice?.toFixed(2)}
+                    </Typography>
+                    <Box sx={{ display: "flex", alignItems: "center" }}>
+                      <Button
+                        onClick={() => handleDecreaseQuantity(item)}
+                        sx={{
+                          color: "white",
+                          minWidth: "20px",
+                          padding: 0,
+                          marginRight: "5px",
+                        }}
+                      >
+                        -
+                      </Button>
+                      <Typography variant="body2" sx={{ color: "white" }}>
+                        Quantity: {item.quantity}
+                      </Typography>
+                      <Button
+                        onClick={() => handleIncreaseQuantity(item)}
+                        sx={{ color: "white", marginLeft: "5px" }}
+                      >
+                        +
+                      </Button>
+                      <Button
+                        onClick={() => handleRemoveFromCart(item.id)}
+                        sx={{ color: "white", marginLeft: "10px" }}
+                      >
+                        X
+                      </Button>
+                    </Box>
+                  </Box>
+                </Box>
+              </ListItem>
+            ))
+          ) : (
+            <Typography sx={{ color: "white" }}>No items in cart</Typography>
+          )}
+        </List>
+        <List
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "flex-start",
+          }}
+        >
+          <ListItem component={RouterLink} to="/websiteDoAn/Login">
+            <ListItemIcon>
+              <BiLogOut size={45} style={{ color: "white" }} />
+            </ListItemIcon>
+            <ListItemText primary="Login" sx={{ color: "white" }} />
+          </ListItem>
+        </List>
+      </Box>
+    </>
   );
 }
+
 export default Sidebar;

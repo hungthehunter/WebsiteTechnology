@@ -1,5 +1,6 @@
 import { Add, Delete } from "@mui/icons-material";
 import {
+  Box,
   Button,
   FormControl,
   Grid,
@@ -168,13 +169,13 @@ console.log("Edit Staff submitting:",requestBody)
   };
 
   return (
-    <div>
-      <div className="details_table details">
-        <div className="table recentOrders">
-          <div className="cardHeader">
-            <Typography variant="h4">Edit User Information</Typography>
-          </div>
-          <form onSubmit={handleSubmit} style={{ paddingTop: 15 }}>
+    <Box sx={{ padding: 4 }}>
+      <Box className="details_table">
+        <Box className="table recentOrders">
+          <Typography variant="h4" sx={{ marginBottom: 2 }}>
+            Edit User Information
+          </Typography>
+          <form onSubmit={handleSubmit}>
             <Grid container spacing={2}>
               <Grid item xs={12}>
                 <TextField
@@ -257,12 +258,7 @@ console.log("Edit Staff submitting:",requestBody)
               </Grid>
 
               {addresses.map((address, index) => (
-                <Grid
-                  container
-                  spacing={2}
-                  key={index}
-                  sx={{ marginBottom: 2 }}
-                >
+                <Grid container spacing={2} key={index} sx={{ marginBottom: 2 }}>
                   <Grid item xs={12}>
                     <Typography variant="h6">Address {index + 1}</Typography>
                   </Grid>
@@ -352,9 +348,9 @@ console.log("Edit Staff submitting:",requestBody)
               </Grid>
             </Grid>
           </form>
-        </div>
-      </div>
-    </div>
+        </Box>
+      </Box>
+    </Box>
   );
 }
 

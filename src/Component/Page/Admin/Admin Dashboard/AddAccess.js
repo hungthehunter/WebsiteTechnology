@@ -6,6 +6,7 @@ import {
   FormHelperText,
   Grid,
   TextField,
+  Typography,
 } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import { createDecentralization, getAllFunction, getRoles } from "../../../Serivce/ApiService";
@@ -105,72 +106,73 @@ function AdminAddAccess({ setActiveComponent , showAlert}) {
   };
 
   return (
-    <div>
-      <div className="details_table details">
-        <div className="table recentOrders">
-          <div className="cardHeader">
-            <h2>Thêm Quyền Mới</h2>
-          </div>
+    <Box sx={{ padding: 2 }}>
+    <Box 
+      sx={{ 
+        width: '100%', 
+        boxShadow: 3, 
+        borderRadius: 2, 
+        padding: 3, 
+        backgroundColor: 'white', 
+        margin: '0 auto', 
+      }}
+    >
+      <Typography variant="h4" gutterBottom>
+        Add New Access
+      </Typography>
+      <form onSubmit={handleSubmit}>
+        <FormHelperText sx={{ fontSize: "18px", fontWeight: "bold" }}>
+          Role Name
+        </FormHelperText>
+        <TextField
+          placeholder="Example: Assignment"
+          value={roleName}
+          onChange={handleRoleNameChange}
+          error={Boolean(roleNameError)}
+          helperText={roleNameError}
+          fullWidth
+          sx={{ marginTop:2 , marginBottom:2  }}
+        />
 
-          <form className="form-account" onSubmit={handleSubmit}>
-          <FormHelperText sx={{ fontSize: "18px", fontWeight: "bold" , color:"black"}}>
-                Role Name
-              </FormHelperText>
-            <div className="form__line-wrap">
-              <TextField
-                placeholder="Example: Assignment"
-                value={roleName}
-                onChange={handleRoleNameChange}
-                error={Boolean(roleNameError)}
-                helperText={roleNameError}
-                fullWidth
+        <FormHelperText sx={{ fontSize: "18px", fontWeight: "bold" }}>
+          Allowance Access
+        </FormHelperText>
+
+        <Grid container spacing={2}>
+          {functionList.map((func, index) => (
+            <Grid item xs={12} sm={6} md={4} lg={3} key={func.id}>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={checkedState[index]}
+                    onChange={() => handleCheckboxChange(index)}
+                    sx={{ "& .MuiSvgIcon-root": { fontSize: 28 },
+        "&.Mui-checked": {
+          color: "green", 
+        },
+        "&.Mui-checked + .MuiFormControlLabel-label": {
+          color: "green", 
+        }, }}
+                  />
+                }
+                label={func.functionName}
               />
-            </div>
+            </Grid>
+          ))}
+        </Grid>
 
-            <Box
-              sx={{
-                display: "flex",
-                flexDirection: "column",
-                gap: 3,
-              }}
-            >
-              <FormHelperText sx={{ fontSize: "18px", fontWeight: "bold" }}>
-                Allowance Access
-              </FormHelperText>
-
-              <Grid container spacing={2}>
-                {functionList.map((func, index) => (
-                  <Grid item xs={12} sm={6} md={4} lg={3} key={func.id}>
-                    <FormControlLabel
-                      control={
-                        <Checkbox
-                          checked={checkedState[index]}
-                          onChange={() => handleCheckboxChange(index)}
-                          sx={{ "& .MuiSvgIcon-root": { fontSize: 28 } }}
-                        />
-                      }
-                      label={func.functionName}
-                    />
-                  </Grid>
-                ))}
-              </Grid>
-            </Box>
-
-            <div className="form__input-wrapper">
-              <Button
-                type="submit"
-                variant="contained"
-                size="large"
-                className="button"
-              >
-                Lưu thay đổi
-              </Button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
-  );
+        <Button
+          type="submit"
+          variant="contained"
+          size="large"
+          sx={{ marginTop: 3 }}
+        >
+          Lưu thay đổi
+        </Button>
+      </form>
+    </Box>
+  </Box>
+);
 }
 
 export default AdminAddAccess;

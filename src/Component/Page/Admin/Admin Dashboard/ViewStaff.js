@@ -19,29 +19,30 @@ import {
   Typography,
 } from "@mui/material";
 import { useEffect, useState } from "react";
-import { getUserLoggedById } from "../../../Serivce/ApiService";
+import { getUserById } from "../../../Serivce/ApiService";
 import "./../Admin Dashboard/assets/css/style.scss";
 
 function AdminViewStaff({ id, setActiveComponent }) {
-  const [name, setFullname] = useState("");
   const [mobile, setMobile] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [addresses, setAddresses] = useState([]);
   const [dateOfBirth, setDateOfBirth] = useState("");
+  const [fullname, setFullname] = useState("");
 
+  // GET: Get Data User form to Database Users by id
   useEffect(() => {
-    const fetchCustomerData = async (id) => {
+    const fetchCustomerData = async () => {
       try {
-        const response = await getUserLoggedById(id);
-        const { fullname, mobile, email, password, addresses, dateofbirth } =
-          response.data;
-        setFullname(fullname);
-        setMobile(mobile);
-        setEmail(email);
-        setPassword(password);
-        setAddresses(addresses);
-        setDateOfBirth(dateofbirth);
+        const response = await getUserById(id)
+        const { fullname: fullname,mobile: mobile, email: email,password: password,addresses: addresses,dateofbirth : dateofbirth } =
+        response.data;
+      setFullname(fullname);
+      setMobile(mobile);
+      setEmail(email);
+      setPassword(password);
+      setAddresses(addresses);
+      setDateOfBirth(dateofbirth);
       } catch (error) {
         console.error("Failed to fetch user data:", error);
       }
@@ -57,17 +58,17 @@ function AdminViewStaff({ id, setActiveComponent }) {
           sx={{ bgcolor: "primary.main", color: "white", textAlign: "center" }}
         />
         <CardContent>
-          <Grid container spacing={2} justifyContent="center">
+        <Grid container spacing={2} justifyContent="center">
             <Grid item xs={12} md={4}>
               <Box display="flex" flexDirection="column" alignItems="center">
-                <Avatar sx={{ width: 100, height: 100 }}>
+                <Avatar sx={{ width: 100, height: 100 , borderRadius: 0}}>
                   <PersonIcon sx={{ fontSize: 50 }} />
                 </Avatar>
                 <Typography variant="h6" sx={{ mt: 2 }}>
-                  {name}
+                  {fullname}
                 </Typography>
                 <Typography variant="subtitle1" color="text.secondary">
-                  User ID: {id}
+                  Customer ID: {id}
                 </Typography>
               </Box>
             </Grid>

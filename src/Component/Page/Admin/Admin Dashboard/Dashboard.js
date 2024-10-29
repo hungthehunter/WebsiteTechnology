@@ -1,5 +1,17 @@
 import { IonIcon } from "@ionic/react";
 import {
+  Box,
+  Card,
+  CardContent,
+  Grid,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+  Typography,
+} from "@mui/material";
+import {
   cartOutline,
   cashOutline,
   chatbubblesOutline,
@@ -7,22 +19,25 @@ import {
   personCircleOutline,
 } from "ionicons/icons";
 import { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import { getAllOrder, getAllUser } from "../../../Serivce/ApiService";
 import "./assets/css/style.scss";
 
 function AdminDashboard() {
   /*------- Page function -------*/
   const [activeIndex, setActiveIndex] = useState(null);
-  const [menuActive, setMenuActive] = useState(false);
+  const [menuActive, setMenuActive] = useState(true);
   const [activeComponent, setActiveComponent] = useState("defaultComponent");
+  const listUser = useSelector((state) => state.user.listUser);
+  const listOrder = useSelector((state) => state.order.listOrder);
   const handleMouseOver = (index) => {
     setActiveIndex(index);
   };
   const formatOrderStatus = (status) => {
     // Tách trước chữ hoa và thêm khoảng trắng
-    return status.replace(/([a-z])([A-Z])/g, '$1 $2');
+    return status.replace(/([a-z])([A-Z])/g, "$1 $2");
   };
-  
+
   const toggleMenu = () => {
     setMenuActive(!menuActive);
   };
@@ -38,8 +53,10 @@ function AdminDashboard() {
   const handleInputSearch = (event) => {
     const searchTerm = event.target.value;
     setSearchTerm(searchTerm);
-    const filteredUsers = users.filter((user) =>
-      user.username && user.username.toLowerCase().includes(searchTerm.toLowerCase())
+    const filteredUsers = users.filter(
+      (user) =>
+        user.username &&
+        user.username.toLowerCase().includes(searchTerm.toLowerCase())
     );
     setFilteredUsers(filteredUsers);
   };
@@ -71,163 +88,221 @@ function AdminDashboard() {
   };
 
   return (
-    <div>
+    <Box sx={{ padding: 4 }}>
       {/* ======================= Cards ================== */}
-      <div className="cardBox">
-        <div className="card">
-          <div>
-            <div className="numbers">1,504</div>
-            <div className="cardName">Daily Views</div>
-            <div className="iconBx">
-              <IonIcon icon={eyeOutline} style={{ fontSize: "4rem" }} />
-            </div>
-          </div>
-        </div>
-        <div className="card">
-          <div>
-            <div className="numbers">80</div>
-            <div className="cardName">Sales</div>
-          </div>
-          <div className="iconBx">
-            <IonIcon icon={cartOutline} style={{ fontSize: "4rem" }} />
-          </div>
-        </div>
-        <div className="card">
-          <div>
-            <div className="numbers">284</div>
-            <div className="cardName">Comments</div>
-          </div>
-          <div className="iconBx">
-            <IonIcon icon={chatbubblesOutline} style={{ fontSize: "4rem" }} />
-          </div>
-        </div>
-        <div className="card">
-          <div>
-            <div className="numbers">$7,842</div>
-            <div className="cardName">Earning</div>
-          </div>
-          <div className="iconBx">
-            <IonIcon icon={cashOutline} style={{ fontSize: "4rem" }} />
-          </div>
-        </div>
-      </div>
+      <Grid container spacing={2}>
+        <Grid item xs={12} sm={6} md={3}>
+          <Card>
+            <CardContent>
+              <Typography
+                variant="h5"
+                component="div"
+                sx={{ fontWeight: 500, fontSize: "2.5rem", color: "#2a2185" }}
+              >
+                1,504
+              </Typography>
+              <Typography
+                variant="body2"
+                sx={{ color: "#999", fontSize: "1.5rem", marginTop: 1 }}
+              >
+                Daily Views
+              </Typography>
+              <IonIcon
+                icon={eyeOutline}
+                style={{ fontSize: "4rem", color: "#999" }}
+              />
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <Card>
+            <CardContent>
+              <Typography
+                variant="h5"
+                component="div"
+                sx={{ fontWeight: 500, fontSize: "2.5rem", color: "#2a2185" }}
+              >
+                80
+              </Typography>
+              <Typography
+                variant="body2"
+                sx={{ color: "#999", fontSize: "1.5rem", marginTop: 1 }}
+              >
+                Sales
+              </Typography>
+              <IonIcon
+                icon={cartOutline}
+                style={{ fontSize: "4rem", color: "#999" }}
+              />
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <Card>
+            <CardContent>
+              <Typography
+                variant="h5"
+                component="div"
+                sx={{ fontWeight: 500, fontSize: "2.5rem", color: "#2a2185" }}
+              >
+                284
+              </Typography>
+              <Typography
+                variant="body2"
+                sx={{ color: "#999", fontSize: "1.5rem", marginTop: 1 }}
+              >
+                Comments
+              </Typography>
+              <IonIcon
+                icon={chatbubblesOutline}
+                style={{ fontSize: "4rem", color: "#999" }}
+              />
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <Card>
+            <CardContent>
+              <Typography
+                variant="h5"
+                component="div"
+                sx={{ fontWeight: 500, fontSize: "2.5rem", color: "#2a2185" }}
+              >
+                $7,842
+              </Typography>
+              <Typography
+                variant="body2"
+                sx={{ color: "#999", fontSize: "1.5rem", marginTop: 1 }}
+              >
+                Earning
+              </Typography>
+              <IonIcon
+                icon={cashOutline}
+                style={{ fontSize: "4rem", color: "#999" }}
+              />
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
+
       {/* ================ Order Details List ================= */}
-      <div className="details">
-        <div className="recentOrders">
-          <div className="cardHeader">
-            <h2>Recent Orders</h2>
-            <a href="#" className="btn">
-              View All
-            </a>
-          </div>
-          <table>
-            <thead>
-              <tr>
-                <td>Name</td>
-                <td>Price</td>
-                <td>Payment</td>
-                <td>Status</td>
-              </tr>
-            </thead>
-            <tbody>
-              {orders.map((detail,index) =>
-                  <tr key={index}>
-                    <td>{detail.product.productName}</td>
-                    <td>${detail.unitPrice}</td>
-                    <td>{detail.order.orderStatus === "Shipped" ? "Due":"Pay" }</td>
-                    <td>
-                      <span
-                        className={`status ${detail.order.order_status ? detail.order.order_status.toLowerCase() : ''}`}
-                      >
-                        { detail.order.order_status ? formatOrderStatus(detail.order.order_status) : 'Unknown'}
-                      </span>
-                    </td>
-                  </tr>
-                
-              )}
-
-              <tr>
-                <td>Apple Watch</td>
-                <td>$1200</td>
-                <td>Paid</td>
-                <td>
-                  <span className="status return">Return</span>
-                </td>
-              </tr>
-              <tr>
-                <td>Addidas Shoes</td>
-                <td>$620</td>
-                <td>Due</td>
-                <td>
-                  <span className="status inprogress">In Progress</span>
-                </td>
-              </tr>
-            
-              <tr>
-                <td>Dell Laptop</td>
-                <td>$110</td>
-                <td>Due</td>
-                <td>
-                  <span className="status pending">Pending</span>
-                </td>
-              </tr>
-              <tr>
-                <td>Apple Watch</td>
-                <td>$1200</td>
-                <td>Paid</td>
-                <td>
-                  <span className="status return">Return</span>
-                </td>
-              </tr>
-              <tr>
-                <td>Addidas Shoes</td>
-                <td>$620</td>
-                <td>Due</td>
-                <td>
-                  <span className="status inprogress">In Progress</span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+      <Box sx={{ display: "flex", marginTop: 4, gap: 2 }}>
+        {" "}
+        {/* Thêm gap giữa hai Box */}
+        <Box
+          sx={{
+            flex: 2,
+            background: "#fff",
+            padding: 2,
+            borderRadius: 2,
+            boxShadow: 1,
+            display: "flex",
+            flexDirection: "column",
+            height: "65vh",
+          }}
+        >
+          <Typography variant="h6" sx={{ fontWeight: 600, color: "#2a2185" }}>
+            Recent Orders
+          </Typography>
+          <Box sx={{ flex: 1, overflowY: "auto" }}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Product</TableCell>
+                  <TableCell>Name</TableCell>
+                  <TableCell>Price</TableCell>
+                  <TableCell>Payment</TableCell>
+                  <TableCell>Status</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {listOrder.map((order, orderIndex) =>
+                  order?.orderItem?.map((item, itemIndex) => (
+                    <TableRow key={`${orderIndex}-${itemIndex}`}>
+                      <TableCell>
+                        <img
+                          src={`${
+                            item.product.product_image.find((img) => img.mainImage)
+                              ?.url || ""
+                          }`}
+                          alt={item.productName}
+                          style={{ width: "50px", height: "50px" }}
+                        />
+                      </TableCell>
+                      <TableCell>{item.product.productName}</TableCell>
+                      <TableCell>${order.total_price.toFixed(2)}</TableCell>
+                      <TableCell>
+                        {order.order_status === "Shipped" ? "Pay" : "Due"}
+                      </TableCell>
+                      <TableCell>
+                        <span
+                          className={`status ${
+                            order.order_status
+                              ? order.order_status.toLowerCase()
+                              : ""
+                          }`}
+                        >
+                          {order.order_status
+                            ? formatOrderStatus(order.order_status)
+                            : "Unknown"}
+                        </span>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </Box>
+        </Box>
         {/* ================= New Customers ================ */}
-        <div className="recentCustomers">
-          <div className="cardHeader">
-            <h2>Recent Customers</h2>
-          </div>
-          <table>
-            <tbody>
-              {filteredUsers.map((user, index) => (
-                <tr key={index}>
-                  <td width="60px">
-                    <div className="imgBx">
-                      <IonIcon
-                        icon={personCircleOutline}
-                        style={{ fontSize: "4rem" }}
-                      />
-
-                      {/* <img src="assets/imgs/customer02.jpg" alt="" /> */}
-                    </div>
-                  </td>
-                  <td>
-                    <h4>
-                      {user.fullname} <br /> <span>{user.email}</span>
-                    </h4>
-                  </td>
-                </tr>
-              ))}
-              {filteredUsers.length === 0 && (
-                <tr className="nouser">
-                  <td style={{ display: "block", textAlign: "center" }}>
-                    No users found
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
+        <Box
+          sx={{
+            flex: 1,
+            background: "#fff",
+            padding: 2,
+            borderRadius: 2,
+            boxShadow: 1,
+            display: "flex",
+            flexDirection: "column",
+            height: "65vh",
+          }}
+        >
+          <Typography variant="h6" sx={{ fontWeight: 600, color: "#2a2185" }}>
+            Recent Customers
+          </Typography>
+          <Box sx={{ flex: 1, overflowY: "auto" }}>
+            <Table>
+              <TableBody>
+                {listUser.map((user, index) => (
+                  <TableRow key={index}>
+                    <TableCell width="60px">
+                      <div className="imgBx">
+                        <IonIcon
+                          icon={personCircleOutline}
+                          style={{ fontSize: "4rem" }}
+                        />
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Typography variant="body1">
+                        {user.fullname} <br /> <span>{user.email}</span>
+                      </Typography>
+                    </TableCell>
+                  </TableRow>
+                ))}
+                {listUser.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={2} style={{ textAlign: "center" }}>
+                      No users found
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </Box>
+        </Box>
+      </Box>
+    </Box>
   );
 }
 export default AdminDashboard;

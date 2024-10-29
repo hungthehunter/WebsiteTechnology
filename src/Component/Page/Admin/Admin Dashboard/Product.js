@@ -1,3 +1,4 @@
+import { Box, Button, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material';
 import { useEffect, useState } from "react";
 import { deleteProductById, getAllProduct } from "../../../Serivce/ApiService";
 import "./assets/css/style.scss";
@@ -44,7 +45,7 @@ function AdminProduct({ setActiveComponent ,showAlert}) {
     try {
       const result = await getAllProduct();
       setProducts(result.data);
-      setFilteredUsers(result.data); // Initialize filteredUsers with all users
+      setFilteredUsers(result.data);
     } catch (error) {
       console.error("Failed to load users:", error);
     }
@@ -54,74 +55,66 @@ function AdminProduct({ setActiveComponent ,showAlert}) {
   const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this product?")) {
       try {
-        await deleteProductById(id)
-
-        showAlert("Delete product successfully.","success");
-        loadUsers();
+        const result = await deleteProductById(id);
+        showAlert("Delete product successfully.", "success");
+        // Cập nhật danh sách sản phẩm sau khi xóa
+      loadUsers();
       } catch (error) {
-        console.error("Error deleting Product:", error);
-        showAlert("Failed to delete product successfully.","error");
+        console.error("Error deleting product:", error);
+        showAlert("Failed to delete product.", "error");
       }
     }
   };
-  return (
-    <div>
-      {/* ================ Order Details List ================= */}
-      <div className="details_table details">
-        <div className="table recentOrders">
-          <div className="cardHeader">
-            <h2>Recent Product</h2>
-            <a
-              href="#"
-              className="btn"
-              onClick={() =>
-                setActiveComponent({
-                  name: "AdminAddProduct"
-                })
-              }
-            >
-              + Add new Product
-            </a>
-          </div>
-          <table>
-            <thead>
-              <tr>
-              <th scope="col" style={{ textAlign: "start" }}>
-                  Id
-                </th>
-                <th scope="col" style={{ textAlign: "start" }}>
-                  Name
-                </th>
-                <th scope="col" style={{ textAlign: "end" }}>
-                  Price
-                </th>
-                <th scope="col" style={{ textAlign: "end" }}>
-                  quantity
-                </th>
-                <th scope="col" style={{ textAlign: "end" }}>
-                  Status
-                </th>
-                <th scope="col" style={{ textAlign: "end" }}>
-                  Action
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredUsers.map((product, index) => (
-                <tr key={index}>
-                      <td style={{ textAlign: "start" }}>{product.id}</td>
-                  <td style={{ textAlign: "start" }}>{product.productName}</td>
-                  <td style={{ textAlign: "end" }}>${product.unitPrice}</td>
-                  <td style={{ textAlign: "end" }} >{product.unitInStock}</td>
-                  <td style={{ textAlign: "end" }} >
-                 
 
-                    <span  className={`status ${product.unitInStock > 0 ? "inprogress" : "deleting"}`}> {product.unitInStock > 0 ? "In stock" : "out of stock"}</span>
-                   
-                  </td>
-                  <td style={{ textAlign: "end" }}>
-                    <button
-                      className="status viewing mx-2"
+  return (
+    <Box sx={{ padding: 2 }}>
+      <Box 
+        sx={{ 
+          width: '100%', 
+          height: '80vh',
+          overflowY: 'auto',
+          boxShadow: 3, 
+          borderRadius: 2, 
+          padding: 3, 
+          backgroundColor: 'white', 
+          margin: '0 auto', 
+        }}
+      >
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
+          <Typography variant="h4" gutterBottom sx={{ fontSize: '2.5rem' }}>
+            Recent Product
+          </Typography>
+          <Button variant="contained" color="primary" onClick={() => setActiveComponent({ name: "AdminAddProduct" })}>
+            + Add New Product
+          </Button>
+        </Box>
+        <TableContainer component={Paper}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell style={{ textAlign: "start",fontSize: '1.5rem' }}>Id</TableCell>
+                <TableCell style={{ textAlign: "start",fontSize: '1.5rem' }}>Name</TableCell>
+                <TableCell style={{ textAlign: "end",fontSize: '1.5rem' }}>Price</TableCell>
+                <TableCell style={{ textAlign: "end",fontSize: '1.5rem' }}>Quantity</TableCell>
+                <TableCell style={{ textAlign: "end",fontSize: '1.5rem' }}>Status</TableCell>
+                <TableCell style={{ textAlign: "end",fontSize: '1.5rem' }}>Action</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {filteredUsers.map((product) => (
+                <TableRow key={product.id}>
+                  <TableCell style={{ textAlign: "start",fontSize: '1.3rem' }}>{product.id}</TableCell>
+                  <TableCell style={{ textAlign: "start",fontSize: '1.3rem' }}>{product.productName}</TableCell>
+                  <TableCell style={{ textAlign: "end",fontSize: '1.3rem' }}>${product.unitPrice}</TableCell>
+                  <TableCell style={{ textAlign: "end",fontSize: '1.3rem' }}>{product.unitInStock}</TableCell>
+                  <TableCell style={{ textAlign: "end",fontSize: '1.3rem' }}>
+                    <span className={`status ${product.unitInStock > 0 ? "inprogress" : "deleting"}`}>
+                      {product.unitInStock > 0 ? "In stock" : "Out of stock"}
+                    </span>
+                  </TableCell>
+                  <TableCell style={{ textAlign: "end" ,fontSize: '1.3rem'}}>
+                    <Button
+                      variant="outlined"
                       onClick={() =>
                         setActiveComponent({
                           name: "AdminViewProduct",
@@ -130,10 +123,9 @@ function AdminProduct({ setActiveComponent ,showAlert}) {
                       }
                     >
                       View
-                    </button>
-
-                    <button
-                      className="status editing mx-2"
+                    </Button>
+                    <Button
+                      variant="outlined"
                       onClick={() =>
                         setActiveComponent({
                           name: "AdminEditProduct",
@@ -142,32 +134,30 @@ function AdminProduct({ setActiveComponent ,showAlert}) {
                       }
                     >
                       Edit
-                    </button>
-                    <button
-                      className="status deleting mx-2"
+                    </Button>
+                    <Button
+                      variant="outlined"
+                      color="error"
                       onClick={() => handleDelete(product.id)}
                     >
                       Delete
-                    </button>
-                  </td>
-                </tr>
+                    </Button>
+                  </TableCell>
+                </TableRow>
               ))}
               {filteredUsers.length === 0 && (
-                <tr className="nouser">
-                  <td
-                    colSpan={5}
-                    className="inform"
-                    style={{ textAlign: "center", paddingTop: 100 }}
-                  >
-                    No users found
-                  </td>
-                </tr>
+                <TableRow className="nouser">
+                  <TableCell colSpan={6} className="inform" style={{ textAlign: "center", paddingTop: 100 }}>
+                    No products found
+                  </TableCell>
+                </TableRow>
               )}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Box>
+    </Box>
   );
 }
+
 export default AdminProduct;

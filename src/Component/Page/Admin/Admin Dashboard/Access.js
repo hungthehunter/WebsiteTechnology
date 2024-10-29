@@ -1,8 +1,5 @@
-import { TabPanel } from '@mui/lab';
-import TabContext from '@mui/lab/TabContext';
+import { Button, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material';
 import Box from '@mui/material/Box';
-import Tab from "@mui/material/Tab";
-import Tabs from "@mui/material/Tabs";
 import { useEffect, useState } from "react";
 import { deleteDecentralization, deleteFunction, getAllDecentralization, getAllFunction, getAllUser } from '../../../Serivce/ApiService';
 import "./assets/css/style.scss";
@@ -189,7 +186,7 @@ const deleteAccess = async (name,id) => {
                     className="inform"
                     style={{ textAlign: "center", paddingTop: 100 }}
                   >
-                    No users found
+                    No Access found
                   </td>
                 </tr>
               )}
@@ -268,36 +265,91 @@ const deleteAccess = async (name,id) => {
       </div>
     </div>
   );
+  const [showAccessTable, setShowAccessTable] = useState(true); // Thêm trạng thái để theo dõi bảng nào đang hiển thị
+
+  const toggleTable = () => {
+    setShowAccessTable((prev) => !prev); // Chuyển đổi giữa hai bảng
+  };
+
   return (
-    <div>
-      <div className="details_table details">
-        <div className="table recentOrders">
-          <Box sx={{ width: "100%" }}>
-            <TabContext value={value}>
-              <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
-                <Tabs
-                  variant="fullWidth"
-                  value={value}
-                  onChange={handleChange}
-                  scrollButtons="auto"
-                  aria-label="scrollable auto tabs example"
-                >
-                  <Tab label="ALL ACCESS" className="tab-title" value="1" />
-                  <Tab label="ALL DECENTRALIZATION" className="tab-title" value="2" />
-           
-                </Tabs>
-              </Box>
-              <TabPanel value="1">
-                {renderProductTableAccess("ALL ACCESS")}
-              </TabPanel>
-              <TabPanel value="2">
-                {renderProductTableRole("ALL DECENTRALIZATION")}
-              </TabPanel>
-            </TabContext>
-          </Box>
-        </div>
-      </div>
-    </div>
+    <Box sx={{ padding: 2 }}>
+      <Box 
+        sx={{ 
+          width: '100%', 
+          height: '80vh',
+          maxWidth: '100%', 
+          maxHeight: '80vh', 
+          overflowY: 'auto',
+          boxShadow: 3, 
+          borderRadius: 2, 
+          padding: 3, 
+          backgroundColor: 'white', 
+          margin: '0 auto', 
+        }}
+      >
+       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
+  <Typography variant="h4" gutterBottom sx={{ fontSize: '2.5rem' }}>
+    Recent Access
+  </Typography>
+  <Box sx={{ display: 'flex', gap: 1 }}> {/* Thêm Box để chứa các nút và sử dụng gap để tạo khoảng cách */}
+    <Button variant="contained" color="primary" onClick={() => setActiveComponent({ name: "AdminAddAccess" })}>
+      + Add New Access
+    </Button>
+    <Button variant="outlined" onClick={toggleTable}>
+      {showAccessTable ? "Show Roles" : "Show Access"} {/* Nút để chuyển đổi giữa hai bảng */}
+    </Button>
+  </Box>
+</Box>
+        
+        {showAccessTable ? ( // Hiển thị bảng Access
+          <TableContainer component={Paper}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell style={{ textAlign: "start", fontSize: '1.5rem' }}>Id</TableCell>
+                  <TableCell style={{ textAlign: "start", fontSize: '1.5rem' }}>Name</TableCell>
+                  <TableCell style={{ textAlign: "end", fontSize: '1.5rem' }}>Action</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {functions.map((decentralization, index) => (
+                  <TableRow key={index}>
+                    <TableCell style={{ textAlign: "start", fontSize: '1.3rem' }}>{decentralization.id}</TableCell>
+                    <TableCell style={{ textAlign: "start", fontSize: '1.3rem' }}>{decentralization.functionName}</TableCell>
+                    <TableCell style={{ textAlign: "end", fontSize: '1.3rem' }}>
+                      <Button variant="outlined" color="error" onClick={() => handleDelete(decentralization.id)}>Delete</Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        ) : ( // Hiển thị bảng Roles
+          <TableContainer component={Paper}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell style={{ textAlign: "start", fontSize: '1.5rem' }}>Id</TableCell>
+                  <TableCell style={{ textAlign: "start", fontSize: '1.5rem' }}>Role Name</TableCell>
+                  <TableCell style={{ textAlign: "end", fontSize: '1.5rem' }}>Action</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {decentralizations.map((decentralization, index) => (
+                  <TableRow key={index}>
+                    <TableCell style={{ textAlign: "start", fontSize: '1.3rem' }}>{decentralization.id}</TableCell>
+                    <TableCell style={{ textAlign: "start", fontSize: '1.3rem' }}>{decentralization.access.roleName}</TableCell>
+                    <TableCell style={{ textAlign: "end", fontSize: '1.3rem' }}>
+                      <Button variant="outlined" color="error" onClick={() => deleteAccess(decentralization.access.roleName, decentralization.id)}>Delete</Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        )}
+      </Box>
+    </Box>
   );
 }
 export default AdminAccess;

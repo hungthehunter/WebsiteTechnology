@@ -33,7 +33,9 @@ const PICTURE={
  GeForce_RTX4090:require("../PICTURE/GeForce-RTX4090-Back.png"),
  GeForce_RTX4070Ti:require("../PICTURE/GeForce-RTX4070Ti.png"),
  GeForce_RTX4060:require("../PICTURE/GeForce-RTX4060.png"),
- nvidia_logo:require("../PICTURE/R.png")
+ nvidia_logo:require("../PICTURE/R.png"),
+ nvidia_dli_banner:require("../PICTURE/nvidia-dli-banner-background-image-spec2-bb300-d.jpg"),
+ cards_accepted:require("../PICTURE/imgcards.png")
 }
 
 export default PICTURE;

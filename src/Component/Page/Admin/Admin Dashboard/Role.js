@@ -1,3 +1,14 @@
+import {
+  Box,
+  Button,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Typography,
+} from "@mui/material";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { getAllRole } from "../../../Serivce/ApiService";
@@ -65,92 +76,83 @@ const handleDelete = async (id) => {
   }
 };
 return (
-  <div>
-    {/* ================ Order Details List ================= */}
-    <div className="details_table details">
-      <div className="table recentOrders">
-        <div className="cardHeader">
-          <h2>Recent Access</h2>
-          <a
-            href="#"
-            className="btn"
+  <Box>
+    <Box className="details_table details">
+      <Box className="table recentOrders">
+        <Box className="cardHeader">
+          <Typography variant="h4">Recent Access</Typography>
+          <Button
+            variant="contained"
             onClick={() =>
               setActiveComponent({
-                name: "AdminAddAccess"
+                name: "AdminAddAccess",
               })
             }
           >
             + Add New Access
-          </a>
-        </div>
-        <table>
-          <thead>
-            <tr>
-            <th scope="col" style={{ textAlign: "start" }}>
-                Id
-              </th>
-              <th scope="col" style={{ textAlign: "start" }}>
-                Name
-              </th>
-              <th scope="col" style={{ textAlign: "end" }}>
-                Action
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {functions.map((function_role, index) => (
-              <tr key={index}>
-                    <td style={{ textAlign: "start" }}>{function_role.id}</td>
-                <td style={{ textAlign: "start" }}>{function_role.roleName}</td>
-                <td style={{ textAlign: "end" }}>
-                  <button
-                    className="status viewing mx-2"
-                    onClick={() =>
-                      setActiveComponent({
-                        name: "AdminViewProduct",
-                        props: { id: function_role.id },
-                      })
-                    }
-                  >
-                    View
-                  </button>
-
-                  <button
-                    className="status editing mx-2"
-                    onClick={() =>
-                      setActiveComponent({
-                        name: "AdminEditProduct",
-                        props: { id: function_role.id },
-                      })
-                    }
-                  >
-                    Edit
-                  </button>
-                  <button
-                    className="status deleting mx-2"
-                    onClick={() => handleDelete(function_role.id)}
-                  >
-                    Delete
-                  </button>
-                </td>
-              </tr>
-            ))}
-            {filteredUsers.length === 0 && (
-              <tr className="nouser">
-                <td
-                  colSpan={5}
-                  className="inform"
-                  style={{ textAlign: "center", paddingTop: 100 }}
-                >
-                  No users found
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
+          </Button>
+        </Box>
+        <TableContainer>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell align="left">Id</TableCell>
+                <TableCell align="left">Name</TableCell>
+                <TableCell align="right">Action</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {filteredUsers.length > 0 ? (
+                filteredUsers.map((function_role, index) => (
+                  <TableRow key={index}>
+                    <TableCell align="left">{function_role.id}</TableCell>
+                    <TableCell align="left">{function_role.roleName}</TableCell>
+                    <TableCell align="right">
+                      <Button
+                        variant="outlined"
+                        onClick={() =>
+                          setActiveComponent({
+                            name: "AdminViewProduct",
+                            props: { id: function_role.id },
+                          })
+                        }
+                      >
+                        View
+                      </Button>
+                      <Button
+                        variant="outlined"
+                        onClick={() =>
+                          setActiveComponent({
+                            name: "AdminEditProduct",
+                            props: { id: function_role.id },
+                          })
+                        }
+                      >
+                        Edit
+                      </Button>
+                      <Button
+                        variant="outlined"
+                        color="error"
+                        onClick={() => handleDelete(function_role.id)}
+                      >
+                        Delete
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={3} align="center">
+                    No roles found
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Box>
+    </Box>
+  </Box>
 );
 }
 export default AdminRole;

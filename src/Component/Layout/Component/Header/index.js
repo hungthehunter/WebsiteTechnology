@@ -1,31 +1,40 @@
 import axios from "axios";
 import classNames from "classnames/bind";
 import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 import { FaUserAlt } from "react-icons/fa";
 import { FiShoppingCart } from "react-icons/fi";
 import { GiHamburgerMenu } from "react-icons/gi";
 import { MdOutlineEventNote } from "react-icons/md";
+import { useDispatch, useSelector } from "react-redux";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
+import { clearUserCart } from "../../../../services/redux/slices/cartSlice.js";
+import { clearUserLoggedIn, setUserLoggedIn } from "../../../../services/redux/slices/userSlice.js";
+import { cartThunk } from "../../../../services/redux/thunks/thunk.js";
 import icon from "../../../Assests/ICON";
 import Sidebar from "../DefaultLayout/Sidebar/index.js";
 import styles from "./Header.module.scss";
 const cx = classNames.bind(styles);
-function Header() {
+function Header({ toggleSidebar }) {
   const [email, setEmail] = useState("");
+  const dispatch = useDispatch();
   const id = useParams();
   const navigate = useNavigate();
   const location = useLocation();
+  const userCurrentLogged = useSelector((state) => state.user.userCurrentLogged);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [title, setTitle] = useState("NVIDIA STORE");
   const [showNav, setShowNav] = useState(false);
   const [showCart, setShowCart] = useState(false);
+  const [userId,setUserId] = useState();
+  const cartItems = useSelector((state) => state.cart.selectedCartItem || []);
 
   useEffect(() => {
     const token = localStorage.getItem("authToken");
     setIsLoggedIn(!!token);
     if (token) {
       GetEmailToken(token);
-      }
+    }
     if (location.pathname === "/") {
       setTitle("NVIDIA STORE");
     } else if (location.pathname === "/Service") {
@@ -33,30 +42,46 @@ function Header() {
     } else if (location.pathname === "/Login") {
       setTitle("Login / Sign Up");
     }
-  }, [location]);
+  }, [location]); 
 
   const GetEmailToken = async (token) => {
     try {
-     const result = await axios.get(
-    "http://localhost:8080/api/v1/auth/me",
-    {
-     headers: {
-     Authorization: `Bearer ${token}`,
-     },
-    }
-     );
-     setEmail(result.data.email);
+      const result = await axios.get("http://localhost:8080/api/v1/auth/me", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const user = result.data;
+      dispatch(setUserLoggedIn(user))
+        .then(() => {
+          if (user && user.id) {
+            dispatch(cartThunk.getUserCart(user.id));
+          } else {
+            console.warn("User ID is undefined, cannot get cart.");
+          }
+        })
+        .catch((error) => {
+          console.error("Error getting user cart:", error);
+        });
     } catch (error) {
-     console.error("Failed to load Email:", error);
+      console.error("Failed to load Email:", error);
     }
-     };
-
-  const toLoginPage = () => {
-    navigate("/websiteDoAn/Login");
   };
 
-  const toMainPage = () => {
-    navigate("/websiteDoAn/");
+  const handleLogout = async () => {
+    try {
+  
+      dispatch(clearUserLoggedIn());
+      dispatch(clearUserCart());
+      localStorage.removeItem("authToken");
+      localStorage.removeItem("userEmail"); 
+      setIsLoggedIn(false);
+      setEmail(""); 
+      navigate("/websiteDoAn/Login");
+    } catch (error) {
+      console.error("Lỗi khi đăng xuất:", error);
+      toast.error("Không thể đăng xuất. Vui lòng thử lại.");
+    }
   };
 
   const handleLoginLogout = () => {
@@ -70,14 +95,14 @@ function Header() {
       navigate("/websiteDoAn/Login");
     }
   };
-
+  
   return (
     <header className={cx("wrapper")}>
       <div className={cx("inner")}>
         <nav className={cx("global-nav")}>
           <div className={cx("nav-header-container")}>
             <div className={cx("logo-container")}>
-              <div className={cx("logo")} onClick={toMainPage}>
+              <div className={cx("logo")} >
                 <img
                   src={icon.nvidia}
                   alt="nvidia-icon"
@@ -122,7 +147,7 @@ function Header() {
                     />
                   </span>
                   <span className={cx("box-text")}>
-                    <Link to="/websiteDoAn/Invoice">
+                    <Link to="/websiteDoAn/CartPage">
                       <span>Giỏ</span>
                       <span className={cx("txtbl")}>
                         <span className={cx("txt-overflow")}>
@@ -135,7 +160,7 @@ function Header() {
                 {isLoggedIn ? (
                   <div
                     className={cx("header-action_text")}
-                    onClick={handleLoginLogout}
+                    onClick={()=>handleLogout()}
                   >
                     <span className={cx("box-icon")}>
                       <FaUserAlt
@@ -144,7 +169,7 @@ function Header() {
                       />
                     </span>
                     <span className={cx("box-text")}>
-                      <span>{email}</span>
+                      <span>{userCurrentLogged?.email}</span>
                       <span className={cx("txtbl")}>
                         <span className={cx("txt-overflow")}>
                           <span>Đăng xuất</span>{" "}
@@ -171,7 +196,7 @@ function Header() {
                 <GiHamburgerMenu
                   size={28}
                   className={cx("nav-header-item")}
-                  onClick={() => setShowNav(!showNav)}
+                  onClick={toggleSidebar}
                   style={{ marginLeft: 10 }}
                 />
 

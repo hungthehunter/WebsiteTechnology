@@ -1,12 +1,19 @@
 import axios from "axios";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import toast from "react-hot-toast";
 import ReactPaginate from "react-paginate";
-import { Link } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { cartThunk, productThunk } from "../../../services/redux/thunks/thunk";
 import "../Shop/Shop.scss";
 
 const Shop_Fake = ({ isGridView, searchItem, categoryFilters }) => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const listProduct = useSelector((state) => state.product.listProduct);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 3; // Number of items per page
+  const cartItems = useSelector((state) => state.cart.listCartItems);
   const [searchTerm, setSearchTerm] = useState(searchItem);
   const productRefs = {
     item: useRef(null),
@@ -18,17 +25,86 @@ const Shop_Fake = ({ isGridView, searchItem, categoryFilters }) => {
 
   /*-------- BEGIN: Import data product in Store --------*/
   const [products, setProduct] = useState([]);
-  
+  const userCurrentLogged = useSelector((state) => state.user.userCurrentLogged);
+
   useEffect(() => {
-    handleShow();
-  }, []);
+    if (listProduct.length === 0) {
+      try {
+        dispatch(productThunk.getAllProduct());
+      } catch (error) {
+        console.error(error);
+      }
+    }
+  }, [dispatch, listProduct.length]);
+  
+
+  const handleAddToCart = useCallback((product, userCurrentLogged) => {
+    if (product && userCurrentLogged) {
+      const existingCartItem = cartItems?.find(
+        (item) => item.product?.id === product.id
+      );
+  
+      const updateCartItem = (itemId, cartData) => {
+        dispatch(cartThunk.updateCartItem({ id: itemId, cartData }))
+          .then(() => {
+            dispatch(cartThunk.getUserCart(userCurrentLogged.id));
+            toast.success(`Đã tăng số lượng của ${product.productName} trong giỏ hàng!`);
+          })
+          .catch((error) => {
+            console.error("Lỗi khi cập nhật số lượng sản phẩm:", error);
+            toast.error("Không thể cập nhật số lượng sản phẩm. Vui lòng thử lại.");
+          });
+      };
+  
+      const addNewCartItem = (cartItem) => {
+        if (!cartItem.user || !cartItem.user.id) {
+          toast.error("Thông tin người dùng không hợp lệ.");
+          return;
+        }
+        if (!cartItem.product || !cartItem.product.id) {
+          toast.error("Thông tin sản phẩm không hợp lệ.");
+          return;
+        }
+  
+        dispatch(cartThunk.addToCart(cartItem))
+          .then(() => {
+            dispatch(cartThunk.getUserCart(userCurrentLogged.id));
+            toast.success(`${product.productName} đã được thêm vào giỏ hàng!`);
+          })
+          .catch((error) => {
+            console.error("Lỗi khi thêm vào giỏ hàng:", error);
+            toast.error("Không thể thêm sản phẩm vào giỏ hàng. Vui lòng thử lại.");
+          });
+      };
+  
+      if (existingCartItem) {
+        // Nếu sản phẩm đã có trong giỏ hàng, cập nhật số lượng
+        updateCartItem(existingCartItem.id, {
+          quantity: existingCartItem.quantity + 1,
+          user: { id: userCurrentLogged.id },
+          product: { id: product.id },
+        });
+      } else {
+        // Thêm sản phẩm mới vào giỏ hàng, bao gồm trường hợp giỏ hàng rỗng
+        addNewCartItem({
+          quantity: 1,
+          user: { id: userCurrentLogged.id },
+          product: { id: product.id },
+        });
+      }
+    }else if(!userCurrentLogged){
+      toast.error("Bạn cần đăng nhập để thêm sản phẩm vào giỏ hàng.");
+      navigate(`/websiteDoAn/Login`);
+    }
+  }, [dispatch, cartItems]);
+  
+  
 
   const handleShow = async () => {
     try {
       const response = await axios.get("http://localhost:8080/api/products");
       if (response.status === 200) {
         setProduct(response.data);
-        console.log(response.data);
       } else {
         throw new Error(`Error fetching products: ${response.status}`);
       }
@@ -41,7 +117,7 @@ const Shop_Fake = ({ isGridView, searchItem, categoryFilters }) => {
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
 
-  const filteredItems = products.filter((item) => {
+  const filteredItems = listProduct.filter((item) => {
     // Check search term
     const matchesSearch = item.productName
       .toLowerCase()
@@ -54,10 +130,11 @@ const Shop_Fake = ({ isGridView, searchItem, categoryFilters }) => {
           // Only check activated filters
           switch (key) {
             // Categorize
-            case "gpu":
-              return item.category.categoryName === "GPU";
             case "laptop":
-              return item.category.categoryName === "Laptop";
+              return item.productName.toLowerCase().includes("laptop");
+            case "gpu":
+              return item.productName.toLowerCase().includes("gpu");
+
             // Price
             case "$500":
               return item.unitPrice >= 500 && item.unitPrice < 1000;
@@ -65,24 +142,46 @@ const Shop_Fake = ({ isGridView, searchItem, categoryFilters }) => {
               return item.unitPrice >= 1000 && item.unitPrice <= 2000;
             case "$2000":
               return item.unitPrice >= 2000;
+
             // GPU
             case "RTX4090":
-              return item.gpu === "GeForce RTX4090";
+              return item.specification.some(
+                (spec) =>
+                  spec.specificationName === "Graphics Card" &&
+                  spec.specificationData.includes("RTX 4090")
+              );
             case "RTX4080":
-              return item.gpu === "GeForce RTX4080";
+              return item.specification.some(
+                (spec) =>
+                  spec.specificationName === "Graphics Card" &&
+                  spec.specificationData.includes("RTX 4080")
+              );
             case "RTX4070":
-              return item.gpu === "GeForce RTX4070";
+              return item.specification.some(
+                (spec) =>
+                  spec.specificationName === "Graphics Card" &&
+                  spec.specificationData.includes("RTX 4070")
+              );
             case "RTX4060":
-              return item.gpu === "GeForce RTX4060";
+              return item.specification.some(
+                (spec) =>
+                  spec.specificationName === "Graphics Card" &&
+                  spec.specificationData.includes("RTX 4060")
+              );
             case "RTX4050":
-              return item.gpu === "GeForce RTX4050";
+              return item.specification.some(
+                (spec) =>
+                  spec.specificationName === "Graphics Card" &&
+                  spec.specificationData.includes("RTX 4050")
+              );
+
             // Manufacturer
             case "NVIDIA":
-              return item.manufacturer.manufacturerName === "NVIDIA";
+              return item.manufacturer.name.toLowerCase().includes("nvidia");
             case "ACER":
-              return item.manufacturer.manufacturerName === "ACER";
+              return item.manufacturer.name.toLowerCase().includes("acer");
             case "ASUS":
-              return item.manufacturer.manufacturerName === "ASUS";
+              return item.manufacturer.name.toLowerCase().includes("asus");
           }
         }
         return false;
@@ -109,6 +208,10 @@ const Shop_Fake = ({ isGridView, searchItem, categoryFilters }) => {
     setCurrentPage(selected + 1);
   };
 
+  const handleProductClick = (productId) => {
+    navigate(`/websiteDoAn/ProductDetail/${productId}`);
+  };
+
   return (
     <div>
       {currentItems.map((item) => (
@@ -131,7 +234,9 @@ const Shop_Fake = ({ isGridView, searchItem, categoryFilters }) => {
                 <img
                   className={`${isGridView ? "load-more-img-lg" : "img-lg"}`}
                   id="product-img"
-                  src={`${item.product_image.find(img => img.mainImage)?.url || ''}`}
+                  src={`${
+                    item.product_image.find((img) => img.mainImage)?.url || ""
+                  }`}
                   alt={item.productName}
                 />
               </div>
@@ -145,17 +250,18 @@ const Shop_Fake = ({ isGridView, searchItem, categoryFilters }) => {
                 <h2 className="product-name">{item.productName}</h2>
                 <div className="specs-contain">
                   <ul>
-                    <li>
-                      <div className="specs p-medium">CPU: {item.cpu}</div>
-                    </li>
-                    <li>
-                      <div className="specs p-medium">
-                        Screen: {item.screen}
-                      </div>
-                    </li>
-                    <li>
-                      <div className="specs p-medium">RAM: {item.ram}</div>
-                    </li>
+                    {["CPU", "Screen", "RAM"].map((specName) => {
+                      const spec = item.specification.find(
+                        (s) => s.specificationName === specName
+                      );
+                      return spec ? (
+                        <li key={specName}>
+                          <div className="specs p-medium">
+                            {specName}: {spec.specificationData}
+                          </div>
+                        </li>
+                      ) : null;
+                    })}
                   </ul>
                 </div>
               </div>
@@ -169,23 +275,18 @@ const Shop_Fake = ({ isGridView, searchItem, categoryFilters }) => {
                   <span className="decimal">00</span>
                 </div>
                 <div className="buy-link">
-                  <Link className="link-btn featured-buy-link brand-green">
+                  <button className="link-btn featured-buy-link brand-green"
+                  onClick={()=>handleAddToCart(item,userCurrentLogged)}
+                  >
                     Add to Cart
-                  </Link>
+                  </button>
                 </div>
                 <div className="buy-bfp">
-                  <Link
-                    to={{
-                      pathname: `/websiteDoAn/ProductDetail/${item.id}`,
-                    }}
+                  <button
+                    onClick={() => handleProductClick(item.id)}
                     className="buy-from-partner featured-buy-link no-brand"
                   >
                     Detail Product
-                  </Link>
-                </div>
-                <div>
-                  <button className="featured-buy-link compare link-regular">
-                    Compare
                   </button>
                 </div>
               </div>

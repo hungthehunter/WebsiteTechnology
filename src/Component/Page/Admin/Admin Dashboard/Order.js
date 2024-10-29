@@ -1,23 +1,41 @@
-import { Button, MenuItem, Popover } from '@mui/material';
-import axios from 'axios';
-import React, { useEffect, useState } from 'react';
-import { getPurchaseHistories, getUserLogged } from '../../../Serivce/ApiService';
-import './../Admin Dashboard/assets/js/main';
-import './assets/css/style.scss';
+import {
+  Box,
+  Button,
+  MenuItem,
+  Paper,
+  Popover,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Typography,
+} from "@mui/material";
+import axios from "axios";
+import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  getPurchaseHistories,
+  getUserLogged,
+} from "../../../Serivce/ApiService";
+import "./assets/css/style.scss";
 
-function AdminOrder({ setActiveComponent ,showAlert }) {
+function AdminOrder({ setActiveComponent, showAlert }) {
+  const listOrder = useSelector((state) => state.order.listOrder);
+  const dispatch = useDispatch();
   const [activeIndex, setActiveIndex] = useState(null);
   const [anchorEl, setAnchorEl] = useState(null);
   const [userId, setUserId] = useState(null);
   const [purchaseHistories, setPurchaseHistories] = useState([]);
-  const [sortOption, setSortOption] = useState('productName'); // Default sorting option
-
+  const [sortOption, setSortOption] = useState("productName"); // Default sorting option
+  console.log("list order:", listOrder);
   const handleMouseOver = (index) => {
     setActiveIndex(index);
   };
 
   const formatOrderStatus = (status) => {
-    return (status ?? '').replace(/([a-z])([A-Z])/g, '$1 $2');
+    return (status ?? "").replace(/([a-z])([A-Z])/g, "$1 $2");
   };
 
   const handleClick = (event) => {
@@ -34,7 +52,7 @@ function AdminOrder({ setActiveComponent ,showAlert }) {
   };
 
   const open = Boolean(anchorEl);
-  const id = open ? 'simple-popover' : undefined;
+  const id = open ? "simple-popover" : undefined;
 
   useEffect(() => {
     const token = localStorage.getItem("authToken");
@@ -45,7 +63,7 @@ function AdminOrder({ setActiveComponent ,showAlert }) {
 
     const fetchUserId = async (token) => {
       try {
-        const response = await getUserLogged(token)
+        const response = await getUserLogged(token);
         setUserId(response.data.id);
         console.log("User ID:", response.data.id);
       } catch (error) {
@@ -65,13 +83,13 @@ function AdminOrder({ setActiveComponent ,showAlert }) {
   const fetchData = async (userId) => {
     try {
       const ordersResult = await getPurchaseHistories(userId);
-      console.log('API Response:', ordersResult.data);
+      console.log("API Response:", ordersResult.data);
 
-      const groupedHistories = ordersResult.data.map(purchaseHistory => {
+      const groupedHistories = ordersResult.data.map((purchaseHistory) => {
         const productGroups = {};
 
-        purchaseHistory.carts.forEach(cart => {
-          cart.products.forEach(product => {
+        purchaseHistory.carts.forEach((cart) => {
+          cart.products.forEach((product) => {
             const key = `${product.id}-${purchaseHistory.orders.order_date}-${purchaseHistory.orders.deliveryAddress}`;
             if (!productGroups[key]) {
               productGroups[key] = {
@@ -80,7 +98,7 @@ function AdminOrder({ setActiveComponent ,showAlert }) {
                 totalPrice: 0,
                 orderDate: purchaseHistory.orders.order_date,
                 deliveryAddress: purchaseHistory.orders.deliveryAddress,
-                order_status: purchaseHistory.orders.order_status
+                order_status: purchaseHistory.orders.order_status,
               };
             }
 
@@ -90,11 +108,11 @@ function AdminOrder({ setActiveComponent ,showAlert }) {
         });
 
         const products = Object.values(productGroups).sort((a, b) => {
-          if (sortOption === 'productName') {
+          if (sortOption === "productName") {
             return a.productName.localeCompare(b.productName);
-          } else if (sortOption === 'deliveryAddress') {
+          } else if (sortOption === "deliveryAddress") {
             return a.deliveryAddress.localeCompare(b.deliveryAddress);
-          } else if (sortOption === 'orderDate') {
+          } else if (sortOption === "orderDate") {
             return new Date(a.orderDate) - new Date(b.orderDate);
           }
           return 0;
@@ -102,7 +120,7 @@ function AdminOrder({ setActiveComponent ,showAlert }) {
 
         return {
           ...purchaseHistory,
-          products
+          products,
         };
       });
 
@@ -117,105 +135,158 @@ function AdminOrder({ setActiveComponent ,showAlert }) {
       try {
         await axios.delete(`http://localhost:8080/api/purchaseHistories/${id}`);
         fetchData();
-        showAlert("Delete order successfully","success");
+        showAlert("Delete order successfully", "success");
       } catch (error) {
-        showAlert("Delete order successfully","error");
+        showAlert("Delete order successfully", "error");
         console.error("Error deleting order:", error);
       }
     }
   };
 
   return (
-    <div>
-      <div className="details_table details">
-        <div className="table recentOrders">
-          <div className="cardHeader">
-            <h2>Recent Orders</h2>
-            <Button
-              variant="contained"
-              aria-controls={open ? 'demo-positioned-menu' : undefined}
-              aria-haspopup="true"
-              aria-expanded={open ? 'true' : undefined}
-              onClick={handleClick}
-            >
-              Sort By
-            </Button>
-            <Popover
-              id={id}
-              open={open}
-              anchorEl={anchorEl}
-              onClose={handleClose}
-              anchorOrigin={{
-                vertical: 'bottom',
-                horizontal: 'left',
-              }}
-              transformOrigin={{
-                vertical: 'top',
-                horizontal: 'left',
-              }}
-            >
-              <MenuItem onClick={() => handleSortChange('productName')}>Product Name</MenuItem>
-              <MenuItem onClick={() => handleSortChange('deliveryAddress')}>Delivery Address</MenuItem>
-              <MenuItem onClick={() => handleSortChange('orderDate')}>Order Date</MenuItem>
-            </Popover>
-          </div>
-          <table>
-            <thead>
-              <tr>
-                <th scope="col" style={{ textAlign: "start" }}>Id</th>
-                <th scope="col" style={{ textAlign: "start" }}>Name</th>
-                <th scope="col" style={{ textAlign: "end" }}>Price</th>
-                <th scope="col" style={{ textAlign: "end" }}>Date</th>
-                <th scope="col" style={{ textAlign: "end" }}>Address</th>
-                <th scope="col" style={{ textAlign: "end" }}>Payment</th>
-                <th scope="col" style={{ textAlign: "end" }}>order_status</th>
-                <th scope="col" style={{ textAlign: "end" }}>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {purchaseHistories.map((purchaseHistory, purchaseIndex) =>
-                purchaseHistory.products.map((product, productIndex) => (
-                  <tr key={`${productIndex}`}>
-                    <td style={{ textAlign: "start" }}>{purchaseHistory.orders.id}</td>
-                    <td style={{ textAlign: "start" }}>{product.productName}</td>
-                    <td style={{ textAlign: "end" }}>${product.totalPrice.toFixed(2)}</td>
-                    <td style={{ textAlign: "end" }}>{product.orderDate}</td>
-                    <td style={{ textAlign: "end" }}>{product.deliveryAddress}</td>
-                    <td style={{ textAlign: "end" }}>
-                      {purchaseHistory.orders.order_status === "Shipped" ? "Due" : "Pay"}
-                    </td>
-                    <td style={{ textAlign: "end" }}>
-                      <span className={`status ${purchaseHistory.orders.order_status.toLowerCase()}`}>
-                        {formatOrderStatus(purchaseHistory.orders.order_status)}
-                      </span>
-                    </td>
-                    <td style={{ textAlign: "end" }}>
-                      <button
-                        className="status editing mx-2"
-                        onClick={() =>
-                          setActiveComponent({
-                            name: "AdminEditOrder",
-                            props: { id: purchaseHistory.orders.id},
-                          })
-                        }
-                      >
-                        Edit
-                      </button>
-                      {/* <button
-                        className="status deleting mx-2"
-                        onClick={() => handleDelete(purchaseHistory.id)}
-                      >
-                        Delete
-                      </button> */}
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
+    <Box sx={{ padding: 2 }}>
+      <Box
+        sx={{
+          width: "100%",
+          height: "80vh",
+          overflowY: "auto",
+          boxShadow: 3,
+          borderRadius: 2,
+          padding: 3,
+          backgroundColor: "white",
+          margin: "0 auto",
+        }}
+      >
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: 2,
+          }}
+        >
+          <Typography variant="h4" gutterBottom sx={{ fontSize: "2.5rem" }}>
+            Recent Orders
+          </Typography>
+          <Button
+            variant="contained"
+            aria-controls={open ? "demo-positioned-menu" : undefined}
+            aria-haspopup="true"
+            aria-expanded={open ? "true" : undefined}
+            onClick={handleClick}
+          >
+            Sort By
+          </Button>
+          <Popover
+            id={id}
+            open={open}
+            anchorEl={anchorEl}
+            onClose={handleClose}
+            anchorOrigin={{
+              vertical: "bottom",
+              horizontal: "left",
+            }}
+            transformOrigin={{
+              vertical: "top",
+              horizontal: "left",
+            }}
+          >
+            <MenuItem onClick={() => handleSortChange("productName")}>
+              Product Name
+            </MenuItem>
+            <MenuItem onClick={() => handleSortChange("deliveryAddress")}>
+              Delivery Address
+            </MenuItem>
+            <MenuItem onClick={() => handleSortChange("orderDate")}>
+              Order Date
+            </MenuItem>
+          </Popover>
+        </Box>
+        <TableContainer component={Paper}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell style={{ textAlign: "start", fontSize: "1.5rem" }}>
+                  Id
+                </TableCell>
+                <TableCell style={{ textAlign: "start", fontSize: "1.5rem" }}>
+                  Email
+                </TableCell>
+                <TableCell style={{ textAlign: "end", fontSize: "1.5rem" }}>
+                  Total Price
+                </TableCell>
+                <TableCell style={{ textAlign: "end", fontSize: "1.5rem" }}>
+                  Date
+                </TableCell>
+                <TableCell style={{ textAlign: "end", fontSize: "1.5rem" }}>
+                  Address
+                </TableCell>
+                <TableCell style={{ textAlign: "end", fontSize: "1.5rem" }}>
+                  Status
+                </TableCell>
+                <TableCell style={{ textAlign: "end", fontSize: "1.5rem" }}>
+                  Action
+                </TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {listOrder.map((order) => (
+                <TableRow key={order.id}>
+                  <TableCell style={{ textAlign: "start", fontSize: "1.3rem" }}>
+                    {order?.id}
+                  </TableCell>
+                  <TableCell style={{ textAlign: "start", fontSize: "1.3rem" }}>
+                    {order?.user?.email}
+                  </TableCell>
+                  <TableCell style={{ textAlign: "end", fontSize: "1.3rem" }}>
+                    ${order?.total_price?.toFixed(2)}
+                  </TableCell>
+                  <TableCell style={{ textAlign: "end", fontSize: "1.3rem" }}>
+                    {order?.order_date}
+                  </TableCell>
+                  <TableCell style={{ textAlign: "end", fontSize: "1.3rem" }}>
+                    {`${order?.address?.houseNumber || ""} / ${
+                      order?.address?.street || ""
+                    } / ${order?.address?.ward || ""} / ${
+                      order?.address?.district || ""
+                    } / ${order?.address?.city || ""} / ${
+                      order?.address?.country || ""
+                    }`}
+                  </TableCell>
+                  <TableCell style={{ textAlign: "end", fontSize: "1.3rem" }}>
+                    <span
+                      className={`status ${order.order_status.toLowerCase()}`}
+                    >
+                      {formatOrderStatus(order.order_status)}
+                    </span>
+                  </TableCell>
+                  <TableCell style={{ textAlign: "end", fontSize: "1.3rem" }}>
+                    <Button
+                      variant="outlined"
+                      onClick={() =>
+                        setActiveComponent({
+                          name: "AdminEditOrder",
+                          props: { id: order.id },
+                        })
+                      }
+                    >
+                      Edit
+                    </Button>
+                    <Button
+                      variant="outlined"
+                      color="error"
+                      onClick={() => handleDelete(order.id)}
+                    >
+                      Delete
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Box>
+    </Box>
   );
 }
 

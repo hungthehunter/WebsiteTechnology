@@ -1,3 +1,4 @@
+import { Box, Button, MenuItem, Paper, Popover, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography, useMediaQuery } from '@mui/material';
 import { useEffect, useState } from "react";
 import { deleteUserById, getAllUser } from "../../../Serivce/ApiService";
 import "./assets/css/style.scss";
@@ -5,7 +6,34 @@ function AdminCustomer({ setActiveComponent , showAlert }) {
   /*------- Page function -------*/
   const [activeIndex, setActiveIndex] = useState(null);
   const [menuActive, setMenuActive] = useState(false);
+  const [sortBy, setSortBy] = useState(""); // Thêm state để lưu giá trị sắp xếp
+  const [anchorEl, setAnchorEl] = useState(null); // Thêm state cho Popover
+  const [users, setUsers] = useState([]);
+  const handleClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
 
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  const open = Boolean(anchorEl); // Kiểm tra xem Popover có mở hay không
+  const id = open ? 'simple-popover' : undefined;
+  const handleSortChange = (value) => {
+    if (!value) return; // Kiểm tra xem value có tồn tại không
+    setSortBy(value);
+    // Sắp xếp người dùng dựa trên role
+    const sortedUsers = [...users].sort((a, b) => {
+      if (value === "user") {
+        return users.role === "User" ? -1 : 1; // Đưa User lên đầu
+      } else if (value === "employee") {
+        return users.role === "Employee" ? -1 : 1; // Đưa Employee lên đầu
+      }
+      return 0; // Không sắp xếp nếu không có giá trị
+    });
+    setFilteredUsers(sortedUsers);
+  };
+  
   const handleMouseOver = (index) => {
     setActiveIndex(index);
   };
@@ -34,7 +62,7 @@ function AdminCustomer({ setActiveComponent , showAlert }) {
   /*------- Database function -------*/
   // Set element User
 
-  const [users, setUsers] = useState([]);
+
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -64,97 +92,112 @@ function AdminCustomer({ setActiveComponent , showAlert }) {
       }
     }
   };
-  return (
-    <div>
-      {/* ================ Order Details List ================= */}
-      <div className="details_table details">
-        <div className="table recentOrders">
-          <div className="cardHeader">
-            <h2>Recent Customer</h2>
-            <a
-              href="#"
-              className="btn"
-              onClick={() => setActiveComponent({ name: "AdminAddCustomer" })}
-            >
-              + Add new Customer
-            </a>
-          </div>
-          <table>
-            <thead>
-              <tr>
-                <th scope="col" style={{ textAlign: "start" }}>
-                  Id
-                </th>
-                <th scope="col" style={{ textAlign: "start" }}>
-                  Name
-                </th>
-                <th scope="col" style={{ textAlign: "end" }}>
-                  Mobile
-                </th>
-                <th scope="col" style={{ textAlign: "end" }}>
-                  Email
-                </th>
-                <th scope="col" style={{ textAlign: "end" }}>
-                  Role
-                </th>
-                <th scope="col" style={{ textAlign: "end" }}>
-                  Action
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {users.map((user, index) => (
-                <tr key={index}>
-                  <td style={{ textAlign: "start" }}>{user.id}</td>
-                  <td style={{ textAlign: "start" }}>{user.fullname}</td>
-                  <td style={{ textAlign: "end" }}>{user.mobile}</td>
-                  <td style={{ textAlign: "end" }}>{user.email}</td>
-                  <td style={{ textAlign: "end" }}>
-                    <span className={`status ${user.role.toLowerCase()}`}>
-                      {" "}
-                      {user.role}
-                    </span>
-                  </td>
-                  <td style={{ textAlign: "end" }}>
-                    <button
-                      className="status viewing mx-2"
-                      onClick={() =>
-                        setActiveComponent({
-                          name: "AdminViewCustomer",
-                          props: { id: user.id },
-                        })
-                      }
-                    >
-                      View
-                    </button>
+  const isSmallScreen = useMediaQuery((theme) => theme.breakpoints.down('sm'));
 
-                    <button
-                      className="status editing mx-2"
-                      onClick={() =>
-                        setActiveComponent({
-                          name: "AdminEditCustomer",
-                          props: { id: user.id },
-                        })
-                      }
-                    >
-                      Edit
-                    </button>
-                    <button
-                      className="status deleting mx-2"
-                      onClick={() => handleDelete(user.id)}
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))}
-       
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  );
+  return (
+    <Box sx={{ padding: 2 }}>
+    <Box 
+      sx={{ 
+        width: '100%', 
+        height: '80vh',
+        maxWidth: '100%', 
+        maxHeight: '80vh', 
+        overflowY: 'auto',
+        boxShadow: 3, 
+        borderRadius: 2, 
+        padding: 3, 
+        backgroundColor: 'white', 
+        margin: '0 auto', 
+      }}
+    >
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
+        <Typography variant="h4" gutterBottom sx={{ fontSize: '2.5rem' }}> {/* Tăng kích thước chữ */}
+          Recent Customers
+        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <Button variant="contained" color="primary" onClick={() => setActiveComponent({ name: "AdminAddCustomer" })}>
+              + Add New Customer
+            </Button>
+            <Button
+              variant="outlined"
+              aria-controls={open ? 'demo-positioned-menu' : undefined}
+              aria-haspopup="true"
+              aria-expanded={open ? 'true' : undefined}
+              onClick={handleClick}
+              sx={{ marginLeft: 2 }} // Thêm khoảng cách giữa hai nút
+            >
+              Sort By
+            </Button>
+            <Popover
+              id={id}
+              open={open}
+              anchorEl={anchorEl}
+              onClose={handleClose}
+              anchorOrigin={{
+                vertical: 'bottom',
+                horizontal: 'left',
+              }}
+              transformOrigin={{
+                vertical: 'top',
+                horizontal: 'left',
+              }}
+            >
+              <MenuItem onClick={() => handleSortChange('user')}>User</MenuItem>
+              <MenuItem onClick={() => handleSortChange('employee')}>Employee</MenuItem>
+            </Popover>
+          </Box>
+      </Box>
+      <TableContainer component={Paper}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell style={{ textAlign: "start", fontSize: '1.5rem' }}>Id</TableCell>
+              <TableCell style={{ textAlign: "start", fontSize: '1.5rem' }}>Name</TableCell>
+              <TableCell style={{ textAlign: "end", fontSize: '1.5rem' }}>Mobile</TableCell>
+              <TableCell style={{ textAlign: "end", fontSize: '1.5rem' }}>Email</TableCell>
+              <TableCell style={{ textAlign: "end", fontSize: '1.5rem' }}>Role</TableCell>
+              <TableCell style={{ textAlign: "end", fontSize: '1.5rem' }}>Action</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {users.map((user, index) => (
+              <TableRow key={index}>
+                <TableCell style={{ textAlign: "start", fontSize: '1.3rem' }}>{user.id}</TableCell>
+                <TableCell style={{ textAlign: "start", fontSize: '1.3rem' }}>{user.fullname}</TableCell>
+                <TableCell style={{ textAlign: "end", fontSize: '1.3rem' }}>{user.mobile}</TableCell>
+                <TableCell style={{ textAlign: "end", fontSize: '1.3rem' }}>{user.email}</TableCell>
+                <TableCell style={{ textAlign: "end", fontSize: '1.3rem' }}>
+                  <span className={`status ${user.role.toLowerCase()}`}>{user.role}</span>
+                </TableCell>
+                <TableCell style={{ textAlign: "end", fontSize: '1.3rem' }}>
+                  <Button variant="outlined" onClick={() => setActiveComponent({ name: "AdminViewCustomer", props: { id: user.id } })}>View</Button>
+                  <Button variant="outlined" onClick={() => setActiveComponent({ name: "AdminEditCustomer", props: { id: user.id } })}>Edit</Button>
+                  <Button variant="outlined" color="error" onClick={() => handleDelete(user.id)}>Delete</Button>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+      <style jsx>{`
+        .status {
+          padding: 4px 8px;
+          border-radius: 4px;
+          color: white;
+        }
+        .status.admin {
+          background-color: #2196f3;
+        }
+        .status.user {
+          background-color: #4caf50;
+        }
+        .status.guest {
+          background-color: #ff9800;
+        }
+      `}</style>
+    </Box>
+  </Box>
+);
 }
 export default AdminCustomer;
 

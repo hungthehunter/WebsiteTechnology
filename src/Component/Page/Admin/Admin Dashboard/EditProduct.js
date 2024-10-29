@@ -1,12 +1,11 @@
 import {
   Box,
   Button,
-  FormControl,
+  Card,
+  CardContent,
   Grid,
-  InputLabel,
-  MenuItem,
-  Select,
   TextField,
+  Typography,
 } from "@mui/material";
 import axios from "axios";
 import imageCompression from "browser-image-compression";
@@ -14,8 +13,36 @@ import React, { useEffect, useState } from "react";
 import { getAllCategory, getAllManufacturer, getProductById } from "../../../Serivce/ApiService";
 import "./assets/css/style.scss";
 
-function AdminEditProduct({ id, setActiveComponent ,showAlert}) {
-  const [product, setProduct] = useState({});
+function AdminEditProduct({ id, setActiveComponent, showAlert }) {
+  const defaultSpecifications = [
+    { specificationName: "CPU", specificationData: "" },
+    { specificationName: "RAM", specificationData: "" },
+    { specificationName: "Hard Drive", specificationData: "" },
+    { specificationName: "Graphics Card", specificationData: "" },
+    { specificationName: "Screen", specificationData: "" },
+    { specificationName: "Port", specificationData: "" },
+    { specificationName: "Keyboard", specificationData: "" },
+    { specificationName: "LAN", specificationData: "" },
+    { specificationName: "Wireless", specificationData: "" },
+    { specificationName: "Bluetooth", specificationData: "" },
+    { specificationName: "Operating System", specificationData: "" },
+    { specificationName: "Battery", specificationData: "" },
+    { specificationName: "Weight", specificationData: "" },
+    { specificationName: "Color", specificationData: "" },
+    { specificationName: "Size", specificationData: "" },
+    { specificationName: "Relationship", specificationData: "" },
+  ];
+
+  const [product, setProduct] = useState({
+    unitPrice: "",
+    unitInStock: "",
+    unitInOrder: "",
+    productName: "",
+    status: "Available",
+    manufacturer: { id: "" },
+    specification: defaultSpecifications,
+    product_image: [], // Thêm trường cho hình ảnh sản phẩm
+  });
   const [categories, setCategories] = useState([]);
   const [manufacturers, setManufacturers] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("");
@@ -24,6 +51,7 @@ function AdminEditProduct({ id, setActiveComponent ,showAlert}) {
   const [newManufacturer, setNewManufacturer] = useState("");
   const [files, setFiles] = useState([]);
   const [mainFile, setMainFile] = useState(null);
+  const [clonedImages, setClonedImages] = useState([]); // Biến để lưu hình ảnh cũ
 
   const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
 
@@ -39,6 +67,7 @@ function AdminEditProduct({ id, setActiveComponent ,showAlert}) {
       setProduct(response.data);
       setSelectedCategory(response.data.category.id);
       setSelectedManufacturer(response.data.manufacturer.id);
+      setClonedImages(response.data.product_image); // Lưu hình ảnh cũ vào biến clone
     } catch (error) {
       console.error("Error fetching product:", error);
     }
@@ -55,7 +84,7 @@ function AdminEditProduct({ id, setActiveComponent ,showAlert}) {
 
   const loadManufacturers = async () => {
     try {
-      const response = await getAllManufacturer()
+      const response = await getAllManufacturer();
       setManufacturers(response.data);
     } catch (error) {
       console.error("Error fetching manufacturers:", error);
@@ -101,9 +130,7 @@ function AdminEditProduct({ id, setActiveComponent ,showAlert}) {
 
           const compressedFile = await imageCompression(file, options);
           const compressedSizeMB = compressedFile.size / (1024 * 1024);
-          console.log(
-            `Compressed file size: ${compressedSizeMB.toFixed(2)} MB`
-          );
+          console.log(`Compressed file size: ${compressedSizeMB.toFixed(2)} MB`);
 
           validFiles.push(compressedFile);
         } catch (error) {
@@ -115,24 +142,6 @@ function AdminEditProduct({ id, setActiveComponent ,showAlert}) {
     }
 
     setFiles(validFiles);
-  };
-
-  const handleGeneralInfoChange = (e) => {
-    const { name, value } = e.target;
-    setProduct((prevProduct) => ({
-      ...prevProduct,
-      [name]: value,
-    }));
-  };
-
-  const handleCategoryChange = (e) => {
-    setSelectedCategory(e.target.value);
-    setNewCategory(""); // Clear newCategory if an existing category is selected
-  };
-
-  const handleManufacturerChange = (e) => {
-    setSelectedManufacturer(e.target.value);
-    setNewManufacturer(""); // Clear newManufacturer if an existing manufacturer is selected
   };
 
   const handleUpdate = async () => {
@@ -180,339 +189,205 @@ function AdminEditProduct({ id, setActiveComponent ,showAlert}) {
       }
     }
 
-    // Prepare the product data
+    // Prepare product data
     const updatedProduct = {
-      cpu: product.cpu,
-      gpu: product.gpu,
       unitPrice: product.unitPrice,
       unitInStock: product.unitInStock,
       unitInOrder: product.unitInOrder,
-      batteryCapacity: product.batteryCapacity,
-      operatingSystem: product.operatingSystem,
-      screen: product.screen,
-      ram: product.ram,
       productName: product.productName,
-      design: product.design,
-      warrantyInformation: product.warrantyInformation,
-      generalInformation: product.generalInformation,
       status: product.status,
-      category: { id: categoryId },
       manufacturer: { id: manufacturerId },
-      promotion: { id: product.promotion?.id || null }, // Ensure promotion is included
+      specification: product.specification || [],
     };
 
-    // Add files (images) to FormData
+    // Create FormData to send to the server
     const formData = new FormData();
-    formData.append("product", 
+    formData.append(
+      "product",
       new Blob([JSON.stringify(updatedProduct)], { type: "application/json" })
-    )
+    );
 
-    // Add files (images) to FormData
-    files.forEach((file) => {
-      formData.append("images", file); 
+    // Append the main image if it exists
+    if (mainFile) {
+      formData.append("mainImage", mainFile);
+    }
+
+    // Kết hợp hình ảnh cũ và hình ảnh mới
+    const combinedImages = [...clonedImages, ...files];
+    combinedImages.forEach((image) => {
+      formData.append("images", image); // Append all images (old + new)
     });
 
-    // Append the main image
-    formData.append("mainImage", mainFile);
-
-    // Log the total number of files
-    console.log(`Total number of files: ${files.length}`);
-
     try {
-      // Update the product with new images
+      // Gửi yêu cầu cập nhật sản phẩm
       const response = await axios.put(
         `http://localhost:8080/api/products/${id}`,
         formData,
         {
           headers: {
-            "Content-Type": "multipart/form-data", // Ensure this is set for the request
+            "Content-Type": "multipart/form-data",
           },
         }
       );
 
       if (response.status === 200) {
-        showAlert("Edit product successfully.","success");
-        setTimeout(()=>setActiveComponent({ name: "AdminProduct" }),1000);
+        showAlert("Edit product successfully.", "success");
+        setTimeout(() => setActiveComponent({ name: "AdminProduct" }), 1000);
       }
     } catch (error) {
       console.error("Error updating product:", error);
-      showAlert("Failed to edit product.","error");
+      showAlert("Failed to edit product.", "error");
     }
   };
 
-  const handleDeleteImage = (index) => {
-    const updatedList = product.product_image.filter((_, i) => i !== index);
-    const updatedProduct = {
-      ...product,
-      product_image: updatedList,
-    };
-    setProduct(updatedProduct);
-  };
-
-  const handleDeleteMainImage = () => {
-    const updatedProduct = {
-      ...product,
-      mainImage: null,
-    };
-
-    setProduct(updatedProduct);
-  };
-
   return (
-    <Box sx={{ padding: 4 }}>
-      <h2>Edit Product</h2>
-      <form id="editForm">
-        {/* General Information Fields */}
-        <TextField
-          fullWidth
-          margin="normal"
-          label="Product Name"
-          name="productName"
-          value={product.productName || ""}
-          onChange={handleGeneralInfoChange}
-        />
-        <TextField
-          fullWidth
-          margin="normal"
-          label="Unit Price"
-          name="unitPrice"
-          type="number"
-          value={product.unitPrice || ""}
-          onChange={handleGeneralInfoChange}
-        />
-        <TextField
-          fullWidth
-          margin="normal"
-          label="Quantity in Stock"
-          name="unitInStock"
-          type="number"
-          value={product.unitInStock || ""}
-          onChange={handleGeneralInfoChange}
-        />
-        <TextField
-          fullWidth
-          margin="normal"
-          label="Quantity in Order"
-          name="unitInOrder"
-          type="number"
-          value={product.unitInOrder || ""}
-          onChange={handleGeneralInfoChange}
-        />
-        <TextField
-          fullWidth
-          margin="normal"
-          label="CPU"
-          name="cpu"
-          value={product.cpu || ""}
-          onChange={handleGeneralInfoChange}
-        />
-        <TextField
-          fullWidth
-          margin="normal"
-          label="RAM"
-          name="ram"
-          value={product.ram || ""}
-          onChange={handleGeneralInfoChange}
-        />
-        <TextField
-          fullWidth
-          margin="normal"
-          label="GPU"
-          name="gpu"
-          value={product.gpu || ""}
-          onChange={handleGeneralInfoChange}
-        />
-        <TextField
-          fullWidth
-          margin="normal"
-          label="Battery Capacity"
-          name="batteryCapacity"
-          value={product.batteryCapacity || ""}
-          onChange={handleGeneralInfoChange}
-        />
-        <TextField
-          fullWidth
-          margin="normal"
-          label="Operating System"
-          name="operatingSystem"
-          value={product.operatingSystem || ""}
-          onChange={handleGeneralInfoChange}
-        />
-        <TextField
-          fullWidth
-          margin="normal"
-          label="Screen"
-          name="screen"
-          value={product.screen || ""}
-          onChange={handleGeneralInfoChange}
-        />
-        <TextField
-          fullWidth
-          margin="normal"
-          label="Design"
-          name="design"
-          value={product.design || ""}
-          onChange={handleGeneralInfoChange}
-        />
-        <TextField
-          fullWidth
-          margin="normal"
-          label="Warranty Information"
-          name="warrantyInformation"
-          value={product.warrantyInformation || ""}
-          onChange={handleGeneralInfoChange}
-        />
-        <TextField
-          fullWidth
-          margin="normal"
-          label="General Information"
-          name="generalInformation"
-          value={product.generalInformation || ""}
-          onChange={handleGeneralInfoChange}
-        />
-
-        {/* Category and Manufacturer Selection */}
-        <FormControl fullWidth margin="normal">
-          <InputLabel>Category</InputLabel>
-          <Select
-            value={selectedCategory}
-            onChange={handleCategoryChange}
-            displayEmpty
-          >
-            <MenuItem value="null">
-              None
-            </MenuItem>
-            {categories.map((category) => (
-              <MenuItem key={category.id} value={category.id}>
-                {category.name}
-              </MenuItem>
+    <Box sx={{ padding: 2 }}>
+      <Typography variant="h4" gutterBottom>
+        Edit Product
+      </Typography>
+      <Card>
+        <CardContent>
+          <Grid container spacing={2}>
+            <Grid item xs={12} md={6}>
+              <TextField
+                fullWidth
+                margin="normal"
+                label="Product Name"
+                name="productName"
+                value={product.productName}
+                onChange={(e) => setProduct({ ...product, productName: e.target.value })}
+              />
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <TextField
+                fullWidth
+                margin="normal"
+                label="Unit Price"
+                name="unitPrice"
+                type="number"
+                value={product.unitPrice || ""}
+                onChange={(e) => setProduct({ ...product, unitPrice: e.target.value })}
+              />
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <TextField
+                fullWidth
+                margin="normal"
+                label="Unit In Stock"
+                name="unitInStock"
+                type="number"
+                value={product.unitInStock || ""}
+                onChange={(e) => setProduct({ ...product, unitInStock: e.target.value })}
+              />
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <TextField
+                fullWidth
+                margin="normal"
+                label="Unit In Order"
+                name="unitInOrder"
+                type="number"
+                value={product.unitInOrder || ""}
+                onChange={(e) => setProduct({ ...product, unitInOrder: e.target.value })}
+              />
+            </Grid>
+            {/* Specifications */}
+            {product.specification.map((spec, index) => (
+              <Grid item xs={12} md={6} key={index}>
+                <TextField
+                  fullWidth
+                  label="Specification Name"
+                  value={spec.specificationName}
+                  onChange={(e) => {
+                    const newSpecifications = [...product.specification];
+                    newSpecifications[index].specificationName = e.target.value;
+                    setProduct({ ...product, specification: newSpecifications });
+                  }}
+                  margin="normal"
+                  disabled // Disable the default specification name field
+                />
+                <TextField
+                  fullWidth
+                  label="Specification Data"
+                  value={spec.specificationData}
+                  onChange={(e) => {
+                    const newSpecifications = [...product.specification];
+                    newSpecifications[index].specificationData = e.target.value;
+                    setProduct({ ...product, specification: newSpecifications });
+                  }}
+                  margin="normal"
+                />
+              </Grid>
             ))}
-          </Select>
-          {newCategory && (
-            <TextField
-              fullWidth
-              margin="normal"
-              label="New Category"
-              value={newCategory}
-              onChange={(e) => setNewCategory(e.target.value)}
-            />
-          )}
-        </FormControl>
-
-        <FormControl fullWidth margin="normal">
-          <InputLabel>Manufacturer</InputLabel>
-          <Select
-            value={selectedManufacturer}
-            onChange={handleManufacturerChange}
-            displayEmpty
-          >
-            <MenuItem value="null">
-              None
-            </MenuItem>
-            {manufacturers.map((manufacturer) => (
-              <MenuItem key={manufacturer.id} value={manufacturer.id}>
-                {manufacturer.name}
-              </MenuItem>
-            ))}
-          </Select>
-          {newManufacturer && (
-            <TextField
-              fullWidth
-              margin="normal"
-              label="New Manufacturer"
-              value={newManufacturer}
-              onChange={(e) => setNewManufacturer(e.target.value)}
-            />
-          )}
-        </FormControl>
-
-        {/* File Input for Images */}
-        <TextField
-          type="file"
-          fullWidth
-          margin="normal"
-          label="Product Images"
-          InputLabelProps={{
-            shrink: true,
-          }}
-          inputProps={{
-            multiple: true,
-          }}
-          onChange={handleFilesChange}
-        />
-
-        <TextField
-          type="file"
-          fullWidth
-          margin="normal"
-          label="Main Product Image"
-          InputLabelProps={{
-            shrink: true,
-          }}
-          inputProps={{
-            accept: "image/*",
-          }}
-          onChange={handleMainImageChange}
-        />
-
-<Grid container spacing={2}>
-  {/* Display Existing Images */}
-  {product.product_image &&
-    product.product_image
-      .filter(image => !image.isMainImage) // Filter out main image
-      .map((image, index) => (
-        <Grid item xs={4} key={index}>
-          <img
-            src={image.url}
-            alt={`Product Image ${index}`}
-            style={{ width: "100%", height: "auto" }}
-          />
-          <Button
-            variant="contained"
-            color="secondary"
-            onClick={() => handleDeleteImage(index)}
-          >
-            Delete
-          </Button>
-        </Grid>
-      ))}
-
-  {/* Display Main Image */}
-  {product.product_image &&
-    product.product_image
-      .filter(image => image.isMainImage) // Filter to get the main image
-      .map((image, index) => (
-        <Grid item xs={12} mt={2} key={index}>
-          <Box>
-            <img
-              src={image.url} // Assuming `image.url` for main image
-              alt="Main Product Image"
-              style={{ width: "100%", height: "auto" }}
-            />
-            <Button
-              variant="contained"
-              color="secondary"
-              onClick={handleDeleteMainImage}
-              sx={{ mt: 2 }}
-            >
-              Delete Main Image
-            </Button>
-          </Box>
-        </Grid>
-      ))}
-</Grid>
-
-
-        {/* Save Changes */}
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={handleUpdate}
-          sx={{ marginTop: 2 }}
-        >
-          Update Product
-        </Button>
-      </form>
+            <Grid item xs={12}>
+              <Button variant="outlined" onClick={() => {
+                const newSpecifications = [...product.specification, { specificationName: "", specificationData: "" }];
+                setProduct({ ...product, specification: newSpecifications });
+              }}>
+                Add Specification
+              </Button>
+            </Grid>
+            {/* File Input for Images */}
+            <Grid item xs={12}>
+              <TextField
+                type="file"
+                fullWidth
+                margin="normal"
+                label="Main Product Image"
+                InputLabelProps={{
+                  shrink: true,
+                }}
+                inputProps={{
+                  accept: "image/*",
+                }}
+                onChange={handleMainImageChange}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                type="file"
+                fullWidth
+                margin="normal"
+                label="Additional Images"
+                InputLabelProps={{
+                  shrink: true,
+                }}
+                inputProps={{
+                  multiple: true,
+                }}
+                onChange={handleFilesChange}
+              />
+            </Grid>
+            {/* Display Existing Images */}
+            <Grid item xs={12}>
+              <Typography variant="h6">Existing Images</Typography>
+              <Grid container spacing={2}>
+                {clonedImages &&
+                  clonedImages.map((image, index) => (
+                    <Grid item xs={4} key={index}>
+                      <img
+                        src={image.url}
+                        alt={`Product Image ${index}`}
+                        style={{ width: "100%", height: "auto" }}
+                      />
+                    </Grid>
+                  ))}
+              </Grid>
+            </Grid>
+            {/* Save Changes */}
+            <Grid item xs={12}>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleUpdate}
+                sx={{ marginTop: 2 }}
+              >
+                Update Product
+              </Button>
+            </Grid>
+          </Grid>
+        </CardContent>
+      </Card>
     </Box>
   );
 }

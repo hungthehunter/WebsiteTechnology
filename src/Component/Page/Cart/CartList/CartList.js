@@ -1,7 +1,12 @@
 import { faBell } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Box, Chip, Stack, Typography, useMediaQuery, useTheme } from '@mui/material';
+import ArrowForwardIosOutlinedIcon from '@mui/icons-material/ArrowForwardIosOutlined';
+import { Box, Button, Chip, Stack, Typography, useMediaQuery, useTheme } from '@mui/material';
+import { styled } from '@mui/material/styles';
 import React, { useState } from 'react';
+import { AiOutlineShoppingCart } from 'react-icons/ai';
+import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import CartItem from '../CartItem/CartItem.js';
 // Dữ liệu giả
 const dummyData = {
@@ -13,9 +18,25 @@ const dummyData = {
   recentlyItem: { name: 'Product 1', action: 'add' }
 };
 
+const GreenButton = styled(Button)(({ theme }) => ({
+  backgroundColor: 'transparent',
+  color: '#00CED1', 
+  '&:hover': {
+    backgroundColor: 'transparent',
+    color: '#76b900',
+    '& .MuiButton-endIcon': { 
+      transform: 'translateX(10px)', 
+      transition: 'color 0.3s ease, transform 0.3s ease ',
+      color: '#76b900', 
+    },
+  },
+}));
+
 export default function CartList({ maxHeight, maxWidthItem }) {
   const [{ cartList, totalItem, recentlyItem }, setCartData] = useState(dummyData);
+  const listCartItems = useSelector((state) => state.cart.listCartItems)
   const theme = useTheme();
+  const navigate = useNavigate();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   /* Render */
@@ -72,8 +93,41 @@ export default function CartList({ maxHeight, maxWidthItem }) {
   };
 
   const renderCartItem = () => {
-    return cartList.map((item) => (
-      <CartItem key={item.id} maxWidth={maxWidthItem} initialProduct={item} />
+    if (!listCartItems || listCartItems.length === 0) {
+      return (
+        <Box 
+          sx={{ 
+            display: 'flex', 
+            flexDirection: 'column', 
+            alignItems: 'center', 
+            justifyContent: 'center', 
+            textAlign: 'center' 
+          }}
+        >
+          <AiOutlineShoppingCart size={48} /> {/* Biểu tượng giỏ hàng */}
+          <Typography variant="h6" sx={{ mt: 2 }}>
+            There is no item in Cart
+          </Typography>
+          <GreenButton 
+          endIcon={<ArrowForwardIosOutlinedIcon fontSize='3'/>}
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center', 
+            fontSize: '1.2rem', 
+            fontWeight: 'bold', 
+            marginTop: 'auto', 
+          }}
+          onClick={()=>navigate("/websiteDoAn/Shop")}
+        >
+          Shop Now
+        </GreenButton>
+        </Box>
+      );
+    }
+
+    return listCartItems.map((item) => (
+      <CartItem key={item.id} maxWidth={maxWidthItem} cart={item} />
     ));
   };
 
@@ -86,7 +140,7 @@ export default function CartList({ maxHeight, maxWidthItem }) {
             : 'You have not added any products to your cart yet'
         }
         color={changeColorBadgeAction()}
-        icon={totalItem !== 0 ? <FontAwesomeIcon icon={faBell} fontSize={16} shake /> : null}
+        icon={totalItem !== 0 ? <FontAwesomeIcon icon={faBell} fontSize={15} shake /> : null}
         sx={{
           width: '100%',
           py: 2,
@@ -95,10 +149,11 @@ export default function CartList({ maxHeight, maxWidthItem }) {
           '& .MuiChip-label': {
             display: 'block',
             whiteSpace: 'normal',
-            fontSize: isMobile ? '0.9rem' : '1.1rem',
+            fontWeight: 'bold',
+            fontSize: isMobile ? '1.3rem' : '1.5rem',
           },
-          backgroundColor: '#4CAF50',
-          color: '#fff',
+          backgroundColor: '#84e020 ',
+          color: '#000',
         }}
       />
       <Box

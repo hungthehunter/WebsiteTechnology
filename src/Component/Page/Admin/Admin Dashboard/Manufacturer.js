@@ -1,3 +1,4 @@
+import { Box, Button, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material';
 import { useEffect, useState } from "react";
 import { deleteManufactuereId, getAllManufacturer, getAllProduct } from "../../../Serivce/ApiService";
 import "./assets/css/style.scss";
@@ -36,8 +37,7 @@ function AdminManufacturer({ setActiveComponent, showAlert }) {
   const checkManufacturerNameExists = (name) => {
     return products.some(
       (product) =>
-        product.manufacturer.manufacturerName.toLowerCase() ===
-        name.toLowerCase()
+        product.manufacturer.name.toLowerCase() === name.toLowerCase()
     );
   };
   /*------- Database function -------*/
@@ -96,130 +96,71 @@ function AdminManufacturer({ setActiveComponent, showAlert }) {
     }
   };
   return (
-    <div>
-      {/* ================ Order Details List ================= */}
-      <div className="details_table details">
-        <div className="table recentOrders">
-          <div className="cardHeader">
-            <h2>Recent Manufacturer</h2>
-            <a
-              href="#"
-              className="btn"
-              onClick={() =>
-                setActiveComponent({
-                  name: "AdminAddManufacturer",
-                })
-              }
-            >
-              + Add new Manufacturer
-            </a>
-          </div>
-          <table>
-            <thead>
-              <tr>
-                <th scope="col" style={{ textAlign: "start" }}>
-                  Id
-                </th>
-                <th scope="col" style={{ textAlign: "start" }}>
-                  Image
-                </th>
-                <th scope="col" style={{ textAlign: "start" }}>
-                  Name
-                </th>
-                <th scope="col" style={{ textAlign: "start" }}>
-                  Email
-                </th>
-                <th scope="col" style={{ textAlign: "start" }}>
-                  Website
-                </th>
-               
-                <th scope="col" style={{ textAlign: "end" }}>
-                  Action
-                </th>
-              </tr>
-            </thead>
-            <tbody>
+    <Box sx={{ padding: 2 }}>
+      <Box 
+        sx={{ 
+          width: '100%', 
+          height: '80vh',
+          overflowY: 'auto',
+          boxShadow: 3, 
+          borderRadius: 2, 
+          padding: 3, 
+          backgroundColor: 'white', 
+          margin: '0 auto', 
+        }}
+      >
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
+          <Typography variant="h4" gutterBottom sx={{ fontSize: '2.5rem' }}>
+            Recent Manufacturer
+          </Typography>
+          <Button variant="contained" color="primary" onClick={() => setActiveComponent({ name: "AdminAddManufacturer" })}>
+            + Add New Manufacturer
+          </Button>
+        </Box>
+        <TableContainer component={Paper}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell style={{ textAlign: "start", fontSize: '1.5rem' }}>Id</TableCell>
+                <TableCell style={{ textAlign: "start", fontSize: '1.5rem' }}>Image</TableCell>
+                <TableCell style={{ textAlign: "start", fontSize: '1.5rem' }}>Name</TableCell>
+                <TableCell style={{ textAlign: "start", fontSize: '1.5rem' }}>Email</TableCell>
+                <TableCell style={{ textAlign: "start", fontSize: '1.5rem' }}>Website</TableCell>
+                <TableCell style={{ textAlign: "end", fontSize: '1.5rem' }}>Action</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
               {filteredUsers.map((manufacturer, index) => (
-                <tr key={index}>
-                  <td style={{ textAlign: "start" }}>{manufacturer.id}</td>
-                  <td style={{ textAlign: "start" }}>
-                    <img
-                      src={manufacturer.imageCloud.url}
-                      alt={manufacturer.name}
-                      width="50"
-                      style={{ objectFit: "cover" }} // Optional: Adjust image fit within the width
-                    />
-                  </td>
-                  <td style={{ textAlign: "start" }}>{manufacturer.name}</td>
-                  <td style={{ textAlign: "start" }}>{manufacturer.email}</td>
-                  <td style={{ textAlign: "start" }}>
-                    <a
-                      href={manufacturer.website}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      {manufacturer.website}
-                    </a>
-                  </td>
-
-                
-
-                  <td style={{ textAlign: "end" }}>
-                  <button
-                      className="status viewing mx-2"
-                      onClick={() =>
-                        setActiveComponent({
-                          name: "AdminViewManufacturer",
-                          props: { id: manufacturer.id },
-                        })
-                      }
-                    >
-                      View
-                    </button>
-
-
-                  <button
-                      className="status editing mx-2"
-                      onClick={() =>
-                        setActiveComponent({
-                          name: "AdminEditManufacturer",
-                          props: { id: manufacturer.id },
-                        })
-                      }
-                    >
-                      Edit
-                    </button>
-
-                    <button
-                      className="status deleting mx-2"
-                      onClick={() =>
-                        handleDelete(
-                          manufacturer.id,
-                          manufacturer.manufacturerName
-                        )
-                      }
-                    >
-                      Delete Manufacturer
-                    </button>
-                  </td>
-                </tr>
+                <TableRow key={index}>
+                  <TableCell style={{ textAlign: "start" , fontSize: '1.3rem'}}>{manufacturer.id}</TableCell>
+                  <TableCell style={{ textAlign: "start" , fontSize: '1.3rem'}}>
+                    <img src={manufacturer.imageCloud.url} alt={manufacturer.name} width="50" style={{ objectFit: "cover" }} />
+                  </TableCell>
+                  <TableCell style={{ textAlign: "start" , fontSize: '1.3rem'}}>{manufacturer.name}</TableCell>
+                  <TableCell style={{ textAlign: "start" , fontSize: '1.3rem'}}>{manufacturer.email}</TableCell>
+                  <TableCell style={{ textAlign: "start" , fontSize: '1.3rem'}}>
+                    <a href={manufacturer.website} target="_blank" rel="noopener noreferrer">{manufacturer.website}</a>
+                  </TableCell>
+                  <TableCell style={{ textAlign: "end" , fontSize: '1.3rem'}}>
+                    <Button variant="outlined" onClick={() => setActiveComponent({ name: "AdminViewManufacturer", props: { id: manufacturer.id } })}>View</Button>
+                    <Button variant="outlined" onClick={() => setActiveComponent({ name: "AdminEditManufacturer", props: { id: manufacturer.id } })}>Edit</Button>
+                    <Button variant="outlined" color="error" onClick={() => handleDelete(manufacturer.id, manufacturer.name)}>Delete Manufacturer</Button>
+                  </TableCell>
+                </TableRow>
               ))}
               {filteredUsers.length === 0 && (
-                <tr className="nouser">
-                  <td
-                    colSpan={5}
-                    className="inform"
-                    style={{ textAlign: "center", paddingTop: 100 }}
-                  >
+                <TableRow className="nouser">
+                  <TableCell colSpan={6} className="inform" style={{ textAlign: "center", paddingTop: 100 }}>
                     No manufacturer found
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               )}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Box>
+    </Box>
   );
 }
+
 export default AdminManufacturer;

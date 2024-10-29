@@ -36,7 +36,7 @@ function AdminViewCustomer({ id, setActiveComponent }) {
     const fetchCustomerData = async () => {
       try {
         const response = await getUserById(id)
-        const { fullname, mobile, email, password, addresses, dateofbirth } =
+        const { fullname: fullname,mobile: mobile, email: email,password: password,addresses: addresses,dateofbirth : dateofbirth } =
         response.data;
       setFullname(fullname);
       setMobile(mobile);
@@ -62,7 +62,7 @@ function AdminViewCustomer({ id, setActiveComponent }) {
           <Grid container spacing={2} justifyContent="center">
             <Grid item xs={12} md={4}>
               <Box display="flex" flexDirection="column" alignItems="center">
-                <Avatar sx={{ width: 100, height: 100 }}>
+                <Avatar sx={{ width: 100, height: 100 , borderRadius: 0}}>
                   <PersonIcon sx={{ fontSize: 50 }} />
                 </Avatar>
                 <Typography variant="h6" sx={{ mt: 2 }}>

@@ -1,14 +1,19 @@
 import axios from "axios";
-import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-
+import React, { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 import { FaGoogle } from "react-icons/fa";
 import { MdFacebook } from "react-icons/md";
 import { RxDiscordLogo } from "react-icons/rx";
+import { useDispatch, useSelector } from "react-redux";
+import { Link, useNavigate } from "react-router-dom";
+import { setUserLoggedIn } from "../../../services/redux/slices/userSlice";
+import { cartThunk } from "../../../services/redux/thunks/thunk";
 import PICTURE from "../../Assests/PICTURE";
 import "./LoginSignup.scss";
 const Login = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const cartItems = useSelector((state)=>state.cart.selectedCartItem);
   const [user, setUser] = useState({
     email: "",
     password: "",
@@ -42,44 +47,60 @@ const Login = () => {
   };
   
 
-
   const handleLogin = async (e) => {
-    e.preventDefault(); 
+    e.preventDefault();
     try {
-      // Post login credentials to the server
+      // Gửi thông tin đăng nhập đến server
       const response = await axios.post(
         "http://localhost:8080/api/v1/auth/signin",
         user
       );
-      console.log("Response data: ", response.data);
   
-      // Check if the server responded with a token
+      // Kiểm tra xem server có trả về token không
       if (response.data.token) {
-        // Store the token in local storage or manage it in a way suitable for your security requirements
-        localStorage.setItem("authToken", response.data.token);
-        localStorage.setItem("email", response.data.email);
-        alert("Welcome to our website!");
+        // Lưu token
+        const { token } = response.data;
+        localStorage.setItem("authToken", token);
+        
+        // Lấy thông tin người dùng với token
+        const userResponse = await axios.get("http://localhost:8080/api/v1/auth/me", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
   
-        // Check the role and navigate accordingly
-        const isAdmin = await GetRoleToken(response.data.token);
-        if (isAdmin) {
-          navigate("/websiteDoAn/AdminDashboard");
+        const userData = userResponse.data;
+  
+        // Dispatch setUserLoggedIn và lấy thông tin giỏ hàng
+        dispatch(setUserLoggedIn(userData));
+  
+        if (userData && userData.id) {
+           // Dispatch lấy giỏ hàng
+           await dispatch(cartThunk.getUserCart(userData.id)); // Đảm bảo await
+           console.log("selectedCartItem", cartItems); // Chờ cartItems cập nhật
         } else {
-          navigate("/websiteDoAn");
+          console.warn("User ID is undefined, cannot get cart.");
         }
+  
+        // Hiển thị thông báo thành công
+        toast.success("Welcome to our website!");
+  
+        // Kiểm tra xem người dùng có phải là Admin và điều hướng tương ứng
+        const isAdmin = userData.authorities.some(auth => auth.authority === "Admin");
+        navigate(isAdmin ? "/websiteDoAn/AdminDashboard" : "/websiteDoAn");
+  
       } else {
-        // Handle any case where login is unsuccessful but does not throw an error
-        alert(
-          response.data.message ||
-            "Invalid login credentials. Please try again."
-        );
+        // Xử lý trường hợp đăng nhập không thành công nhưng không báo lỗi
+        alert(response.data.message || "Invalid login credentials. Please try again.");
       }
     } catch (error) {
       console.error("Login failed, please check the email and password", error);
-      alert("Login failed due to technical issues. Please try again later.");
+      toast.error("Login failed due to technical issues. Please try again later.");
     }
   };
   
+  // Sử dụng useEffect để theo dõi sự thay đổi của cartItems
+useEffect(() => {
+  console.log("Updated cart items:", cartItems);
+}, [cartItems]);
 
   return (
     <div className="account-section">

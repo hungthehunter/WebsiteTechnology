@@ -1,5 +1,6 @@
 import { Add, Delete } from "@mui/icons-material";
 import {
+  Box,
   Button,
   FormControl,
   Grid,
@@ -8,7 +9,7 @@ import {
   MenuItem,
   Select,
   TextField,
-  Typography,
+  Typography
 } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import { getUserLoggedById, updateUser } from "../../../Serivce/ApiService";
@@ -144,11 +145,11 @@ function AdminEditCustomer({ id, setActiveComponent, showAlert }) {
 
     // Ensure addresses are not null
     const requestBody = {
-      fullname,
-      mobile,
-      email,
-      password,
-      status,
+      fullname:fullname,
+      mobile:mobile,
+      email:email,
+      password:password,
+      status: status,
       role: "User",
       dateofbirth: formatDate,
       decentralization: { id: decentralization },
@@ -168,12 +169,12 @@ function AdminEditCustomer({ id, setActiveComponent, showAlert }) {
   };
 
   return (
-    <div>
-      <div className="details_table details">
-        <div className="table recentOrders">
-          <div className="cardHeader">
+    <Box sx={{ padding: 4 }}>
+      <Box className="details_table">
+        <Box className="table recentOrders">
+          <Box className="cardHeader">
             <Typography variant="h4">Edit User Information</Typography>
-          </div>
+          </Box>
           <form onSubmit={handleSubmit} style={{ paddingTop: 15 }}>
             <Grid container spacing={2}>
               <Grid item xs={12}>
@@ -184,6 +185,16 @@ function AdminEditCustomer({ id, setActiveComponent, showAlert }) {
                   onChange={(e) => setFullName(e.target.value)}
                 />
               </Grid>
+
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="Email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+              </Grid>
+              
               <Grid item xs={12}>
                 <TextField
                   fullWidth
@@ -193,14 +204,7 @@ function AdminEditCustomer({ id, setActiveComponent, showAlert }) {
                   onChange={(e) => setMobile(e.target.value)}
                 />
               </Grid>
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  label="Email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-              </Grid>
+          
 
               <Grid item xs={12}>
                 <TextField
@@ -354,9 +358,9 @@ function AdminEditCustomer({ id, setActiveComponent, showAlert }) {
               </Grid>
             </Grid>
           </form>
-        </div>
-      </div>
-    </div>
+        </Box>
+      </Box>
+    </Box>
   );
 }
 

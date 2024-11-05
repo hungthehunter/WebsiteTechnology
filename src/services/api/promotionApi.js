@@ -1,31 +1,31 @@
 import shopAPI from "../axios/configAxios";
 
 const PROMOTION_ENDPOINTS = {
-    GET_ALL_REVIEW:"/promotions",
-    GET_REVIEW_BY_ID:"/promotions/:id",
-    CREATE_REVIEW:"/promotions",
-    UPDATE_REVIEW:"/promotions/:id",
-    DELETE_REVIEW:"/promotions/:id",
+    GET_ALL_PROMOTION:"/promotions",
+    GET_PROMOTION_BY_ID:"/promotions/:id",
+    CREATE_PROMOTION:"/promotions",
+    UPDATE_PROMOTION:"/promotions/:id",
+    DELETE_PROMOTION:"/promotions/:id",
 }
 
 
 const promotionApi = {
-getAllPromotion: async (loadingScreen=true) => {
-    const res = await shopAPI.get(PROMOTION_ENDPOINTS.GET_ALL_REVIEW);
+getAllPromotions: async (loadingScreen=true) => {
+    const res = await shopAPI.get(PROMOTION_ENDPOINTS.GET_ALL_PROMOTION);
     if(loadingScreen){
         await new  Promise((state)=>setTimeout(state,2000));
     }
     return res;
 },
 getPromotionById: async (id,LoadingScreen=true) => {
-    const res = await shopAPI.get(PROMOTION_ENDPOINTS.GET_REVIEW_BY_ID.replace(":id",id));
+    const res = await shopAPI.get(PROMOTION_ENDPOINTS.GET_PROMOTION_BY_ID.replace(":id",id));
     if(LoadingScreen){
         await new  Promise((state) => setTimeout(state,2000));
     }
     return res;
 },
 createPromotion: async (promotionData,LoadingScreen=true) => {
-    const res = await shopAPI.post(PROMOTION_ENDPOINTS.CREATE_REVIEW, promotionData ,
+    const res = await shopAPI.post(PROMOTION_ENDPOINTS.CREATE_PROMOTION, promotionData ,
         {
             header:{
             'Content-type':'application/json',
@@ -38,7 +38,7 @@ createPromotion: async (promotionData,LoadingScreen=true) => {
     return res;
 },
 updatePromotion: async (id,promotionData,LoadingScreen=true) => {
-    const res = await shopAPI.put(PROMOTION_ENDPOINTS.UPDATE_REVIEW.replace(":id",id), promotionData ,
+    const res = await shopAPI.put(PROMOTION_ENDPOINTS.UPDATE_PROMOTION.replace(":id",id), promotionData ,
 {
     headers:{
         'Content-Type':'application/json',
@@ -50,8 +50,8 @@ if(LoadingScreen){
 }
 return res;
 },
-deleteProduct: async(id,LoadingScreen) => {
-    const res = await shopAPI.delete(PROMOTION_ENDPOINTS.DELETE_REVIEW.replace(":id",id));
+deletePromotion: async(id,LoadingScreen) => {
+    const res = await shopAPI.delete(PROMOTION_ENDPOINTS.DELETE_PROMOTION.replace(":id",id));
     if(LoadingScreen){
         await new Promise((state)=>setTimeout(state,2000));
     }

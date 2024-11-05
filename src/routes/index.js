@@ -25,7 +25,6 @@ import {
 } from "../Component/Page/Admin/Admin Dashboard/Manufacturer.js";
 import AdminOrder from "../Component/Page/Admin/Admin Dashboard/Order.js";
 import AdminProduct from "../Component/Page/Admin/Admin Dashboard/Product.js";
-import AdminRole from "../Component/Page/Admin/Admin Dashboard/Role.js";
 import AdminStaff from "../Component/Page/Admin/Admin Dashboard/Staff.js";
 import AdminViewCategory from "../Component/Page/Admin/Admin Dashboard/ViewCategory.js";
 import AdminViewCustomer from "../Component/Page/Admin/Admin Dashboard/ViewCustomer.js";
@@ -155,12 +154,6 @@ const publicRoutes = [
   {
     path: "/websiteDoAn/EditAccess",
     component: AdminEditAccess,
-    layout: BodyOnly,
-  },
-
-  {
-    path: "/websiteDoAn/Role",
-    component: AdminRole,
     layout: BodyOnly,
   },
 

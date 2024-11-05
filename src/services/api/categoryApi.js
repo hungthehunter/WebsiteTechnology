@@ -17,6 +17,7 @@ const categoryApi = {
         return res;
     },
     getCategoryById: async (id, loadingScreen = true) => {
+        console.log(CATEGORY_ENDPOINTS.GET_CATEGORY_BY_ID.replace(":id", id));
         const res = await shopAPI.get(CATEGORY_ENDPOINTS.GET_CATEGORY_BY_ID.replace(":id", id));
         if (loadingScreen) {
             await new Promise((state) => setTimeout(state, 2000));
@@ -26,7 +27,7 @@ const categoryApi = {
     createCategory: async (categoryData, loadingScreen = true) => {
         const res = await shopAPI.post(CATEGORY_ENDPOINTS.CREATE_CATEGORY, categoryData, {
             headers: {
-                'Content-Type': 'application/json',
+                'Content-Type': 'multipart/form-data'
             }
         });
         if (loadingScreen) {
@@ -37,7 +38,7 @@ const categoryApi = {
     updateCategory: async (id, categoryData, loadingScreen = true) => {
         const res = await shopAPI.put(CATEGORY_ENDPOINTS.UPDATE_CATEGORY.replace(":id", id), categoryData, {
             headers: {
-                'Content-Type': 'application/json',
+                'Content-Type': 'multipart/form-data'
             }
         });
         if (loadingScreen) {

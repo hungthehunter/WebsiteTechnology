@@ -15,6 +15,12 @@ const accessSlice = createSlice({
         clearSelectedAccessId: (state) => {
             state.selectedAccess = null;
         },
+        removeAccessFromList: (state, action) => {
+            state.listAccess = state.listAccess.filter(access => access.id !== action.payload);
+        },
+        addToAccess: (state , action) => {
+            state.listAccess.push(action.payload);
+        }
     },
     extraReducers: (builder) => {
         // getAllAccess
@@ -105,5 +111,5 @@ const accessSlice = createSlice({
     },
 });
 
-export const { clearSelectedAccessId } = accessSlice.actions;
+export const { clearSelectedAccessId ,removeAccessFromList , addToAccess } = accessSlice.actions;
 export default accessSlice.reducer;

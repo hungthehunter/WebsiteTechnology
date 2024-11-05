@@ -9,23 +9,20 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import React, { useEffect, useState } from "react";
-import { createCategory, getAllProduct, getAllPromotion } from "../../../Serivce/ApiService";
+import React, { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { categoryThunk } from "../../../../services/redux/thunks/thunk";
 import "./assets/css/style.scss";
 
 function AdminAddCategory({ setActiveComponent, showAlert }) {
   const [categoryName, setCategoryName] = useState("");
-  const [selectedPromotions, setSelectedPromotions] = useState(null); // Single promotion
-  const [promotions, setPromotions] = useState([]);
-  const [products, setProducts] = useState([]);
+  const dispatch = useDispatch();
+  const [selectedPromotions, setSelectedPromotions] = useState(null); 
   const [description, setDescription] = useState("");
-  const [imageFile, setImageFile] = useState(null); // For image file
-  const [selectedProduct, setSelectedProduct] = useState(null); // Single product
-
-  useEffect(() => {
-    getAllProducts();
-    getAllPromotions();
-  }, []);
+  const [imageFile, setImageFile] = useState(null); 
+  const [selectedProduct, setSelectedProduct] = useState([]); 
+  const listProduct = useSelector((state) => state.product.listProduct);
+  const listPromotion = useSelector((state) => state.promotion.listPromotion);
 
   const handleCategoryChange = (e) => {
     setCategoryName(e.target.value);
@@ -54,7 +51,7 @@ function AdminAddCategory({ setActiveComponent, showAlert }) {
     const categoryDTO = {
       name: categoryName,
       description: description,
-      products: selectedProduct ? [selectedProduct] : [], // Ensure it's an array
+      products: selectedProduct.map(id => ({ id })), // Ensure it's an array
       promotion: selectedPromotions ? { id: selectedPromotions } : null, // Ensure it's an object
     };
 
@@ -70,38 +67,16 @@ function AdminAddCategory({ setActiveComponent, showAlert }) {
     }
 
     try {
-      const response = await createCategory(formData);
-      if (response.status === 200) {
+         dispatch(categoryThunk.createCategory(formData));
         showAlert("Category added successfully.", "success");
         setActiveComponent({ name: "AdminCategory" });
-      }
+      
     } catch (error) {
       console.error("Error adding new category:", error);
       showAlert("Failed to add category.", "error");
     }
   };
 
-  /*------------------------------ Database functions ------------------------------------*/
-
-  // GET: Function to get list of products
-  const getAllProducts = async () => {
-    try {
-      const response = await getAllProduct();
-      setProducts(response.data);
-    } catch (error) {
-      console.error("Failed to get list of products:", error);
-    }
-  };
-
-  // GET: Function to get list of promotions
-  const getAllPromotions = async () => {
-    try {
-      const response = await getAllPromotion();
-      setPromotions(response.data);
-    } catch (error) {
-      console.error("Failed to get list of promotions:", error);
-    }
-  };
 
   return (
     <Box sx={{ padding: 4 }}>
@@ -135,10 +110,11 @@ function AdminAddCategory({ setActiveComponent, showAlert }) {
             value={selectedProduct}
             onChange={handleProductChange}
             label="Select Product"
+            multiple
           >
             <MenuItem value={null}>None</MenuItem>
-            {products.length > 0 ? (
-              products.map((product) => (
+            {listProduct.length > 0 ? (
+              listProduct.map((product) => (
                 <MenuItem key={product.id} value={product.id}>
                   {product.productName}
                 </MenuItem>
@@ -161,8 +137,8 @@ function AdminAddCategory({ setActiveComponent, showAlert }) {
             label="Select Promotion"
           >
             <MenuItem value={null}>None</MenuItem>
-            {promotions.length > 0 ? (
-              promotions.map((promotion) => (
+            {listPromotion.length > 0 ? (
+              listPromotion.map((promotion) => (
                 <MenuItem key={promotion.id} value={promotion.id}>
                   {promotion.name}
                 </MenuItem>

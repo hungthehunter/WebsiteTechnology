@@ -13,8 +13,10 @@ import {
 } from "ionicons/icons";
 import React, { useEffect, useState } from "react";
 import { BsNvidia } from "react-icons/bs";
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import { getUserLogged } from "../../../Serivce/ApiService";
+import { useDispatch, useSelector } from "react-redux";
+import { Link, useNavigate } from "react-router-dom";
+import { clearUserCart } from "../../../../services/redux/slices/cartSlice";
+import { clearUserLoggedIn } from "../../../../services/redux/slices/userSlice";
 
 const SidebarAdmin = ({
   activeIndex,
@@ -24,62 +26,47 @@ const SidebarAdmin = ({
 }) => {
   /*------- Page function -------*/
 
-  const [email, setEmail] = useState("");
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userFunctions, setUserFunctions] = useState([]);
+  const dispatch = useDispatch();
+
+  const userCurrentLogged = useSelector((state) => state.user.userCurrentLogged);
   const navigate = useNavigate();
 
   const functionMap = {
-    // New
-    /* Customer */
+    // Mapping function names to components
     "View Customer List": "AdminCustomer",
     "Create Customer": "AdminAddCustomer",
     "Edit Customer": "AdminEditCustomer",
     "Delete Customer": "AdminDeleteCustomer",
-
-    /* Product */
     "View Product List": "AdminProduct",
     "Create Product": "AdminAddProduct",
     "Edit Product": "AdminEditProduct",
     "Delete Product": "AdminDeleteProduct",
-
-    /* Access */
     "View Access List": "AdminAccess",
     "Create Access": "AdminAddAccess",
     "Edit Access": "AdminEditAccess",
     "Delete Access": "AdminDeleteAccess",
-
-    /* Staff */
     "View Staff List": "AdminStaff",
     "Create Staff": "AdminAddStaff",
     "Edit Staff": "AdminEditStaff",
     "Delete Staff": "AdminDeleteStaff",
-
-    /* Order */
     "View Order List": "AdminOrder",
     "Create Order": "AdminAddOrder",
     "Edit Order": "AdminEditOrder",
     "Delete Order": "AdminDeleteOrder", 
-
-    /* Manufacturer */
     "View Manufacturer List": "AdminManufacturer",
     "Create Manufacturer": "AdminAddManufacturer",
     "Edit Manufacturer": "AdminEditManufacturer",
     "Delete Manufacturer": "AdminDeleteManufacturer",
-
-    /* Category */
     "View Category List": "AdminCategory",
     "Create Category": "AdminAddCategory",
     "Edit Category": "AdminEditCategory",
     "Delete Category": "AdminDeleteCategory",  
-
-    /* Dash board and Chart */
     "View Dashboard": "AdminDashboard",
-    "View Chart":"AdminChart"
-    
+    "View Chart": "AdminChart",
   };
 
-  // Define sidebar items with mapping to components
+  // Sidebar items with links and components
   const sidebarItems = [
     {
       icon: statsChartOutline,
@@ -137,40 +124,21 @@ const SidebarAdmin = ({
     },
   ];
 
-  /* Login out */
-
-  const handleLoginLogout = () => {
-    if (isLoggedIn) {
-      localStorage.removeItem("authToken");
-      localStorage.removeItem("userEmail"); // Remove the email from local storage
-      setIsLoggedIn(false);
-      setEmail(""); // Clear the email
-      navigate("/websiteDoAn/Login"); // Navigate to login after logout
-    } else {
-      navigate("/websiteDoAn/Login");
-    }
-  };
-
-  // Get User by Id
-  const location = useLocation();
-  const [userId, getUserId] = useState({});
+  // Populate user functions based on decentralization data
   useEffect(() => {
-    const token = localStorage.getItem("authToken");
-    GetUserAccount(token);
-  }, [location]);
-
-  const GetUserAccount = async (token) => {
-    try {
-      const result = await getUserLogged(token)
-      getUserId(result.data);
-      setUserFunctions(
-        result.data.decentralization.functionIds.map(
-          (func) => func.functionName
-        )
+    if (userCurrentLogged && userCurrentLogged.decentralization) {
+      const functions = userCurrentLogged.decentralization.functionIds.map(
+        (func) => func.functionName
       );
-    } catch (error) {
-      console.error("Failed to load User:", error);
+      setUserFunctions(functions);
     }
+  }, [userCurrentLogged]);
+
+  const handleLoginLogout  = () => {
+    dispatch(clearUserLoggedIn());
+    dispatch(clearUserCart());
+    localStorage.removeItem("authToken");
+    navigate("/websiteDoAn/Login");
   };
 
   // Filter sidebar items based on user functions
@@ -181,6 +149,8 @@ const SidebarAdmin = ({
       )
     )
   );
+
+  console.log("đây là filteredSidebarItems",filteredSidebarItems)
 
   return (
     <div className={`navigation ${menuActive ? "active" : ""}`}>
@@ -201,7 +171,7 @@ const SidebarAdmin = ({
             onMouseOver={() => handleMouseOver(index)}
           >
             <a
-              href="#"
+              to={item.link}
               onClick={() => setActiveComponent({ name: item.component })}
             >
               <span className="icon">

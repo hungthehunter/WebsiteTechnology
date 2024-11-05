@@ -1,59 +1,55 @@
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from '@mui/material';
-import axios from "axios";
-import * as React from 'react';
-import { useEffect, useState } from "react";
-import { createAddress, getUserLogged } from '../../Serivce/ApiService';
+import {
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  TextField,
+  Typography,
+} from "@mui/material";
+import React, { useEffect, useState } from "react";
+import toast from "react-hot-toast";
+import { useDispatch, useSelector } from "react-redux";
+import { addressThunk } from "../../../services/redux/thunks/thunk";
 import "./css/style.scss";
 
 const AccountAddress = ({ setActiveComponent }) => {
-  /*------- Page function -------*/
-  /*------- User database -------*/
-
-  const [address, setAddress] = useState([]);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userId, setUserId] = useState(null);
-
   const [openView, setOpenView] = useState(false);
   const [openAdd, setOpenAdd] = useState(false);
   const [selectedAddress, setSelectedAddress] = useState(null);
   const [newAddress, setNewAddress] = useState({
-    street: '',
-    houseNumber: '',
-    ward: '',
-    district: '',
-    city: '',
-    country: '',
-    user: {
-      id: null
-    }
+    houseNumber: "",
+    street: "",
+    ward: "",
+    district: "",
+    city: "",
+    country: "",
+    status: true,
+    user: { id: null },
   });
 
-  useEffect(() => {
-    const token = localStorage.getItem("authToken");
-    setIsLoggedIn(!!token);
-    if (token) {
-      GetUserAccount(token);
-    }
-  }, [])
+  const dispatch = useDispatch();
+  const userCurrentLogged = useSelector((state) => state.user.userCurrentLogged);
+  const listAddress = useSelector((state) =>
+    state?.address?.listAddress?.filter((addr) => addr.user?.id 
+  === userCurrentLogged?.id && addr?.status)
+  );
 
   useEffect(() => {
-    setNewAddress((prevState) => ({
-      ...prevState,
-      user: {
-        id: userId
-      }
-    }));
-  }, [userId]);
-
-  const GetUserAccount = async (token) => {
-    try {
-      const result = await getUserLogged(token);
-      setAddress(result.data.addresses);
-      setUserId(result.data.id); // Lưu trữ userId
-    } catch (error) {
-      console.error("Failed to load Email:", error);
+    if (userCurrentLogged) {
+      setNewAddress((prevState) => ({
+        ...prevState,
+        user: { id: userCurrentLogged.id },
+      }));
     }
-  };
+  }, [userCurrentLogged]);
 
   const handleClickOpenView = (address) => {
     setSelectedAddress(address);
@@ -65,132 +61,103 @@ const AccountAddress = ({ setActiveComponent }) => {
     setSelectedAddress(null);
   };
 
-  const handleClickOpenAdd = () => {
-    setOpenAdd(true);
-  };
+  const handleClickOpenAdd = () => setOpenAdd(true);
 
   const handleCloseAdd = () => {
     setOpenAdd(false);
     setNewAddress({
-      street: '',
-      houseNumber: '',
-      ward: '',
-      district: '',
-      city: '',
-      country: '',
-      user: {
-        id: userId
-      }
+      houseNumber: "",
+      street: "",
+      ward: "",
+      district: "",
+      city: "",
+      country: "",
+      status: true,
+      user: { id: userCurrentLogged?.id },
     });
   };
 
   const handleInputChange = (event) => {
     const { name, value } = event.target;
-    setNewAddress({
-      ...newAddress,
-      [name]: value
-    });
+    setNewAddress((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleAddAddress = async (newAddress) => {
-    const token = localStorage.getItem("authToken");
+  const handleAddAddress = async () => {
     try {
-      const result = await createAddress(newAddress)
-      GetUserAccount(token);
+       await dispatch(addressThunk.createAddress(newAddress)).unwrap();
+      dispatch(addressThunk.getAllAddresses());
+      toast.success("Địa chỉ đã được thêm thành công");
     } catch (error) {
       console.error("Failed to add address:", error);
     }
-    console.log(newAddress);
     handleCloseAdd();
   };
 
-  const handleDelete = async(id)=>{
-    
-      try {
-        const result = await axios.delete(
-          `http://localhost:8080/api/address/${id}`,
-          newAddress,
-        );
-        alert("đã xóa thành công");
-        setAddress((prevAddresses) => prevAddresses.filter(address => address.id !== id)); // Remove the deleted address from the state
-      } catch (error) {
-        console.error("Failed to add address:", error);
-      }
+  const handleDelete = async (id) => {
+    try {
+      await dispatch(addressThunk.deleteAddress(id));
+      dispatch(addressThunk.getAllAddresses());
+      toast.success("Đã xóa thành công");
+    } catch (error) {
+      console.error("Failed to delete address:", error);
     }
+  };
 
   return (
-    <div>
-      {/* ================ Order Details List ================= */}
-      <div className="details_table details">
-        <div className="table recentOrders">
-          <div className="cardHeader">
-            <h2>Address Detail</h2>
-            <button
-              className="btn"
-              onClick={handleClickOpenAdd}
-            >
-              + Add new Address
-            </button>
-          </div>
-          <table>
-            <thead>
-              <tr>
-                <th scope="col" style={{ textAlign: "start" }}>
-                  Id
-                </th>
-                <th scope="col" style={{ textAlign: "start" }}>
-                  Street
-                </th>
-                <th scope="col" style={{ textAlign: "end" }}>
-                  House Number
-                </th>
-                <th scope="col" style={{ textAlign: "end" }}>
-                  Ward
-                </th>
-                <th scope="col" style={{ textAlign: "end" }}>
-                  District
-                </th>
-                <th scope="col" style={{ textAlign: "end" }}>
-                  City
-                </th>
-                <th scope="col" style={{ textAlign: "end" }}>
-                  Country
-                </th>
-                <th scope="col" style={{ textAlign: "end" }}>
-                  Action
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {address.map((product, index) => (
-                <tr key={index}>
-                  <td style={{ textAlign: "start" }}>{product.id}</td>
-                  <td style={{ textAlign: "start" }}>{product.street}</td>
-                  <td style={{ textAlign: "end" }}>{product.houseNumber}</td>
-                  <td style={{ textAlign: "end" }}>{product.ward}</td>
-                  <td style={{ textAlign: "end" }}>{product.district}</td>
-                  <td style={{ textAlign: "end" }}>{product.city}</td>
-                  <td style={{ textAlign: "end" }}>{product.country}</td>
-                  <td style={{ textAlign: "end" }}>
-                    <button
-                      className="status viewing mx-2"
-                      onClick={() => handleClickOpenView(product)}
-                    >
-                      View
-                    </button>
-                
-                    <button
-                      className="status deleting mx-2"
-                      onClick={() => handleDelete(product.id)}
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+    <div className="details_table details">
+      <div className="table recentOrders">
+        <div className="cardHeader">
+          <Typography variant="h5">Address Detail</Typography>
+          <Button variant="contained" color="primary" onClick={handleClickOpenAdd}>
+            + Add new Address
+          </Button>
         </div>
+        <TableContainer component={Paper}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                {["Id", "Street", "House Number", "Ward", "District", "City", "Country", "Action"].map((header) => (
+                  <TableCell key={header} align="left">{header}</TableCell>
+                ))}
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {listAddress.length > 0 ? (
+                listAddress.map((addr) => (
+                  <TableRow key={addr.id}>
+                    <TableCell>{addr.id}</TableCell>
+                    <TableCell>{addr.street}</TableCell>
+                    <TableCell>{addr.houseNumber}</TableCell>
+                    <TableCell>{addr.ward}</TableCell>
+                    <TableCell>{addr.district}</TableCell>
+                    <TableCell>{addr.city}</TableCell>
+                    <TableCell>{addr.country}</TableCell>
+                    <TableCell>
+                      <Button
+                        variant="outlined"
+                        color="primary"
+                        onClick={() => handleClickOpenView(addr)}
+                      >
+                        View
+                      </Button>
+                      <Button
+                        variant="outlined"
+                        color="error"
+                        onClick={() => handleDelete(addr.id)}
+                      >
+                        Delete
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={8} align="center">No address found</TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
       </div>
 
       <Dialog open={openView} onClose={handleCloseView}>
@@ -198,171 +165,44 @@ const AccountAddress = ({ setActiveComponent }) => {
         <DialogContent>
           {selectedAddress && (
             <>
-              <TextField
-                autoFocus
-                margin="dense"
-                id="street"
-                label="Street"
-                type="text"
-                fullWidth
-                variant="outlined"
-                value={selectedAddress.street}
-                InputProps={{
-                  readOnly: true,
-                }}
-              />
-              <TextField
-                margin="dense"
-                id="houseNumber"
-                label="House Number"
-                type="text"
-                fullWidth
-                variant="outlined"
-                value={selectedAddress.houseNumber}
-                InputProps={{
-                  readOnly: true,
-                }}
-              />
-              <TextField
-                margin="dense"
-                id="ward"
-                label="Ward"
-                type="text"
-                fullWidth
-                variant="outlined"
-                value={selectedAddress.ward}
-                InputProps={{
-                  readOnly: true,
-                }}
-              />
-              <TextField
-                margin="dense"
-                id="district"
-                label="District"
-                type="text"
-                fullWidth
-                variant="outlined"
-                value={selectedAddress.district}
-                InputProps={{
-                  readOnly: true,
-                }}
-              />
-              <TextField
-                margin="dense"
-                id="city"
-                label="City"
-                type="text"
-                fullWidth
-                variant="outlined"
-                value={selectedAddress.city}
-                InputProps={{
-                  readOnly: true,
-                }}
-              />
-              <TextField
-                margin="dense"
-                id="country"
-                label="Country"
-                type="text"
-                fullWidth
-                variant="outlined"
-                value={selectedAddress.country}
-                InputProps={{
-                  readOnly: true,
-                }}
-              />
+              {["street", "houseNumber", "ward", "district", "city", "country"].map((field) => (
+                <TextField
+                  key={field}
+                  label={field.charAt(0).toUpperCase() + field.slice(1)}
+                  fullWidth
+                  value={selectedAddress[field]}
+                  InputProps={{ readOnly: true }}
+                />
+              ))}
             </>
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseView} color="primary">
-            Close
-          </Button>
+          <Button onClick={handleCloseView}>Close</Button>
         </DialogActions>
       </Dialog>
 
       <Dialog open={openAdd} onClose={handleCloseAdd}>
         <DialogTitle>Add New Address</DialogTitle>
         <DialogContent>
-          <TextField
-            autoFocus
-            margin="dense"
-            id="street"
-            label="Street"
-            type="text"
-            fullWidth
-            variant="outlined"
-            name="street"
-            value={newAddress.street}
-            onChange={handleInputChange}
-          />
-          <TextField
-            margin="dense"
-            id="houseNumber"
-            label="House Number"
-            type="text"
-            fullWidth
-            variant="outlined"
-            name="houseNumber"
-            value={newAddress.houseNumber}
-            onChange={handleInputChange}
-          />
-          <TextField
-            margin="dense"
-            id="ward"
-            label="Ward"
-            type="text"
-            fullWidth
-            variant="outlined"
-            name="ward"
-            value={newAddress.ward}
-            onChange={handleInputChange}
-          />
-          <TextField
-            margin="dense"
-            id="district"
-            label="District"
-            type="text"
-            fullWidth
-            variant="outlined"
-            name="district"
-            value={newAddress.district}
-            onChange={handleInputChange}
-          />
-          <TextField
-            margin="dense"
-            id="city"
-            label="City"
-            type="text"
-            fullWidth
-            variant="outlined"
-            name="city"
-            value={newAddress.city}
-            onChange={handleInputChange}
-          />
-          <TextField
-            margin="dense"
-            id="country"
-            label="Country"
-            type="text"
-            fullWidth
-            variant="outlined"
-            name="country"
-            value={newAddress.country}
-            onChange={handleInputChange}
-          />
+          {["houseNumber", "street", "ward", "district", "city", "country"].map((field) => (
+            <TextField
+              key={field}
+              name={field}
+              label={field.charAt(0).toUpperCase() + field.slice(1)}
+              fullWidth
+              value={newAddress[field]}
+              onChange={handleInputChange}
+            />
+          ))}
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseAdd} color="primary">
-            Cancel
-          </Button>
-          <Button onClick={handleAddAddress} color="primary">
-            Add
-          </Button>
+          <Button onClick={handleCloseAdd}>Cancel</Button>
+          <Button onClick={handleAddAddress}>Add</Button>
         </DialogActions>
       </Dialog>
     </div>
   );
-}
+};
 
 export default AccountAddress;

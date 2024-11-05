@@ -15,19 +15,20 @@ const decentralizationSlice = createSlice({
         clearSelectedDecentralizationId: (state) => {
             state.selectedDecentralization = null;
         },
+
     },
     extraReducers: (builder) => {
         // getAllDecentralizations
         builder
-            .addCase(decentralizationThunk.getAllDecentralizations.pending, (state) => {
+            .addCase(decentralizationThunk.getAllDecentralization.pending, (state) => {
                 state.isLoading = true;
             })
-            .addCase(decentralizationThunk.getAllDecentralizations.fulfilled, (state, action) => {
+            .addCase(decentralizationThunk.getAllDecentralization.fulfilled, (state, action) => {
                 state.isLoading = false;
                 state.isError = false;
                 state.listDecentralization = action.payload;
             })
-            .addCase(decentralizationThunk.getAllDecentralizations.rejected, (state) => {
+            .addCase(decentralizationThunk.getAllDecentralization.rejected, (state) => {
                 state.isLoading = false;
                 state.isError = true;
             });
@@ -105,5 +106,5 @@ const decentralizationSlice = createSlice({
     },
 });
 
-export const { clearSelectedDecentralizationId } = decentralizationSlice.actions;
+export const { clearSelectedDecentralizationId} = decentralizationSlice.actions;
 export default decentralizationSlice.reducer;

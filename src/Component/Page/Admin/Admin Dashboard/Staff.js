@@ -1,67 +1,21 @@
 import { Box, Button, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material';
-import axios from "axios";
-import { useEffect, useState } from "react";
-import { getEmployees } from "../../../Serivce/ApiService";
+import { useDispatch, useSelector } from 'react-redux';
+import { userThunk } from '../../../../services/redux/thunks/thunk';
 import "./assets/css/style.scss";
 function AdminStaff({ setActiveComponent ,showAlert}) {
   /*------- Page function -------*/
-  const [activeIndex, setActiveIndex] = useState(null);
-  const [menuActive, setMenuActive] = useState(false);
+const listUser = useSelector((state) => state.user.listUser);
+ const dispatch = useDispatch();
 
-  const handleMouseOver = (index) => {
-    setActiveIndex(index);
-  };
-
-  const toggleMenu = () => {
-    setMenuActive(prev => !prev); // Correctly toggle the state
-  };
-  
-  // Customer: Load List of Users when component mounts
-
-  useEffect(() => {
-    loadUsers();
-  }, []);
-
-  // Customer: Handle search bar
-
-  const handleInputSearch = (event) => {
-    const searchTerm = event.target.value;
-    setSearchTerm(searchTerm);
-    const filteredUsers = users.filter((user) =>
-      user.username.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-    setFilteredUsers(filteredUsers);
-  };
-
-  /*------- Database function -------*/
-  // Set element User
-
-  const [users, setUsers] = useState([]);
-  const [filteredUsers, setFilteredUsers] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
-
-  // GET: Get User by id from Database
-
-  const loadUsers = async () => {
-    try {
-      const result = await getEmployees();
-    
-    // Filter users where role is 'Admin'
-    const filteredUsers = result.data.filter(user => user.role !== "Admin");
-    
-    setUsers(filteredUsers);
-    } catch (error) {
-      console.error("Failed to load users:", error);
-    }
-  };
 
   // DELETE: Delete User by id from Database
   const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this image?")) {
       try {
-        await axios.delete(`http://localhost:8080/api/v1/admin/${id}`);
+        
+        await dispatch(userThunk.deleteUser(id));
+        await dispatch(userThunk.getAllUsers());
         showAlert("Delete staff successfully.","success")
-        loadUsers();
       } catch (error) {
         showAlert("Failed to delete staff successfully.","error")
         console.error("Error deleting image:", error);
@@ -106,7 +60,7 @@ function AdminStaff({ setActiveComponent ,showAlert}) {
               </TableRow>
             </TableHead>
             <TableBody>
-              {users.map((user, index) => (
+              {listUser.map((user, index) => (
                 <TableRow key={index}>
                   <TableCell style={{ textAlign: "start", fontSize: '1.3rem' }}>{user.id}</TableCell>
                   <TableCell style={{ textAlign: "start", fontSize: '1.3rem' }}>{user.fullname}</TableCell>

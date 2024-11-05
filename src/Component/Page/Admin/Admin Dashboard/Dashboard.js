@@ -18,9 +18,8 @@ import {
   eyeOutline,
   personCircleOutline,
 } from "ionicons/icons";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useSelector } from "react-redux";
-import { getAllOrder, getAllUser } from "../../../Serivce/ApiService";
 import "./assets/css/style.scss";
 
 function AdminDashboard() {
@@ -30,9 +29,6 @@ function AdminDashboard() {
   const [activeComponent, setActiveComponent] = useState("defaultComponent");
   const listUser = useSelector((state) => state.user.listUser);
   const listOrder = useSelector((state) => state.order.listOrder);
-  const handleMouseOver = (index) => {
-    setActiveIndex(index);
-  };
   const formatOrderStatus = (status) => {
     // Tách trước chữ hoa và thêm khoảng trắng
     return status.replace(/([a-z])([A-Z])/g, "$1 $2");
@@ -42,50 +38,7 @@ function AdminDashboard() {
     setMenuActive(!menuActive);
   };
 
-  // Dashboard: Load List of User when component mounts
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  // Dashboard: Handle search bar
-
-  const handleInputSearch = (event) => {
-    const searchTerm = event.target.value;
-    setSearchTerm(searchTerm);
-    const filteredUsers = users.filter(
-      (user) =>
-        user.username &&
-        user.username.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-    setFilteredUsers(filteredUsers);
-  };
-
-  /*------- Database function -------*/
-  // Set element User
-
-  const [users, setUsers] = useState([]);
-  const [filteredUsers, setFilteredUsers] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
-
-  // Set element Order
-  const [orders, setOrders] = useState([]);
-
-  // GET: List of User from Database And List of Order from Database
-  const fetchData = async () => {
-    try {
-      const usersResult = await getAllUser();
-      const ordersResult = await getAllOrder();
-
-      setUsers(usersResult.data);
-      setFilteredUsers(usersResult.data);
-
-      // If orders include nested objects for product and order status, we assume they are already resolved
-      setOrders(ordersResult.data);
-    } catch (error) {
-      console.error("Failed to load data:", error);
-    }
-  };
 
   return (
     <Box sx={{ padding: 4 }}>

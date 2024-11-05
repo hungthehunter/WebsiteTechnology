@@ -11,18 +11,20 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import axios from "axios";
+import CircularProgress from "@mui/material/CircularProgress";
 import React, { useEffect, useState } from "react";
-import { getAllDecentralization, getUserById } from "../../../Serivce/ApiService";
+import { useDispatch, useSelector } from "react-redux";
+import { clearSelectedUserId } from "../../../../services/redux/slices/userSlice";
+import { userThunk } from "../../../../services/redux/thunks/thunk";
 import "./assets/css/style.scss";
 
-function AdminEditStaff({ id, setActiveComponent ,showAlert }) {
+function AdminEditStaff({ id, setActiveComponent, showAlert }) {
   const [fullname, setFullName] = useState("");
   const [mobile, setMobile] = useState("");
   const [email, setEmail] = useState("");
+  const [role, setRole] = useState("");
   const [status, setStatus] = useState("true");
   const [dateOfBirth, setDateOfBirth] = useState("");
-  const [decentralization, setDecentralization] = useState("");
   const [addresses, setAddresses] = useState([
     {
       houseNumber: "",
@@ -36,58 +38,30 @@ function AdminEditStaff({ id, setActiveComponent ,showAlert }) {
       },
     },
   ]);
-  const [password, setPassword] = useState(""); // Keep password handling simple
+  const listAccess = useSelector((state) => state.access.listAccess); // Lấy danh sách vai trò từ Redux
+  const dispatch = useDispatch();
 
-  // Fetch decentralizations
-  const [decentralizations, setDecentralizations] = useState([]);
-  const getDecentralizations = async () => {
-    try {
-      const response = await getAllDecentralization();
-      setDecentralizations(response.data);
-    } catch (error) {
-      console.error("Error fetching decentralizations:", error);
+  // Lấy thông tin nhân viên theo ID
+  useEffect(() => {
+    dispatch(userThunk.getUserById(id));
+  }, [dispatch, id]);
+
+  // Lấy thông tin nhân viên đã chọn
+  const selectedUser = useSelector((state) => state.user.selectedUser);
+  const isLoading = useSelector((state) => state.user.isLoading);
+
+  // Cập nhật trạng thái khi selectedUser thay đổi
+  useEffect(() => {
+    if (selectedUser) {
+      setFullName(selectedUser.fullname || "");
+      setMobile(selectedUser.mobile || "");
+      setEmail(selectedUser.email || "");
+      setStatus(selectedUser.status ? "true" : "false");
+      setDateOfBirth(selectedUser.dateofbirth || "");
+      setRole(selectedUser.role || ""); // Cập nhật vai trò
+      setAddresses(selectedUser.addresses || []); // Cập nhật danh sách địa chỉ
     }
-  };
-
-  useEffect(() => {
-    getDecentralizations();
-  }, []);
-
-  useEffect(() => {
-    const fetchCustomerData = async () => {
-      try {
-        const response = await getUserById(id);
-        const { fullname, mobile, email, password, addresses, dateofbirth } =
-          response.data;
-        setFullName(fullname);
-        setMobile(mobile);
-        setEmail(email);
-        const FormatDateOfBirth=dateofbirth.toISOString().split("T")[0]
-        setDateOfBirth(FormatDateOfBirth);
-        setAddresses(
-          addresses && addresses.length > 0
-            ? addresses
-            : [
-                {
-                  houseNumber: "",
-                  street: "",
-                  ward: "",
-                  district: "",
-                  city: "",
-                  country: "",
-                  user: {
-                    id: id,
-                  },
-                },
-              ]
-        );
-        setPassword();
-      } catch (error) {
-        console.error("Failed to fetch user data:", error);
-      }
-    };
-    fetchCustomerData();
-  }, [id]);
+  }, [selectedUser]);
 
   const handleAddressChange = (index, event) => {
     const { name, value } = event.target;
@@ -135,47 +109,66 @@ function AdminEditStaff({ id, setActiveComponent ,showAlert }) {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    const formatDate = dateOfBirth instanceof Date ? dateOfBirth.toISOString().split("T")[0] : dateOfBirth;
+    const FormatDateOfBirth = new Date(dateOfBirth);
+    const formatDate = FormatDateOfBirth.toISOString().split("T")[0];
 
     if (!validateAddresses()) {
       alert("Please fill out all address fields.");
       return;
     }
 
-    // Ensure addresses are not null
     const requestBody = {
-      fullname,
-      mobile,
-      email,
-      password,
-      status,
+      fullname: fullname,
+      mobile: mobile,
+      email: email,
+      status: status,
       role: "Employee",
       dateofbirth: formatDate,
-      decentralization: { id: decentralization },
-      addresses: addresses , // Default to empty array if null
+      addresses: addresses || [],
     };
-console.log("Edit Staff submitting:",requestBody)
+
     try {
-      await axios.put(`http://localhost:8080/api/v1/admin/${id}`, requestBody, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-      showAlert("Edit staff successfully.","success");
-      setTimeout(()=>setActiveComponent({ name: "AdminStaff" }),1000)
+      await dispatch(userThunk.updateUser({ id: selectedUser.id, userData: requestBody }));
+      showAlert("Edit staff successfully.", "success");
+      dispatch(clearSelectedUserId());
+      setTimeout(() => setActiveComponent({ name: "AdminStaff" }), 1000);
     } catch (error) {
-      showAlert("Failed to edit user.","error");
+      console.error("Error editing user:", error);
+      showAlert("Failed to edit staff.", "error");
     }
   };
+
+  if (isLoading) {
+    return (
+      <Box sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100vh',
+        width: '100vw',
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        backgroundColor: 'black',
+        zIndex: 9999
+      }}>
+        <CircularProgress size={60} thickness={4} sx={{ color: '#4CAF50' }} />
+        <Typography variant="h6" sx={{ mt: 2, color: '#4CAF50' }}>
+          PLEASE WAIT...
+        </Typography>
+      </Box>
+    );
+  }
 
   return (
     <Box sx={{ padding: 4 }}>
       <Box className="details_table">
         <Box className="table recentOrders">
-          <Typography variant="h4" sx={{ marginBottom: 2 }}>
-            Edit User Information
-          </Typography>
-          <form onSubmit={handleSubmit}>
+          <Box className="cardHeader">
+            <Typography variant="h4">Edit Staff Information</Typography>
+          </Box>
+          <form onSubmit={handleSubmit} style={{ paddingTop: 15 }}>
             <Grid container spacing={2}>
               <Grid item xs={12}>
                 <TextField
@@ -185,6 +178,16 @@ console.log("Edit Staff submitting:",requestBody)
                   onChange={(e) => setFullName(e.target.value)}
                 />
               </Grid>
+
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="Email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+              </Grid>
+
               <Grid item xs={12}>
                 <TextField
                   fullWidth
@@ -194,23 +197,7 @@ console.log("Edit Staff submitting:",requestBody)
                   onChange={(e) => setMobile(e.target.value)}
                 />
               </Grid>
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  label="Email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  label="Password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-              </Grid>
+
               <Grid item xs={12}>
                 <FormControl fullWidth>
                   <InputLabel>Status</InputLabel>
@@ -225,7 +212,26 @@ console.log("Edit Staff submitting:",requestBody)
                 </FormControl>
               </Grid>
 
-              {/* Date of Birth */}
+              <Grid item xs={12} md={6}>
+                <FormControl fullWidth variant="outlined">
+                  <InputLabel>Role</InputLabel>
+                  <Select
+                    value={role}
+                    onChange={(e) => setRole(e.target.value)}
+                    label="Role"
+                  >
+                    <MenuItem value="" disabled>
+                      Select role
+                    </MenuItem>
+                    {listAccess.map((accessItem) => (
+                      <MenuItem key={accessItem.id} value={accessItem.id}>
+                        {accessItem.roleName}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+
               <Grid item xs={12} md={6}>
                 <TextField
                   fullWidth
@@ -237,28 +243,14 @@ console.log("Edit Staff submitting:",requestBody)
                   onChange={(e) => setDateOfBirth(e.target.value)}
                 />
               </Grid>
-              <Grid item xs={12} md={6}>
-                <FormControl fullWidth variant="outlined">
-                  <InputLabel>Access</InputLabel>
-                  <Select
-                    value={decentralization}
-                    onChange={(e) => setDecentralization(e.target.value)}
-                    label="Access"
-                  >
-                    <MenuItem value="" disabled>
-                      Select decentralizations
-                    </MenuItem>
-                    {decentralizations.map((decentralization) => (
-                      <MenuItem key={decentralization.id} value={decentralization.id}>
-                        {decentralization.access.roleName}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
 
               {addresses.map((address, index) => (
-                <Grid container spacing={2} key={index} sx={{ marginBottom: 2 }}>
+                <Grid
+                  container
+                  spacing={2}
+                  key={index}
+                  sx={{ marginBottom: 2 }}
+                >
                   <Grid item xs={12}>
                     <Typography variant="h6">Address {index + 1}</Typography>
                   </Grid>
@@ -317,7 +309,10 @@ console.log("Edit Staff submitting:",requestBody)
                     />
                   </Grid>
                   <Grid item xs={12}>
-                    <IconButton onClick={() => removeAddress(index)}>
+                    <IconButton
+                      color="error"
+                      onClick={() => removeAddress(index)}
+                    >
                       <Delete />
                     </IconButton>
                   </Grid>
@@ -326,24 +321,17 @@ console.log("Edit Staff submitting:",requestBody)
 
               <Grid item xs={12}>
                 <Button
-                  variant="contained"
                   startIcon={<Add />}
                   onClick={addAddress}
+                  variant="outlined"
                 >
                   Add Address
                 </Button>
               </Grid>
+
               <Grid item xs={12}>
                 <Button type="submit" variant="contained" color="primary">
-                  Confirm
-                </Button>
-                <Button
-                  type="button"
-                  variant="outlined"
-                  color="secondary"
-                  onClick={() => setActiveComponent({ name: "AdminCustomer" })}
-                >
-                  Return to Customer List
+                  Save Changes
                 </Button>
               </Grid>
             </Grid>

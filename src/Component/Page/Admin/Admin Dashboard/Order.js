@@ -12,13 +12,9 @@ import {
   TableRow,
   Typography,
 } from "@mui/material";
-import axios from "axios";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  getPurchaseHistories,
-  getUserLogged,
-} from "../../../Serivce/ApiService";
+import { orderThunk } from "../../../../services/redux/thunks/thunk";
 import "./assets/css/style.scss";
 
 function AdminOrder({ setActiveComponent, showAlert }) {
@@ -26,13 +22,7 @@ function AdminOrder({ setActiveComponent, showAlert }) {
   const dispatch = useDispatch();
   const [activeIndex, setActiveIndex] = useState(null);
   const [anchorEl, setAnchorEl] = useState(null);
-  const [userId, setUserId] = useState(null);
-  const [purchaseHistories, setPurchaseHistories] = useState([]);
   const [sortOption, setSortOption] = useState("productName"); // Default sorting option
-  console.log("list order:", listOrder);
-  const handleMouseOver = (index) => {
-    setActiveIndex(index);
-  };
 
   const formatOrderStatus = (status) => {
     return (status ?? "").replace(/([a-z])([A-Z])/g, "$1 $2");
@@ -54,87 +44,12 @@ function AdminOrder({ setActiveComponent, showAlert }) {
   const open = Boolean(anchorEl);
   const id = open ? "simple-popover" : undefined;
 
-  useEffect(() => {
-    const token = localStorage.getItem("authToken");
-    if (!token) {
-      console.error("No auth token found. User must be logged in.");
-      return;
-    }
-
-    const fetchUserId = async (token) => {
-      try {
-        const response = await getUserLogged(token);
-        setUserId(response.data.id);
-        console.log("User ID:", response.data.id);
-      } catch (error) {
-        console.error("Failed to fetch user information:", error);
-      }
-    };
-
-    fetchUserId();
-  }, []);
-
-  useEffect(() => {
-    if (userId) {
-      fetchData(userId);
-    }
-  }, [userId, sortOption]);
-
-  const fetchData = async (userId) => {
-    try {
-      const ordersResult = await getPurchaseHistories(userId);
-      console.log("API Response:", ordersResult.data);
-
-      const groupedHistories = ordersResult.data.map((purchaseHistory) => {
-        const productGroups = {};
-
-        purchaseHistory.carts.forEach((cart) => {
-          cart.products.forEach((product) => {
-            const key = `${product.id}-${purchaseHistory.orders.order_date}-${purchaseHistory.orders.deliveryAddress}`;
-            if (!productGroups[key]) {
-              productGroups[key] = {
-                ...product,
-                totalQuantity: 0,
-                totalPrice: 0,
-                orderDate: purchaseHistory.orders.order_date,
-                deliveryAddress: purchaseHistory.orders.deliveryAddress,
-                order_status: purchaseHistory.orders.order_status,
-              };
-            }
-
-            productGroups[key].totalQuantity += 1; // Hoặc số lượng thực tế nếu có
-            productGroups[key].totalPrice += product.unitPrice;
-          });
-        });
-
-        const products = Object.values(productGroups).sort((a, b) => {
-          if (sortOption === "productName") {
-            return a.productName.localeCompare(b.productName);
-          } else if (sortOption === "deliveryAddress") {
-            return a.deliveryAddress.localeCompare(b.deliveryAddress);
-          } else if (sortOption === "orderDate") {
-            return new Date(a.orderDate) - new Date(b.orderDate);
-          }
-          return 0;
-        });
-
-        return {
-          ...purchaseHistory,
-          products,
-        };
-      });
-
-      setPurchaseHistories(groupedHistories);
-    } catch (error) {
-      console.error("Failed to load data:", error);
-    }
-  };
 
   const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this order?")) {
       try {
-        await axios.delete(`http://localhost:8080/api/purchaseHistories/${id}`);
-        fetchData();
+        await dispatch(orderThunk.deleteOrder(id));
+        await dispatch(orderThunk.getAllOrders());
         showAlert("Delete order successfully", "success");
       } catch (error) {
         showAlert("Delete order successfully", "error");

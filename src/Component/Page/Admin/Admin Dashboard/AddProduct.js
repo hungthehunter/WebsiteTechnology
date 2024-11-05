@@ -11,8 +11,9 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import axios from "axios";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { productThunk } from "../../../../services/redux/thunks/thunk";
 
 const AdminAddProduct = ({ setActiveComponent, showAlert }) => {
   const defaultSpecifications = [
@@ -48,7 +49,7 @@ const AdminAddProduct = ({ setActiveComponent, showAlert }) => {
     design: "",
     warrantyInformation: "",
     generalInformation: "",
-    status: "Available",
+    status: true,
     category: {
       id: null,
     },
@@ -60,41 +61,13 @@ const AdminAddProduct = ({ setActiveComponent, showAlert }) => {
     },
     specification: defaultSpecifications, // Khởi tạo với các specification mặc định
   });
-
-  const [categories, setCategories] = useState([]);
-  const [manufacturers, setManufacturers] = useState([]);
-  const [promotions, setPromotions] = useState([]);
+  
+  const dispatch = useDispatch();
   const [files, setFiles] = useState([]);
   const [mainFile, setMainFile] = useState();
-
-  useEffect(() => {
-    axios
-      .get("http://localhost:8080/api/categories")
-      .then((response) => {
-        setCategories(response.data);
-      })
-      .catch((error) => {
-        console.error("Error fetching categories", error);
-      });
-
-    axios
-      .get("http://localhost:8080/api/manufacturers")
-      .then((response) => {
-        setManufacturers(response.data);
-      })
-      .catch((error) => {
-        console.error("Error fetching manufacturers", error);
-      });
-
-    axios
-      .get("http://localhost:8080/api/promotions")
-      .then((response) => {
-        setPromotions(response.data);
-      })
-      .catch((error) => {
-        console.error("Error fetching promotions", error);
-      });
-  }, []);
+  const listCategory = useSelector((state) => state.category.listCategory);
+  const listManufacturer = useSelector((state) => state.manufacturer.listManufacturer);
+  const listPromotion = useSelector((state) => state.promotion.listPromotion);
 
   const handleAddSpecification = () => {
     setFormData((prevFormData) => ({
@@ -146,37 +119,36 @@ const AdminAddProduct = ({ setActiveComponent, showAlert }) => {
   };
 
   const handleMainImagesChange = (e) => {
-    setMainFile(e.target.files[0]); // Lấy tệp đầu tiên làm main image
+    setMainFile(e.target.files[0]);
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    const formDataToSend = new FormData();
+    const productData = new FormData();
 
-    formDataToSend.append(
+    productData.append(
       "product",
       new Blob([JSON.stringify(formData)], { type: "application/json" })
     );
 
     if (mainFile) {
-      formDataToSend.append("mainImage", mainFile);
+      productData.append("mainImage", mainFile);
     }
 
     files.forEach((file) => {
-      formDataToSend.append("images", file);
+      productData.append("images", file);
     });
-
-    axios
-      .post("http://localhost:8080/api/products", formDataToSend)
-      .then((response) => {
+      
+      try {
+        dispatch(productThunk.createProduct(productData));
+        dispatch(productThunk.getAllProduct());
         showAlert("Add product successfully.", "success");
         setTimeout(() => setActiveComponent({ name: "AdminProduct" }), 1000);
-      })
-      .catch((error) => {
+      } catch (error) {
         console.error("There was an error creating the product!", error);
         showAlert("Failed to add product.", "error");
-      });
+      }
   };
 
   return (
@@ -333,7 +305,7 @@ const AdminAddProduct = ({ setActiveComponent, showAlert }) => {
                       onChange={handleChange}
                     >
                       <MenuItem value="">None</MenuItem>
-                      {categories.map((category) => (
+                      {listCategory.map((category) => (
                         <MenuItem key={category.id} value={category.id}>
                           {category.name}
                         </MenuItem>
@@ -351,7 +323,7 @@ const AdminAddProduct = ({ setActiveComponent, showAlert }) => {
                       value={formData.manufacturer.id || ""}
                       onChange={handleChange}
                     >
-                      {manufacturers.map((manufacturer) => (
+                      {listManufacturer.map((manufacturer) => (
                         <MenuItem key={manufacturer.id} value={manufacturer.id}>
                           {manufacturer.name}
                         </MenuItem>
@@ -370,7 +342,7 @@ const AdminAddProduct = ({ setActiveComponent, showAlert }) => {
                       onChange={handleChange}
                     >
                       <MenuItem value="">None</MenuItem>
-                      {promotions.map((promotion) => (
+                      {listPromotion.map((promotion) => (
                         <MenuItem key={promotion.id} value={promotion.id}>
                           {promotion.name}
                         </MenuItem>

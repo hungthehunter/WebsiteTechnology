@@ -1,24 +1,36 @@
-import { Description as DescriptionIcon, Laptop as LaptopChromebook, Web as WebIcon } from "@mui/icons-material";
-import { Avatar, Box, Button, Card, CardContent, CardHeader, Container, Divider, Grid, List, ListItem, ListItemText, Typography } from "@mui/material";
-import React, { useEffect, useState } from "react";
-import { getCategoryById } from "./service/AdminService"; // Assuming you have a service function to get category details
+import {
+  Description as DescriptionIcon,
+  Laptop as LaptopChromebook,
+  Web as WebIcon,
+} from "@mui/icons-material";
+import {
+  Avatar,
+  Box,
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  Container,
+  Divider,
+  Grid,
+  List,
+  ListItem,
+  ListItemText,
+  Typography,
+} from "@mui/material";
+import React, { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { categoryThunk } from "../../../../services/redux/thunks/thunk";
 
-function AdminViewCategory({ id, setActiveComponent, showAlert }) {
-  const [category, setCategory] = useState({});
-  
+function AdminViewCategory({ id, setActiveComponent }) {
+  const dispatch = useDispatch();
+  const selectedCategory = useSelector(
+    (state) => state.category.selectedCategory
+  );
+
   useEffect(() => {
-    getCategory();
-  }, []);
-
-  const getCategory = async () => {
-    try {
-      const response = await getCategoryById(id);
-      setCategory(response.data);
-    } catch (error) {
-      console.error("Error fetching category:", error);
-      showAlert("Failed to fetch category details.", "error");
-    }
-  };
+    dispatch(categoryThunk.getCategoryById(id));
+  }, [dispatch, id]);
 
   return (
     <Container maxWidth="md">
@@ -32,34 +44,39 @@ function AdminViewCategory({ id, setActiveComponent, showAlert }) {
             <Grid item xs={12} md={4}>
               <Box display="flex" flexDirection="column" alignItems="center">
                 <Avatar
-                  src={category.imageCloud?.url || ''}
+                  src={selectedCategory?.imageCloud?.url || ""}
                   sx={{
                     width: 100,
                     height: 100,
-                    bgcolor: 'grey.300',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    overflow: 'hidden',
-                    borderRadius: 0 
+                    bgcolor: "grey.300",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    overflow: "hidden",
+                    borderRadius: 0,
                   }}
                 >
-                  {category.imageCloud?.url ? (
+                  {selectedCategory?.imageCloud?.url ? (
                     <img
-                      src={category.imageCloud.url}
+                      src={selectedCategory?.imageCloud.url}
                       alt="Category"
                       style={{
-                        width: '100%',
-                        height: '100%',
-                        objectFit: 'cover',
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
                       }}
                     />
                   ) : (
-                    <Typography variant="body1" sx={{ color: 'text.secondary' }}>N/A</Typography>
+                    <Typography
+                      variant="body1"
+                      sx={{ color: "text.secondary" }}
+                    >
+                      N/A
+                    </Typography>
                   )}
                 </Avatar>
                 <Typography variant="h6" sx={{ mt: 2 }}>
-                  {category.name || 'N/A'}
+                  {selectedCategory?.name || "N/A"}
                 </Typography>
                 <Typography variant="subtitle1" color="text.secondary">
                   Category ID: {id}
@@ -72,7 +89,7 @@ function AdminViewCategory({ id, setActiveComponent, showAlert }) {
                   <DescriptionIcon sx={{ mr: 2 }} />
                   <ListItemText
                     primary="Description"
-                    secondary={category.description || 'N/A'}
+                    secondary={selectedCategory?.description || "N/A"}
                     primaryTypographyProps={{ variant: "h6" }}
                   />
                 </ListItem>
@@ -81,16 +98,27 @@ function AdminViewCategory({ id, setActiveComponent, showAlert }) {
                   <WebIcon sx={{ mr: 2 }} />
                   <ListItemText
                     primary="Promotion"
-                    secondary={category.promotion ? category.promotion.name : 'N/A'} // Render tên khuyến mãi
+                    secondary={
+                      selectedCategory?.promotion
+                        ? selectedCategory?.promotion?.name
+                        : "N/A"
+                    }
                     primaryTypographyProps={{ variant: "h6" }}
                   />
                 </ListItem>
                 <Divider />
                 <ListItem>
-                <LaptopChromebook sx={{ mr: 2 }} />
+                  <LaptopChromebook sx={{ mr: 2 }} />
                   <ListItemText
                     primary="Products"
-                    secondary={Array.isArray(category.products) &&  category.products.length > 0 ? category.products.map(product => product.productName).join(', ') : 'N/A'} // Render tên sản phẩm
+                    secondary={
+                      Array.isArray(selectedCategory?.products) &&
+                      selectedCategory?.products.length > 0
+                        ? selectedCategory?.products
+                            .map((product) => product.productName)
+                            .join(", ")
+                        : "N/A"
+                    }
                     primaryTypographyProps={{ variant: "h6" }}
                   />
                 </ListItem>

@@ -11,8 +11,9 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import React, { useEffect, useState } from "react";
-import { createUser, getAllDecentralization } from "../../../Serivce/ApiService";
+import React, { useState } from "react";
+import { useSelector } from "react-redux";
+import { createUser } from "../../../Serivce/ApiService";
 import "./assets/css/style.scss";
 
 function AdminAddStaff({ setActiveComponent, showAlert }) {
@@ -23,7 +24,7 @@ function AdminAddStaff({ setActiveComponent, showAlert }) {
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("User");
   const [dateOfBirth, setDateOfBirth] = useState("");
-  const [decentralization, setDecentralization] = useState("");
+  const [decentralization,setDecentralization] = useState("");
   const [addressList, setAddressList] = useState([
     {
       houseNumber: "",
@@ -34,21 +35,8 @@ function AdminAddStaff({ setActiveComponent, showAlert }) {
       country: "",
     },
   ]);
+  const listAccess =useSelector((state) => state.access.listAccess);
 
-  // Fetch decentralizations
-  const [access, setAccess] = useState([]);
-  const getDecentralizations = async () => {
-    try {
-      const response = await getAllDecentralization();
-      setAccess(response.data);
-    } catch (error) {
-      console.error("Error fetching decentralizations:", error);
-    }
-  };
-
-  useEffect(() => {
-    getDecentralizations();
-  }, []);
 
   // Address handlers
   const handleAddressChange = (index, event) => {
@@ -173,9 +161,9 @@ function AdminAddStaff({ setActiveComponent, showAlert }) {
                 label="Access"
               >
                 <MenuItem value="" disabled>Select access</MenuItem>
-                {access.map((accessItem) => (
+                {listAccess.map((accessItem) => (
                   <MenuItem key={accessItem.id} value={accessItem.id}>
-                    {accessItem.access.roleName}
+                    {accessItem.roleName}
                   </MenuItem>
                 ))}
               </Select>

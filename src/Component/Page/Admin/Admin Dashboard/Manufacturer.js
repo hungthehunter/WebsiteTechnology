@@ -1,73 +1,19 @@
 import { Box, Button, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material';
-import { useEffect, useState } from "react";
-import { deleteManufactuereId, getAllManufacturer, getAllProduct } from "../../../Serivce/ApiService";
+import { useDispatch, useSelector } from 'react-redux';
+import { manufacturerThunk } from '../../../../services/redux/thunks/thunk';
 import "./assets/css/style.scss";
 function AdminManufacturer({ setActiveComponent, showAlert }) {
   /*------- Page function -------*/
-  const [activeIndex, setActiveIndex] = useState(null);
-  const [menuActive, setMenuActive] = useState(false);
-
-  const handleMouseOver = (index) => {
-    setActiveIndex(index);
-  };
-
-  const toggleMenu = () => {
-    setMenuActive((prev) => !prev); // Correctly toggle the state
-  };
-
-  // Customer: Load List of Users when component mounts
-
-  useEffect(() => {
-    loadManufacturers();
-    loadProducts();
-  }, []);
-
-  // Customer: Handle search bar
-
-  const handleInputSearch = (event) => {
-    const searchTerm = event.target.value;
-    setSearchTerm(searchTerm);
-    const filteredUsers = manufacturer.filter((manufacturer) =>
-      manufacturer.username.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-    setFilteredUsers(filteredUsers);
-  };
+  const listManufacturer = useSelector((state) => state.manufacturer.listManufacturer);
+  const listProduct = useSelector((state) => state.product.listProduct);
+  const dispatch = useDispatch();
 
   //Category: Check manufacturer exist
   const checkManufacturerNameExists = (name) => {
-    return products.some(
+    return listProduct.some(
       (product) =>
         product.manufacturer.name.toLowerCase() === name.toLowerCase()
     );
-  };
-  /*------- Database function -------*/
-  // Set element User
-
-  const [manufacturer, setManufacturer] = useState([]);
-  const [filteredUsers, setFilteredUsers] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [products, setProducts] = useState([]);
-
-  // GET: Get User by id from Database
-
-  const loadManufacturers = async () => {
-    try {
-      const result = await getAllManufacturer()
-      setManufacturer(result.data);
-      setFilteredUsers(result.data); // Initialize filteredUsers with all manufacturer
-    } catch (error) {
-      console.error("Failed to load manufacturer:", error);
-    }
-  };
-
-  // GET: Get list of product from Database
-  const loadProducts = async () => {
-    try {
-      const result = await getAllProduct()
-      setProducts(result.data);
-    } catch (error) {
-      console.error("Failed to load users:", error);
-    }
   };
 
   // DELETE: Delete User by id from Database
@@ -85,9 +31,10 @@ function AdminManufacturer({ setActiveComponent, showAlert }) {
         setTimeout(() => setActiveComponent({ name: "AdminProduct" }), 1000);
       } else {
         try {
-          await deleteManufactuereId(id)
+          await dispatch(manufacturerThunk.deleteManufacturer(id))
           showAlert("Delete manufacturer successfully", "success");
-          setTimeout(() => loadManufacturers(), 1000);
+          dispatch(manufacturerThunk.getAllManufacturers());
+          setActiveComponent({name: "AdminManufacturer"});
         } catch (error) {
           showAlert("Failed to delete manufacturer successfully", "success");
           console.error("Error deleting image:", error);
@@ -130,7 +77,7 @@ function AdminManufacturer({ setActiveComponent, showAlert }) {
               </TableRow>
             </TableHead>
             <TableBody>
-              {filteredUsers.map((manufacturer, index) => (
+              {listManufacturer.map((manufacturer, index) => (
                 <TableRow key={index}>
                   <TableCell style={{ textAlign: "start" , fontSize: '1.3rem'}}>{manufacturer.id}</TableCell>
                   <TableCell style={{ textAlign: "start" , fontSize: '1.3rem'}}>
@@ -148,7 +95,7 @@ function AdminManufacturer({ setActiveComponent, showAlert }) {
                   </TableCell>
                 </TableRow>
               ))}
-              {filteredUsers.length === 0 && (
+              {listManufacturer.length === 0 && (
                 <TableRow className="nouser">
                   <TableCell colSpan={6} className="inform" style={{ textAlign: "center", paddingTop: 100 }}>
                     No manufacturer found

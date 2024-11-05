@@ -26,7 +26,7 @@ const manufacturerApi = {
     createManufacturer: async (manufacturerData, loadingScreen = true) => {
         const res = await shopAPI.post(MANUFACTURER_ENDPOINTS.CREATE_MANUFACTURER, manufacturerData, {
             headers: {
-                'Content-Type': 'application/json',
+                'Content-Type': 'multipart/form-data'
             }
         });
         if (loadingScreen) {
@@ -37,7 +37,7 @@ const manufacturerApi = {
     updateManufacturer: async (id, manufacturerData, loadingScreen = true) => {
         const res = await shopAPI.put(MANUFACTURER_ENDPOINTS.UPDATE_MANUFACTURER.replace(":id", id), manufacturerData, {
             headers: {
-                'Content-Type': 'application/json',
+                'Content-Type': 'multipart/form-data'
             }
         });
         if (loadingScreen) {

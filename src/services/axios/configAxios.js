@@ -15,7 +15,7 @@ const shopAPI=axios.create({
 // hàm này chạy trước response , config ở đây là Trả về cấu hình request đã được chỉnh sửa(headers , baseURL, timeout , data ,...)
 shopAPI.interceptors.request.use((config)=>{
 try {
-    const token=localStorage.getItem("token");
+    const token=localStorage.getItem("authToken");
     if(token){
         config.headers.Authorization=`Bearer ${token}`;
     }

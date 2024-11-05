@@ -105,7 +105,7 @@ export const categoryThunk = {
         return res;
     }),
     getCategoryById: createAsyncThunk("category/getCategoryById", async (id) => {
-        const res = await categoryApi.getCategoryById(id);
+        const res = await categoryApi.getCategoryById(id)
         return res;
     }),
     createCategory: createAsyncThunk("category/createCategory", async (categoryData) => {
@@ -123,8 +123,8 @@ export const categoryThunk = {
 };
 
 export const decentralizationThunk = {
-    getAllDecentralizations: createAsyncThunk("decentralization/getAllDecentralizations", async () => {
-        const res = await decentralizationApi.getAllDecentralizations();
+    getAllDecentralization: createAsyncThunk("decentralization/getAllDecentralizations", async () => {
+        const res = await decentralizationApi.getAllDecentralization();
         return res;
     }),
     getDecentralizationById: createAsyncThunk("decentralization/getDecentralizationById", async (id) => {
@@ -135,8 +135,8 @@ export const decentralizationThunk = {
         const res = await decentralizationApi.createDecentralization(data);
         return res;
     }),
-    updateDecentralization: createAsyncThunk("decentralization/updateDecentralization", async ({ id, data }) => {
-        const res = await decentralizationApi.updateDecentralization(id, data);
+    updateDecentralization: createAsyncThunk("decentralization/updateDecentralization", async ({ id, decentralizationData }) => {
+        const res = await decentralizationApi.updateDecentralization(id, decentralizationData);
         return res;
     }),
     deleteDecentralization: createAsyncThunk("decentralization/deleteDecentralization", async (id) => {
@@ -149,7 +149,7 @@ export const functionThunk = {
     getAllFunctions: createAsyncThunk("function/getAllFunctions", async () => {
         const res = await functionApi.getAllFunctions();
         return res;
-    }),
+    })
 };
 
 export const invoiceThunk = {
@@ -349,8 +349,23 @@ export const userThunk = {
         const res = await userApi.createUser(userData);
         return res;
     }),
+
+    loginUser: createAsyncThunk("user/loginUser", async (userData) => {
+        const res = await userApi.loginUser(userData);
+        return res;
+    }),
+
+    signUpUser: createAsyncThunk("user/signUpUser", async (userData) => {
+        const res = await userApi.signUpUser(userData);
+        return res;
+    }),
+
     updateUser: createAsyncThunk("user/updateUser", async ({ id, userData }) => {
         const res = await userApi.updateUser(id, userData);
+        return res;
+    }),
+    updateUserInfo: createAsyncThunk("user/updateUserInfo", async ({ id, userData }) => {
+        const res = await userApi.updateUserInfo(id, userData);
         return res;
     }),
     deleteUser: createAsyncThunk("user/deleteUser", async (id) => {

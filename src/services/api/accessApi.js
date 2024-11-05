@@ -1,11 +1,11 @@
 import shopAPI from "../axios/configAxios";
 
 const ACCESS_ENDPOINTS = {
-    GET_ALL_ACCESS: "/access",
-    GET_ACCESS_BY_ID: "/access/:id",
-    CREATE_ACCESS: "/access",
-    UPDATE_ACCESS: "/access/:id",
-    DELETE_ACCESS: "/access/:id",
+    GET_ALL_ACCESS: "/accesses",
+    GET_ACCESS_BY_ID: "/accesses/:id",
+    CREATE_ACCESS: "/accesses",
+    UPDATE_ACCESS: "/accesses/:id",
+    DELETE_ACCESS: "/accesses/:id",
 }
 
 const accessApi = {

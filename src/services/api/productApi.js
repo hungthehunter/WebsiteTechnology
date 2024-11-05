@@ -35,23 +35,8 @@ const productApi = {
   },
 
   createProduct: async (productData) => {
-    const formData = new FormData();
-    
-    formData.append('product', new Blob([JSON.stringify(productData)], {type: "application/json"}));
-    
-    if (productData.mainImage) {
-      formData.append('mainImage', productData.mainImage);
-    }
 
-    if (productData.additionalImages && productData.additionalImages.length > 0) {
-      productData.additionalImages.forEach((file) => {
-        formData.append('images', file);
-      });
-    } else {
-      formData.append('images', new Blob(), 'empty.txt');
-    }
-
-    const res = await shopAPI.post(PRODUCT_ENDPOINTS.CREATE_PRODUCT, formData, {
+    const res = await shopAPI.post(PRODUCT_ENDPOINTS.CREATE_PRODUCT, productData, {
       headers: {
         'Content-Type': 'multipart/form-data'
       }

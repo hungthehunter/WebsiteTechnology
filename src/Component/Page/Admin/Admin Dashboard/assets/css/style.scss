@@ -439,6 +439,15 @@
     font-weight: 500;
   }
 
+  .status.canceled{
+    padding: 2px 4px;
+    background: #A0A0A0;
+    color: var(--white);
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 500;
+  }
+
   .status.admin {
     padding: 2px 4px;
     background: #c79750;

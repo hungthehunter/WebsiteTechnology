@@ -11,9 +11,9 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import axios from "axios";
-import React, { useEffect, useState } from "react";
-import { createUser } from "../../../Serivce/ApiService";
+import React, { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { userThunk } from "../../../../services/redux/thunks/thunk";
 import "./assets/css/style.scss";
 
 function AdminAddCustomer({ setActiveComponent ,showAlert }) {
@@ -25,6 +25,8 @@ function AdminAddCustomer({ setActiveComponent ,showAlert }) {
   const [role, setRole] = useState("User");
   const [dateOfBirth, setDateOfBirth] = useState("");
   const [decentralization, setDecentralization] = useState("");
+  const listAccess = useSelector((state) => state.access.listAccess);
+  const dispatch = useDispatch();
   const [addressList, setAddressList] = useState([{
     houseNumber: "",
     street: "",
@@ -33,21 +35,6 @@ function AdminAddCustomer({ setActiveComponent ,showAlert }) {
     city: "",
     country: ""
   }]);
-
-  // Fetch decentralizations
-  const [access, setAccess] = useState([]);
-  const getDecentralizations = async () => {
-    try {
-      const response = await axios.get("http://localhost:8080/api/decentralizations");
-      setAccess(response.data);
-    } catch (error) {
-      console.error("Error fetching decentralizations:", error);
-    }
-  };
-
-  useEffect(() => {
-    getDecentralizations();
-  }, []);
 
   // Address handlers
   const handleAddressChange = (index, event) => {
@@ -87,10 +74,8 @@ function AdminAddCustomer({ setActiveComponent ,showAlert }) {
       decentralization: { id: decentralization },
       addresses: addressList
     };
-console.log("Submitting:",userData);
     try {
-      const response = await createUser(userData);
-      alert("Customer added successfully!");
+      await dispatch(userThunk.createUser(userData))
       //Clear form
       setFullname("");
       setMobile("");
@@ -99,9 +84,8 @@ console.log("Submitting:",userData);
       setRole("User");
       setDateOfBirth("");
       setAddressList([{ houseNumber: "", street: "", ward: "", district: "", city: "", country: "" }]);
-     
-     showAlert("Add customer successfully","success");
-    setTimeout((setActiveComponent({ name: "AdminStaff" })),1000)  
+      showAlert("Add customer successfully","success");
+     setTimeout((setActiveComponent({ name: "AdminStaff" })),1000)  
     } catch (error) {
       showAlert("Failed to add customer successfully","error");
     
@@ -162,9 +146,9 @@ console.log("Submitting:",userData);
                 label="Access"
               >
                 <MenuItem value="" disabled>Select access</MenuItem>
-                {access.map((accessItem) => (
+                {listAccess.map((accessItem) => (
                   <MenuItem key={accessItem.id} value={accessItem.id}>
-                    {accessItem.access.roleName}
+                    {accessItem.roleName}
                   </MenuItem>
                 ))}
               </Select>

@@ -9,30 +9,43 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import axios from "axios";
+import CircularProgress from '@mui/material/CircularProgress';
 import React, { useEffect, useState } from "react";
-import {
-  getAllProduct,
-  getAllPromotion,
-  updateCategory,
-} from "../../../Serivce/ApiService";
+import { useDispatch, useSelector } from "react-redux";
+import { clearSelectedCategoryId } from "../../../../services/redux/slices/categorySlice";
+import { categoryThunk } from "../../../../services/redux/thunks/thunk";
 import "./assets/css/style.scss";
 
 function AdminEditCategory({ id, setActiveComponent, showAlert }) {
-  // Khởi tạo selectedProduct là một mảng rỗng
-  const [categoryName, setCategoryName] = useState("");
-  const [selectedPromotions, setSelectedPromotions] = useState(null);
-  const [promotions, setPromotions] = useState([]);
-  const [products, setProducts] = useState([]);
-  const [description, setDescription] = useState("");
-  const [imageFile, setImageFile] = useState(null);
-  const [selectedProduct, setSelectedProduct] = useState([]); // Đặt mặc định là mảng rỗng
+  const dispatch = useDispatch();
 
+  // State để giữ các giá trị nhập liệu
+  const [categoryName, setCategoryName] = useState("");
+  const [description, setDescription] = useState("");
+  const [selectedProduct, setSelectedProduct] = useState([]);
+  const [selectedPromotions, setSelectedPromotions] = useState(null);
+  const [imageFile, setImageFile] = useState(null);
+
+  // Dữ liệu lấy từ Redux
+  const listProduct = useSelector((state) => state.product.listProduct);
+  const listPromotion = useSelector((state) => state.promotion.listPromotion);
+  const selectedCategory = useSelector((state) => state.category.selectedCategory);
+  const isLoading = useSelector((state) => state.category.isLoading);
+
+  // Fetch dữ liệu khi component load và khi `id` thay đổi
   useEffect(() => {
-    getAllProducts();
-    getAllPromotions();
-    loadCategory(id);
-  }, [id]);
+    dispatch(categoryThunk.getCategoryById(id));
+  }, [dispatch, id]);
+
+  // Đặt giá trị mặc định từ selectedCategory khi có dữ liệu
+  useEffect(() => {
+    if (selectedCategory) {
+      setCategoryName(selectedCategory.name || "");
+      setDescription(selectedCategory.description || "");
+      setSelectedProduct(selectedCategory.products?.map((product) => product.id) || []);
+      setSelectedPromotions(selectedCategory.promotion?.id || null);
+    }
+  }, [selectedCategory]);
 
   const handleCategoryChange = (e) => {
     setCategoryName(e.target.value);
@@ -43,7 +56,7 @@ function AdminEditCategory({ id, setActiveComponent, showAlert }) {
   };
 
   const handleProductChange = (e) => {
-    setSelectedProduct(e.target.value); // Cập nhật để giữ nguyên dạng mảng
+    setSelectedProduct(e.target.value); // Đảm bảo giá trị giữ nguyên dạng mảng
   };
 
   const handlePromotionChange = (e) => {
@@ -54,80 +67,68 @@ function AdminEditCategory({ id, setActiveComponent, showAlert }) {
     setImageFile(e.target.files[0]);
   };
 
+  const clearForm = () => {
+    setCategoryName("");
+    setDescription("");
+    setSelectedProduct([]); // Reset lại mảng selectedProduct
+    setSelectedPromotions(null); // Reset selectedPromotions
+    setImageFile(null); // Xóa file ảnh
+};
+
   const handleSave = async (id) => {
     const formData = new FormData();
-
-    // Tạo đối tượng CategoryDTO
     const categoryDTO = {
       name: categoryName,
       description: description,
-      products: selectedProduct.map(id => ({ id })), // Chuyển đổi mảng id thành mảng đối tượng
+      products: selectedProduct.map((id) => ({ id })),
       promotion: selectedPromotions ? { id: selectedPromotions } : null,
     };
 
-    // Đính kèm CategoryDTO vào formData
     formData.append(
       "category",
       new Blob([JSON.stringify(categoryDTO)], { type: "application/json" })
     );
 
-    // Đính kèm file hình nếu có
     if (imageFile) {
       formData.append("file", imageFile);
     }
 
     try {
-      const response = await updateCategory(id, formData);
-      if (response.status === 200) {
+       await dispatch(categoryThunk.updateCategory({id:id, categoryData:formData}));
         showAlert("Category updated successfully.", "success");
+        dispatch(clearSelectedCategoryId());
+        clearForm();
         setActiveComponent({ name: "AdminCategory" });
-      }
+
     } catch (error) {
       console.error("Error updating category:", error);
       showAlert("Failed to update category.", "error");
     }
   };
 
-  /*------------------------------ Database functions ------------------------------------*/
 
-  // GET: Function to get list of products
-  const getAllProducts = async () => {
-    try {
-      const response = await getAllProduct();
-      setProducts(response.data);
-    } catch (error) {
-      console.error("Failed to get list of products:", error);
-    }
-  };
-
-  // GET: Function to get list of promotions
-  const getAllPromotions = async () => {
-    try {
-      const response = await getAllPromotion();
-      setPromotions(response.data);
-    } catch (error) {
-      console.error("Failed to get list of promotions:", error);
-    }
-  };
-
-  // GET: Function to load category details for editing
-  const loadCategory = async (id) => {
-    try {
-      const response = await axios.get(
-        `http://localhost:8080/api/categories/${id}`
-      );
-      const category = response.data;
-
-      setCategoryName(category.name);
-      setDescription(category.description);
-      setSelectedProduct(category.products.map(p => p.id)); // Lưu nhiều sản phẩm đã chọn
-      setSelectedPromotions(category.promotion ? category.promotion.id : null);
-    } catch (error) {
-      console.error("Failed to load category details:", error);
-      showAlert("Failed to load category details.", "error");
-    }
-  };
-
+  if (isLoading) {
+    return (
+      <Box sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100vh',
+        width: '100vw',
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        backgroundColor: 'black',
+        zIndex: 9999
+      }}>
+        <CircularProgress size={60} thickness={4}  sx={{ color: '#4CAF50' }}  />
+        <Typography variant="h6" sx={{ mt: 2, color: '#4CAF50' }}>
+          PLEASE WAIT...
+        </Typography>
+      </Box>
+    );
+  }
   return (
     <Box sx={{ padding: 4 }}>
       <Typography variant="h4" sx={{ marginBottom: 2 }}>
@@ -141,7 +142,6 @@ function AdminEditCategory({ id, setActiveComponent, showAlert }) {
           value={categoryName}
           onChange={handleCategoryChange}
         />
-
         <TextField
           fullWidth
           margin="normal"
@@ -155,14 +155,14 @@ function AdminEditCategory({ id, setActiveComponent, showAlert }) {
           <InputLabel id="product-select-label">Select Product</InputLabel>
           <Select
             labelId="product-select-label"
-            value={selectedProduct} 
+            value={selectedProduct}
             onChange={handleProductChange}
             label="Select Product"
-            multiple 
+            multiple
           >
             <MenuItem value={null}>None</MenuItem>
-            {products.length > 0 ? (
-              products.map((product) => (
+            {listProduct.length > 0 ? (
+              listProduct.map((product) => (
                 <MenuItem key={product.id} value={product.id}>
                   {product.productName}
                 </MenuItem>
@@ -185,8 +185,8 @@ function AdminEditCategory({ id, setActiveComponent, showAlert }) {
             label="Select Promotion"
           >
             <MenuItem value={null}>None</MenuItem>
-            {promotions.length > 0 ? (
-              promotions.map((promotion) => (
+            {listPromotion.length > 0 ? (
+              listPromotion.map((promotion) => (
                 <MenuItem key={promotion.id} value={promotion.id}>
                   {promotion.name}
                 </MenuItem>
@@ -205,12 +205,8 @@ function AdminEditCategory({ id, setActiveComponent, showAlert }) {
           fullWidth
           margin="normal"
           label="Category Image"
-          InputLabelProps={{
-            shrink: true,
-          }}
-          inputProps={{
-            accept: "image/*",
-          }}
+          InputLabelProps={{ shrink: true }}
+          inputProps={{ accept: "image/*" }}
           onChange={handleImageChange}
           InputProps={{
             endAdornment: (
@@ -228,7 +224,7 @@ function AdminEditCategory({ id, setActiveComponent, showAlert }) {
           fullWidth
           variant="contained"
           color="primary"
-          onClick={() => handleSave(id)}
+          onClick={() => handleSave(selectedCategory.id)}
         >
           Update Category
         </Button>

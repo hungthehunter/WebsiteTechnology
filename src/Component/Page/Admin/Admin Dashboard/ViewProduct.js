@@ -1,4 +1,6 @@
+import { ExpandLess, ExpandMore } from "@mui/icons-material";
 import {
+  Box,
   Button,
   Card,
   CardContent,
@@ -6,32 +8,32 @@ import {
   CircularProgress,
   Container,
   Grid,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableRow,
   Typography
 } from "@mui/material";
 import { useEffect, useState } from "react";
 import ImageGallery from "react-image-gallery";
 import "react-image-gallery/styles/css/image-gallery.css";
-import { getProductById } from "../../../Serivce/ApiService";
+import { useDispatch, useSelector } from "react-redux";
+import { productThunk } from "../../../../services/redux/thunks/thunk";
 import "./assets/css/style.scss";
 
 function AdminViewProduct({ id, setActiveComponent }) {
-  const [product, setProduct] = useState(null);
-
-  // GET: Fetch product data by ID
-  const loadProduct = async (id) => {
-    try {
-      const response = await getProductById(id);
-      setProduct(response.data);
-    } catch (error) {
-      console.error("Error fetching product:", error);
-    }
-  };
+  const dispatch = useDispatch();
+  const [showFullSpecs, setShowFullSpecs] = useState(false);
+  const [visibleSpecs, setVisibleSpecs] = useState(5); // Chỉnh số lượng hiển thị ở đây
 
   useEffect(() => {
-    loadProduct(id);
-  }, [id]);
+    dispatch(productThunk.getProductById(id));
+  }, [dispatch]);
 
-  if (!product) {
+  const selectedProduct = useSelector((state) => state.product.selectedProduct);
+  if (!selectedProduct) {
     return (
       <Container>
         <CircularProgress />
@@ -40,14 +42,18 @@ function AdminViewProduct({ id, setActiveComponent }) {
   }
 
   // Prepare images for Image Gallery
-  const images = product.product_image.map((image) => ({
+  const images = selectedProduct?.product_image?.map((image) => ({
     original: image.url,
-    thumbnail: image.url
+    thumbnail: image.url,
   }));
 
   // Separate the main image from the rest
-  const mainImage = images.find(img => img.original === product.product_image.find(img => img.mainImage)?.url);
-  const otherImages = images.filter(img => img !== mainImage);
+  const mainImage = images.find(
+    (img) =>
+      img.original ===
+      selectedProduct?.product_image?.find((img) => img.mainImage)?.url
+  );
+  const otherImages = images.filter((img) => img !== mainImage);
 
   return (
     <Container className="no-margin-container" style={{ marginTop: '20px', maxWidth: '100%' }}>
@@ -65,51 +71,74 @@ function AdminViewProduct({ id, setActiveComponent }) {
             </Grid>
             <Grid item xs={12} md={6}>
               <Typography variant="h4" gutterBottom>
-                {product.productName}
+                {selectedProduct?.productName}
               </Typography>
               <Typography variant="h6">
-                <strong>CPU:</strong> {product.cpu}
+              <strong>Manufacturer:</strong> {selectedProduct?.manufacturer?.name}
               </Typography>
-              <Typography variant="h6">
-                <strong>RAM:</strong> {product.ram}
+              <Typography variant="h6" >
+              <strong>Category:</strong>  {selectedProduct?.category?.name}
               </Typography>
-              <Typography variant="h6">
-                <strong>Screen:</strong> {product.screen}
+              <Typography variant="h6" >
+              <strong>Promotion:</strong>    {selectedProduct?.promotion?.name}
               </Typography>
-              <Typography variant="h6">
-                <strong>Unit Price:</strong> ${product.unitPrice}
-              </Typography>
-              <Typography variant="h6">
-                <strong>Units in Stock:</strong> {product.unitInStock}
-              </Typography>
-              <Typography variant="h6">
-                <strong>Units in Order:</strong> {product.unitInOrder}
-              </Typography>
-              <Typography variant="h6">
-                <strong>Battery Capacity:</strong> {product.batteryCapacity}
-              </Typography>
-              <Typography variant="h6">
-                <strong>Operating System:</strong> {product.operatingSystem}
-              </Typography>
-              <Typography variant="h6">
-                <strong>Design:</strong> {product.design}
-              </Typography>
-              <Typography variant="h6">
-                <strong>Warranty Information:</strong> {product.warrantyInformation}
-              </Typography>
-              <Typography variant="h6">
-                <strong>General Information:</strong> {product.generalInformation}
-              </Typography>
-              <Typography variant="h6">
-                <strong>Category:</strong> {product.category?.name}
-              </Typography>
-              <Typography variant="h6">
-                <strong>Manufacturer:</strong> {product.manufacturer?.name}
-              </Typography>
-              <Typography variant="h6">
-                <strong>Promotion:</strong> {product.promotion?.name}
-              </Typography>
-
+              
+              {/* Bảng mô tả thông số sản phẩm */}
+              <Typography variant="h5" gutterBottom color="primary">Product Description</Typography>
+              {selectedProduct && selectedProduct?.specification && (
+                <>
+                  <TableContainer
+                    component={Paper}
+                    sx={{ border: 1, borderColor: 'primary.main', borderRadius: 2, overflow: 'hidden' }}
+                  >
+                    <Table>
+                      <TableBody>
+                        {selectedProduct.specification.slice(0, visibleSpecs).map((spec, index) => (
+                          <TableRow
+                            key={spec.specificationName}
+                            sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                          >
+                            <TableCell
+                              component="th"
+                              scope="row"
+                              sx={{
+                                backgroundColor: index % 2 === 0 ? 'rgba(76, 175, 80, 0.1)' : 'background.paper',
+                                fontWeight: 'bold',
+                                color: 'text.primary',
+                              }}
+                            >
+                              <Typography variant="body1">{spec.specificationName}</Typography>
+                            </TableCell>
+                            <TableCell
+                              sx={{
+                                backgroundColor: index % 2 === 0 ? 'rgba(76, 175, 80, 0.1)' : 'background.paper',
+                                color: 'text.primary',
+                              }}
+                            >
+                              <Typography variant="body2">{spec.specificationData}</Typography>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                  <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+                    <Button
+                      onClick={() => {
+                        setShowFullSpecs(!showFullSpecs);
+                        setVisibleSpecs(showFullSpecs ? 5 : selectedProduct.specification.length); // Hiển thị tất cả thông số nếu nhấn
+                      }}
+                      endIcon={showFullSpecs ? <ExpandLess /> : <ExpandMore />}
+                      sx={{ color: 'text.primary', textTransform: 'none' }}
+                    >
+                      <Typography variant="body1">
+                        {showFullSpecs ? 'Thu gọn' : 'Xem thêm'}
+                      </Typography>
+                    </Button>
+                  </Box>
+                </>
+              )}
+              
               <Button
                 variant="contained"
                 color="primary"

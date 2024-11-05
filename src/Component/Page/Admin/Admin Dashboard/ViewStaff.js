@@ -19,7 +19,8 @@ import {
   Typography,
 } from "@mui/material";
 import { useEffect, useState } from "react";
-import { getUserById } from "../../../Serivce/ApiService";
+import { useDispatch, useSelector } from "react-redux";
+import { userThunk } from "../../../../services/redux/thunks/thunk";
 import "./../Admin Dashboard/assets/css/style.scss";
 
 function AdminViewStaff({ id, setActiveComponent }) {
@@ -29,43 +30,39 @@ function AdminViewStaff({ id, setActiveComponent }) {
   const [addresses, setAddresses] = useState([]);
   const [dateOfBirth, setDateOfBirth] = useState("");
   const [fullname, setFullname] = useState("");
+  const dispatch = useDispatch();
 
-  // GET: Get Data User form to Database Users by id
+  useEffect(()=>{
+   dispatch(userThunk.getUserById(id));
+  },[dispatch])
+
+  const selectedUser = useSelector((state) => state.user.selectedUser);
+
   useEffect(() => {
-    const fetchCustomerData = async () => {
-      try {
-        const response = await getUserById(id)
-        const { fullname: fullname,mobile: mobile, email: email,password: password,addresses: addresses,dateofbirth : dateofbirth } =
-        response.data;
-      setFullname(fullname);
-      setMobile(mobile);
-      setEmail(email);
-      setPassword(password);
-      setAddresses(addresses);
-      setDateOfBirth(dateofbirth);
-      } catch (error) {
-        console.error("Failed to fetch user data:", error);
-      }
-    };
-    fetchCustomerData();
-  }, [id]);
-
+    if (selectedUser) {
+      setFullname(selectedUser.fullname || "");
+      setMobile(selectedUser.mobile || "");
+      setEmail(selectedUser.email || "");
+      setDateOfBirth(selectedUser.dateofbirth || "");
+      setAddresses(selectedUser.addresses || []);
+    }
+  }, [selectedUser]);
   return (
     <Container maxWidth="md">
       <Card sx={{ mt: 4 }}>
         <CardHeader
-          title="User Information"
+          title="Customer Information"
           sx={{ bgcolor: "primary.main", color: "white", textAlign: "center" }}
         />
         <CardContent>
-        <Grid container spacing={2} justifyContent="center">
+          <Grid container spacing={2} justifyContent="center">
             <Grid item xs={12} md={4}>
               <Box display="flex" flexDirection="column" alignItems="center">
-                <Avatar sx={{ width: 100, height: 100 , borderRadius: 0}}>
+                <Avatar sx={{ width: 100, height: 100, borderRadius: 0 }}>
                   <PersonIcon sx={{ fontSize: 50 }} />
                 </Avatar>
                 <Typography variant="h6" sx={{ mt: 2 }}>
-                  {fullname}
+                  {fullname || "N/A"}
                 </Typography>
                 <Typography variant="subtitle1" color="text.secondary">
                   Customer ID: {id}
@@ -78,7 +75,7 @@ function AdminViewStaff({ id, setActiveComponent }) {
                   <PhoneIcon sx={{ mr: 2 }} />
                   <ListItemText
                     primary="Mobile"
-                    secondary={mobile}
+                    secondary={mobile || "N/A"}
                     primaryTypographyProps={{ variant: "h6" }}
                   />
                 </ListItem>
@@ -87,7 +84,7 @@ function AdminViewStaff({ id, setActiveComponent }) {
                   <EmailIcon sx={{ mr: 2 }} />
                   <ListItemText
                     primary="Email"
-                    secondary={email}
+                    secondary={email || "N/A"}
                     primaryTypographyProps={{ variant: "h6" }}
                   />
                 </ListItem>
@@ -96,7 +93,7 @@ function AdminViewStaff({ id, setActiveComponent }) {
                   <CakeIcon sx={{ mr: 2 }} />
                   <ListItemText
                     primary="Date of Birth"
-                    secondary={dateOfBirth}
+                    secondary={dateOfBirth || "N/A"}
                     primaryTypographyProps={{ variant: "h6" }}
                   />
                 </ListItem>
@@ -132,9 +129,9 @@ function AdminViewStaff({ id, setActiveComponent }) {
             <Button
               variant="contained"
               color="primary"
-              onClick={() => setActiveComponent({ name: "AdminStaff" })}
+              onClick={() => setActiveComponent({ name: "AdminCustomer" })}
             >
-              Return to Staff List
+              Return to Customer List
             </Button>
           </Box>
         </CardContent>

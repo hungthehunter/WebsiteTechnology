@@ -15,6 +15,9 @@ const addressSlice = createSlice({
         clearSelectedAddressId: (state) => {
             state.selectedAddress = null;
         },
+        addAddressToList: (state, action) => {
+            state.listAddress.push(action.payload);
+        },
     },
     extraReducers: (builder) => {
         // getAllAddresses
@@ -105,5 +108,5 @@ const addressSlice = createSlice({
     },
 });
 
-export const { clearSelectedAddressId } = addressSlice.actions;
+export const { clearSelectedAddressId , addAddressToList} = addressSlice.actions;
 export default addressSlice.reducer;

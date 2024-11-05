@@ -9,73 +9,37 @@ import {
   Typography,
 } from "@mui/material";
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { getDecentralization, getFunctions, getRoles, updateDecentralization } from "./service/AdminService";
+import { useDispatch, useSelector } from "react-redux";
+import { decentralizationThunk } from "../../../../services/redux/thunks/thunk";
 
-function AdminEditAccess({ setActiveComponent, id , showAlert}) {
+function AdminEditAccess({ setActiveComponent, id, showAlert }) {
   const [roleName, setRoleName] = useState("");
-  const [functionList, setFunctionList] = useState([]);
-  const [checkedState, setCheckedState] = useState([]);
   const [roleNameError, setRoleNameError] = useState("");
-  const [roles, setRoles] = useState([]);
-  const navigate = useNavigate(); // Chỉnh sửa từ useNavigate
+  const dispatch = useDispatch();
+
+  const selectedDecentralization = useSelector(
+    (state) => state.decentralization.selectedDecentralization
+  );
+  const listFunction = useSelector((state) => state.function.listFunction);
+  const listAccess = useSelector((state) => state.access.listAccess);
+
+  const [checkedState, setCheckedState] = useState([]);
 
   useEffect(() => {
-    const loadData = async () => {
-      try {
-        // Load functions và roles song song
-        await loadFunctions();
-        await loadRoles();
+    dispatch(decentralizationThunk.getDecentralizationById(id));
+  }, [dispatch, id]);
 
-        // Chờ loadFunctions xong mới load decentralization
-        if (functionList.length > 0 && id) {
-          await loadExistingDecentralization(id);
-        }
-      } catch (error) {
-        console.error("Failed to load data:", error);
-      }
-    };
-
-    loadData(); // Gọi hàm load data
-  }, [id, functionList.length]); // Thêm functionList.length vào dependency array
-
-  const loadFunctions = async () => {
-    try {
-      const response = await getFunctions();
-      setFunctionList(response.data);
-      setCheckedState(new Array(response.data.length).fill(false));
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const loadRoles = async () => {
-    try {
-      const response = await getRoles();
-      setRoles(response.data);
-    } catch (error) {
-      console.error("Failed to load roles:", error);
-    }
-  };
-
-  const loadExistingDecentralization = async (id) => {
-    try {
-      const response = await getDecentralization(id);
-      console.log('Decentralization data:', response.data); // Log dữ liệu để kiểm tra
-      const { access, functionIds } = response.data;
-
-      setRoleName(access.roleName);
-
-      // Cập nhật trạng thái checkbox dựa trên so sánh id
-      const checkedStateUpdated = functionList.map((func) =>
-        functionIds.some((f) => f.id === func.id)
+  // Cập nhật checkedState dựa trên selectedDecentralization
+  useEffect(() => {
+    if (selectedDecentralization && listFunction.length > 0) {
+      const newCheckedState = listFunction.map((func) =>
+        selectedDecentralization.functionIds.some((f) => f.id === func.id)
       );
-
-      setCheckedState(checkedStateUpdated);
-    } catch (error) {
-      console.error("Failed to load decentralization:", error);
+      setCheckedState(newCheckedState);
+      setRoleName(selectedDecentralization.access.roleName);
     }
-  };
+  }, [selectedDecentralization, listFunction]);
+  
 
   const handleCheckboxChange = (index) => {
     const updatedCheckedState = checkedState.map((item, i) =>
@@ -96,10 +60,11 @@ function AdminEditAccess({ setActiveComponent, id , showAlert}) {
   };
 
   const checkRoleNameExists = (name) => {
-    const roleExists = roles.some(
+    const roleExists = listAccess.some(
       (role) =>
         role.roleName.toLowerCase() === name.toLowerCase() &&
-        role.roleName.toLowerCase() !== id.roleName.toLowerCase()
+        role.roleName.toLowerCase() !==
+          selectedDecentralization.access.roleName.toLowerCase()
     );
     setRoleNameError(
       roleExists ? "Tên vai trò đã tồn tại, vui lòng nhập tên khác." : ""
@@ -110,10 +75,10 @@ function AdminEditAccess({ setActiveComponent, id , showAlert}) {
     e.preventDefault();
 
     if (roleNameError || !roleName) {
-      return; 
+      return;
     }
 
-    const selectedFunctions = functionList
+    const selectedFunctions = listFunction
       .filter((_, index) => checkedState[index])
       .map((func) => ({ functionName: func.functionName }));
 
@@ -122,15 +87,21 @@ function AdminEditAccess({ setActiveComponent, id , showAlert}) {
       functionIds: selectedFunctions,
     };
 
+    console.log("decentralization ", decentralizationData)
     try {
-      const response = await updateDecentralization(id, decentralizationData);
-      showAlert("decentralization updated successfully.", "success");
-      setTimeout(() => setActiveComponent({
-        name: "AdminAccess"
-      }), 1000);
-
+      await dispatch(
+        decentralizationThunk.updateDecentralization({
+          id: id,
+          decentralizationData: decentralizationData,
+        })
+      );
+      showAlert("Decentralization updated successfully.", "success");
+      setTimeout(() => setActiveComponent({ name: "AdminAccess" }), 1000);
     } catch (error) {
-      showAlert("Failed to update the decentralization. Please try again.", "error");
+      showAlert(
+        "Failed to update the decentralization. Please try again.",
+        "error"
+      );
     }
   };
 
@@ -143,7 +114,9 @@ function AdminEditAccess({ setActiveComponent, id , showAlert}) {
           </Box>
 
           <form className="form-account" onSubmit={handleSubmit}>
-            <FormHelperText sx={{ fontSize: "18px", fontWeight: "bold", color: "black" }}>
+            <FormHelperText
+              sx={{ fontSize: "18px", fontWeight: "bold", color: "black" }}
+            >
               Role Name
             </FormHelperText>
             <TextField
@@ -162,12 +135,12 @@ function AdminEditAccess({ setActiveComponent, id , showAlert}) {
               </FormHelperText>
 
               <Grid container spacing={2}>
-                {functionList.map((func, index) => (
+                {listFunction.map((func, index) => (
                   <Grid item xs={12} sm={6} md={4} lg={3} key={func.id}>
                     <FormControlLabel
                       control={
                         <Checkbox
-                          checked={checkedState[index]}
+                          checked={checkedState[index] || false} // Sử dụng `|| false` để tránh lỗi undefined
                           onChange={() => handleCheckboxChange(index)}
                           sx={{ "& .MuiSvgIcon-root": { fontSize: 28 } }}
                         />

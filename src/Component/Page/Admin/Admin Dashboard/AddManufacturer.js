@@ -8,16 +8,14 @@ import {
   Select,
   TextField
 } from "@mui/material";
-import React, { useEffect, useState } from "react";
-import { createManufacturer, getAllProduct } from "../../../Serivce/ApiService";
+import React, { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { manufacturerThunk } from "../../../../services/redux/thunks/thunk";
 import "./assets/css/style.scss";
 
 function AdminAddManufacturer({ setActiveComponent, showAlert }) {
-  const [products, setProducts] = useState([]);
-  const [selectedProduct, setSelectedProduct] = useState("");
+  const [selectedProduct, setSelectedProduct] = useState([]);
   const [imageFile, setImageFile] = useState(null);
-
-  // Manufacturer new
   const [name, setName] = useState("");
   const [country, setCountry] = useState("");
   const [website, setWebsite] = useState("");
@@ -25,39 +23,30 @@ function AdminAddManufacturer({ setActiveComponent, showAlert }) {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
-  const [createdAt, setCreatedAt] = useState(null); // kiểu Data
-  const [updatedAt, setUpdatedAt] = useState(null); // kiểu Data
+  const [createdAt, setCreatedAt] = useState(null);
+  const [updatedAt, setUpdatedAt] = useState(null);
 
-  useEffect(() => {
-    getAllProducts();
-  }, []);
+  const listProduct = useSelector((state) => state.product.listProduct);
+  const dispatch = useDispatch();
 
-  const handleProductChange = (e) => {
-    setSelectedProduct(e.target.value);
-  };
-
-  const handleImageChange = (e) => {
-    setImageFile(e.target.files[0]);
-  };
-
-  const handleInputChange = (setter) => (e) => {
-    setter(e.target.value);
-  };
+  const handleProductChange = (e) => setSelectedProduct(e.target.value);
+  const handleImageChange = (e) => setImageFile(e.target.files[0]);
+  const handleInputChange = (setter) => (e) => setter(e.target.value);
 
   const handleAdd = async () => {
     const formData = new FormData();
-  
+
     const manufacturerDTO = {
-      name: name,
-      country: country,
-      website: website,
-      description: description,
-      email: email,
-      phone: phone,
-      address: address,
-      createdAt: createdAt.toISOString(),
-      updatedAt: updatedAt.toISOString(),
-      products: selectedProduct ? [selectedProduct] : [],
+      name,
+      country,
+      website,
+      description,
+      email,
+      phone,
+      address,
+      createdAt: createdAt ? createdAt.toISOString() : null,
+      updatedAt: updatedAt ? updatedAt.toISOString() : null,
+      products: selectedProduct.map(id => ({ id })),
     };
 
     formData.append(
@@ -68,27 +57,14 @@ function AdminAddManufacturer({ setActiveComponent, showAlert }) {
     if (imageFile) {
       formData.append("file", imageFile);
     }
+
     try {
-      const response = await createManufacturer(formData);
-      if (response.status === 200) {
-        showAlert("Add new manufacturer successfully", "success");
-        setActiveComponent({ name: "AdminManufacturer" });
-      }
+      await dispatch(manufacturerThunk.createManufacturer(formData));
+      showAlert("Add new manufacturer successfully", "success");
+      setActiveComponent({ name: "AdminManufacturer" });
     } catch (error) {
-      console.error("Error add new manufacturer:", error);
+      console.error("Error adding manufacturer:", error);
       showAlert("Failed to add manufacturer.", "error");
-    }
-  };
-
-  /*------------------------------ Database functions ------------------------------------*/
-
-  // GET: Function to get list of products
-  const getAllProducts = async () => {
-    try {
-      const response = await getAllProduct();
-      setProducts(response.data);
-    } catch (error) {
-      console.error("Failed to get list of products:", error);
     }
   };
 
@@ -96,8 +72,6 @@ function AdminAddManufacturer({ setActiveComponent, showAlert }) {
     <Box sx={{ padding: 4 }}>
       <h2>Add Manufacturer</h2>
       <form id="editForm">
-
-        {/* Product Selection */}
         <FormControl fullWidth margin="normal" variant="outlined">
           <InputLabel id="product-select-label">Select Product</InputLabel>
           <Select
@@ -105,10 +79,11 @@ function AdminAddManufacturer({ setActiveComponent, showAlert }) {
             value={selectedProduct}
             onChange={handleProductChange}
             label="Select Product"
+            multiple
           >
             <MenuItem value={null}>None</MenuItem>
-            {products.length > 0 ? (
-              products.map((product) => (
+            {listProduct.length > 0 ? (
+              listProduct.map((product) => (
                 <MenuItem key={product.id} value={product.id}>
                   {product.productName}
                 </MenuItem>
@@ -189,18 +164,12 @@ function AdminAddManufacturer({ setActiveComponent, showAlert }) {
           onChange={(e) => setUpdatedAt(new Date(e.target.value))}
         />
 
-        {/* Image Upload */}
         <TextField
           type="file"
           fullWidth
           margin="normal"
-          label="Manufacturer Image"
-          InputLabelProps={{
-            shrink: true,
-          }}
-          inputProps={{
-            accept: "image/*",
-          }}
+          InputLabelProps={{ shrink: true }}
+          inputProps={{ accept: "image/*" }}
           onChange={handleImageChange}
           InputProps={{
             endAdornment: (

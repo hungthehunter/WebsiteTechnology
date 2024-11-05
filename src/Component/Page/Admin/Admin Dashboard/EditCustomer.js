@@ -11,10 +11,12 @@ import {
   TextField,
   Typography
 } from "@mui/material";
+import CircularProgress from '@mui/material/CircularProgress';
 import React, { useEffect, useState } from "react";
-import { getUserLoggedById, updateUser } from "../../../Serivce/ApiService";
+import { useDispatch, useSelector } from "react-redux";
+import { clearSelectedUserId } from "../../../../services/redux/slices/userSlice";
+import { userThunk } from "../../../../services/redux/thunks/thunk";
 import "./assets/css/style.scss";
-import { getAllDecentralization } from "./service/AdminService";
 
 function AdminEditCustomer({ id, setActiveComponent, showAlert }) {
   const [fullname, setFullName] = useState("");
@@ -37,57 +39,31 @@ function AdminEditCustomer({ id, setActiveComponent, showAlert }) {
     },
   ]);
   const [password, setPassword] = useState("");
+  const listAccess = useSelector((state) => state.access.listAccess);
+  const listUser = useSelector((state) => state.user.listUser);
+  const dispatch = useDispatch();
+  
+  // Lấy thông tin người dùng theo ID
+  useEffect(() => {
+    dispatch(userThunk.getUserById(id));
+  }, [dispatch, id]);
 
-  // Fetch decentralizations
-  const [access, setAccess] = useState([]);
-  const getDecentralizations = async () => {
-    try {
-      const response = await getAllDecentralization();
-      setAccess(response.data);
-    } catch (error) {
-      console.error("Error fetching decentralizations:", error);
+  // Lấy thông tin người dùng đã chọn
+  const selectedUser = useSelector((state) => state.user.selectedUser);
+  const isLoading = useSelector((state) => state.user.isLoading);
+
+  // Cập nhật trạng thái khi selectedUser thay đổi
+  useEffect(() => {
+    if (selectedUser) {
+      setFullName(selectedUser.fullname || "");
+      setMobile(selectedUser.mobile || "");
+      setEmail(selectedUser.email || "");
+      setStatus(selectedUser.status ? "true" : "false");
+      setDateOfBirth(selectedUser.dateofbirth || "");
+      setDecentralization(selectedUser.decentralization?.id || "");
+      setAddresses(selectedUser.addresses || []); // Cập nhật danh sách địa chỉ
     }
-  };
-
-  useEffect(() => {
-    getDecentralizations();
-  }, []);
-
-  useEffect(() => {
-    const fetchCustomerData = async () => {
-      try {
-        const response = await getUserLoggedById(id);
-        const { fullname, mobile, email, password, addresses, dateofbirth } =
-          response.data;
-        setFullName(fullname);
-        setMobile(mobile);
-        setEmail(email);
-        setPassword(password);
-        setDateOfBirth(dateofbirth);
-        setAddresses(
-          addresses && addresses.length > 0
-            ? addresses
-            : [
-                {
-                  houseNumber: "",
-                  street: "",
-                  ward: "",
-                  district: "",
-                  city: "",
-                  country: "",
-                  user: {
-                    id: id,
-                  },
-                },
-              ]
-        );
-        setPassword(); // Initialize password but don't modify it unless needed
-      } catch (error) {
-        console.error("Failed to fetch user data:", error);
-      }
-    };
-    fetchCustomerData();
-  }, [id]);
+  }, [selectedUser]);
 
   const handleAddressChange = (index, event) => {
     const { name, value } = event.target;
@@ -143,30 +119,51 @@ function AdminEditCustomer({ id, setActiveComponent, showAlert }) {
       return;
     }
 
-    // Ensure addresses are not null
     const requestBody = {
-      fullname:fullname,
-      mobile:mobile,
-      email:email,
-      password:password,
+      fullname: fullname,
+      mobile: mobile,
+      email: email,
+      password: password,
       status: status,
       role: "User",
       dateofbirth: formatDate,
       decentralization: { id: decentralization },
-      addresses: addresses || [], // Default to empty array if null
+      addresses: addresses || [],
     };
 
     try {
-      await updateUser(id,requestBody);
-
+      await  dispatch(userThunk.updateUser({id: selectedUser.id,userData: requestBody}))
       showAlert("Edit customer successfully.", "success");
+      dispatch(clearSelectedUserId());
       setTimeout(() => setActiveComponent({ name: "AdminCustomer" }), 1000);
     } catch (error) {
       console.error("Error editing user:", error);
-      
       showAlert("Failed to edit customer.", "error");
     }
   };
+
+  if (isLoading) {
+    return (
+      <Box sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100vh',
+        width: '100vw',
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        backgroundColor: 'black',
+        zIndex: 9999
+      }}>
+        <CircularProgress size={60} thickness={4}  sx={{ color: '#4CAF50' }}  />
+        <Typography variant="h6" sx={{ mt: 2, color: '#4CAF50' }}>
+          PLEASE WAIT...
+        </Typography>
+      </Box>
+    );
+  }
 
   return (
     <Box sx={{ padding: 4 }}>
@@ -204,7 +201,6 @@ function AdminEditCustomer({ id, setActiveComponent, showAlert }) {
                   onChange={(e) => setMobile(e.target.value)}
                 />
               </Grid>
-          
 
               <Grid item xs={12}>
                 <TextField
@@ -215,6 +211,7 @@ function AdminEditCustomer({ id, setActiveComponent, showAlert }) {
                   onChange={(e) => setPassword(e.target.value)}
                 />
               </Grid>
+              
               <Grid item xs={12}>
                 <FormControl fullWidth>
                   <InputLabel>Status</InputLabel>
@@ -240,16 +237,15 @@ function AdminEditCustomer({ id, setActiveComponent, showAlert }) {
                     <MenuItem value="" disabled>
                       Select access
                     </MenuItem>
-                    {access.map((accessItem) => (
+                    {listAccess.map((accessItem) => (
                       <MenuItem key={accessItem.id} value={accessItem.id}>
-                        {accessItem.access.roleName}
+                        {accessItem.roleName}
                       </MenuItem>
                     ))}
                   </Select>
                 </FormControl>
               </Grid>
 
-              {/* Date of Birth */}
               <Grid item xs={12} md={6}>
                 <TextField
                   fullWidth
@@ -333,7 +329,6 @@ function AdminEditCustomer({ id, setActiveComponent, showAlert }) {
                   </Grid>
                 </Grid>
               ))}
-
               <Grid item xs={12}>
                 <Button
                   variant="contained"
@@ -344,16 +339,8 @@ function AdminEditCustomer({ id, setActiveComponent, showAlert }) {
                 </Button>
               </Grid>
               <Grid item xs={12}>
-                <Button type="submit" variant="contained" color="primary">
-                  Confirm
-                </Button>
-                <Button
-                  type="button"
-                  variant="outlined"
-                  color="secondary"
-                  onClick={() => setActiveComponent({ name: "AdminCustomer" })}
-                >
-                  Return to Customer List
+                <Button variant="contained" type="submit">
+                  Save Changes
                 </Button>
               </Grid>
             </Grid>

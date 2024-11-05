@@ -1,6 +1,8 @@
-import axios from "axios";
-import { useEffect, useRef, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { addressThunk, orderThunk, userThunk } from "../../../services/redux/thunks/thunk";
 import AccountAddress from "./AccountAddress";
 import AccountDetail from "./AccountDetail";
 import AccountHeader from "./AccountHeader";
@@ -10,9 +12,12 @@ import "./css/style.scss";
 import SidebarAccountHistory from "./SideBar";
 
 const AccountHistory = () => {
-  /*------- Page function -------*/
+  const isLoggingOut = useSelector((state) => state.user.isLoggingOut);
+  const userCurrentLogged = useSelector((state) => state.user.userCurrentLogged);
   const [activeIndex, setActiveIndex] = useState(null);
   const [menuActive, setMenuActive] = useState(false);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
   const [activeComponent, setActiveComponent] = useState({
     name: "AccountDetail",
     props: {},
@@ -26,33 +31,35 @@ const AccountHistory = () => {
     setMenuActive(!menuActive);
   };
 
-  // Dashboard: Load List of User when component mounts
+  useEffect(() => {
+    if (!userCurrentLogged && !isLoggingOut) {
+      toast.error("PLEASE LOGIN BEFORE CONTINUING");
+      navigate("/websiteDoAn/Login");
+    }
+  }, [userCurrentLogged, isLoggingOut, navigate]);
 
   useEffect(() => {
-    loadUsers();
-  }, []);
+    const fetchData = async () => {
+      try {
+        await Promise.all([
+          dispatch(addressThunk.getAllAddresses()).unwrap(),
+          dispatch(userThunk.getAllUsers()).unwrap(),
+          dispatch(orderThunk.getAllOrders()).unwrap(),
+        ]);
+      } catch (error) {
+        console.error("Failed to fetch data:", error);
+      }
+    };
 
-  // Dashboard: Handle search bar
-
-  const handleInputSearch = (event) => {
-    const searchTerm = event.target.value;
-    setSearchTerm(searchTerm);
-    const filteredUsers = users.filter((user) =>
-      user.username.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-    setFilteredUsers(filteredUsers);
-  };
-
-  // Dashboard: Handle change main page
+    fetchData();
+  }, [dispatch]);
 
   const getActiveComponent = () => {
     switch (activeComponent.name) {
       case "AccountDetail":
         return <AccountDetail setActiveComponent={setActiveComponent} />;
       case "AccountProductHistory":
-        return (
-          <AccountProductHistory setActiveComponent={setActiveComponent} />
-        );
+        return <AccountProductHistory setActiveComponent={setActiveComponent} />;
       case "AccountAddress":
         return <AccountAddress setActiveComponent={setActiveComponent} />;
       case "AccountOrder":
@@ -61,46 +68,6 @@ const AccountHistory = () => {
         return <div>Component not found</div>;
     }
   };
-
-  /*------- Database function -------*/
-  // Set element User
-
-  const [users, setUsers] = useState([]);
-  const [filteredUsers, setFilteredUsers] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
-
-  // GET: List of User from Database
-
-  const loadUsers = async () => {
-    try {
-      const result = await axios.get(
-        "http://localhost:8080/api/v1/admin/listUsers"
-      );
-      setUsers(result.data);
-      setFilteredUsers(result.data); // Initialize filteredUsers with all users
-    } catch (error) {
-      console.error("Failed to load users:", error);
-    }
-  };
-
-  // GET: Current User Logged or No validation
-  const location = useLocation();
-  const navigate = useNavigate();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const isInitialMount = useRef(true);
-
-  useEffect(() => {
-    const token = localStorage.getItem("authToken");
-    setIsLoggedIn(!!token);
-
-    if (isInitialMount.current) {
-      isInitialMount.current = false;
-      if (!token) {
-        alert("PLEASE LOGIN BEFORE CONTINUING");
-        navigate("/websiteDoAn/Login");
-      }
-    }
-  }, [navigate]); // Removed location from dependencies
 
   return (
     <div className="account-history">

@@ -42,7 +42,7 @@ function Sidebar({ show, onClose }) {
     }
 
     const newQuantity = item.quantity - 1;
-
+    const totalPrice = newQuantity * item.product.unitPrice;
     if (newQuantity <= 0) {
       // Nếu số lượng <= 0, xóa sản phẩm khỏi giỏ hàng
       handleRemoveFromCart(item.id);
@@ -51,6 +51,7 @@ function Sidebar({ show, onClose }) {
       const updatedCartData = {
         quantity: newQuantity,
         status: true,
+        totalPrice: totalPrice, // ở đây là tính totalPrice
         user: {
           id: userCurrentLogged.id,
         },
@@ -81,9 +82,12 @@ function Sidebar({ show, onClose }) {
     }
 
     const newQuantity = item.quantity + 1;
+    const totalPrice = newQuantity * item.product.unitPrice;
+
     const updatedCartData = {
       quantity: newQuantity,
       status: true,
+      totalPrice: totalPrice, // ở đây là tính totalPrice
       user: {
         id: userCurrentLogged.id,
       },
@@ -198,6 +202,9 @@ function Sidebar({ show, onClose }) {
                     </Typography>
                     <Typography variant="body2" sx={{ color: "white" }}>
                       ${item?.product?.unitPrice?.toFixed(2)}
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: "white" }}>
+                      ${item?.quantity * item?.product?.unitPrice}
                     </Typography>
                     <Box sx={{ display: "flex", alignItems: "center" }}>
                       <Button

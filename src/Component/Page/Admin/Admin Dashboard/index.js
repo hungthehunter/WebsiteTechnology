@@ -1,13 +1,14 @@
 import { Box } from '@mui/material';
+import MuiAlert from '@mui/material/Alert';
+import Snackbar from '@mui/material/Snackbar';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
-import axios from "axios";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
+import { FaExclamationCircle } from "react-icons/fa"; // Biểu tượng
 import { useDispatch, useSelector } from 'react-redux';
-import { useLocation, useNavigate } from "react-router-dom";
-import { addressThunk, orderThunk, productThunk, userThunk } from '../../../../services/redux/thunks/thunk';
+import { useNavigate } from 'react-router-dom';
+import { accessThunk, addressThunk, categoryThunk, decentralizationThunk, functionThunk, manufacturerThunk, orderThunk, productThunk, promotionThunk, userThunk } from '../../../../services/redux/thunks/thunk';
 import AdminAccess from "./Access";
 import AdminAddAccess from "./AddAccess";
-import AdminAddCategory from "./AddCategory";
 import AdminAddCustomer from "./AddCustomer";
 import AdminAddManufacturer from "./AddManufacturer";
 import AdminAddProduct from "./AddProduct";
@@ -28,14 +29,13 @@ import AdminHeader from "./Header";
 import AdminManufacturer from "./Manufacturer";
 import AdminOrder from "./Order";
 import AdminProduct from "./Product";
-import AdminRole from "./Role";
 import SidebarAdmin from "./Sidebar";
 import AdminStaff from "./Staff";
 import AdminViewCategory from "./ViewCategory";
 import AdminViewCustomer from "./ViewCustomer";
 import AdminViewManufacturer from "./ViewManufacturer";
 import AdminViewProduct from "./ViewProduct";
-import AdminViewStaff from "./ViewStaff";
+import AdminViewStaff from './ViewStaff';
 // Tạo theme tùy chỉnh
 const theme = createTheme({
   palette: {
@@ -50,7 +50,7 @@ const theme = createTheme({
 function AdminPage() {
   /*------- Dispatch function -------*/
   const dispatch = useDispatch();
-
+  const navigate = useNavigate();
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -59,6 +59,12 @@ function AdminPage() {
           dispatch(addressThunk.getAllAddresses()).unwrap(),
           dispatch(userThunk.getAllUsers()).unwrap(),
           dispatch(productThunk.getAllProduct()).unwrap(),
+          dispatch(functionThunk.getAllFunctions()).unwrap(),
+          dispatch(accessThunk.getAllAccess()).unwrap(),
+          dispatch(decentralizationThunk.getAllDecentralization()).unwrap(),
+          dispatch(promotionThunk.getAllPromotions()).unwrap(),
+          dispatch(categoryThunk.getAllCategories()).unwrap(),
+          dispatch(manufacturerThunk.getAllManufacturers()).unwrap(),
         ]);
       } catch (error) {
         console.error("Failed to fetch data:", error);
@@ -70,19 +76,17 @@ function AdminPage() {
   
 
   /*------- Data function -------*/
-  const listOrder = useSelector((state) => state.order.listOrder);
-  const listUser = useSelector((state) => state.user.listUser);
-  const listProduct = useSelector((state) => state.product.listProduct);
-
+  const userCurrentLogged = useSelector((state) => state.user.userCurrentLogged);
   /*------- Page function -------*/
 
   const [activeIndex, setActiveIndex] = useState(null);
-
+  const [open, setOpen] = useState(false);
   const [menuActive, setMenuActive] = useState(true);
   const [activeComponent, setActiveComponent] = useState({
     name: "AdminDashboard",
     props: {},
   });
+  
 
   const handleMouseOver = (index) => {
     setActiveIndex(index);
@@ -107,23 +111,6 @@ function AdminPage() {
     setOpenSnackbar(true);
   };
 
-  // Dashboard: Load List of User when component mounts
-
-  useEffect(() => {
-    loadUsers();
-  }, []);
-
-  // Dashboard: Handle search bar
-
-  const handleInputSearch = (event) => {
-    const searchTerm = event.target.value;
-    setSearchTerm(searchTerm);
-    const filteredUsers = users.filter((user) =>
-      user.username.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-    setFilteredUsers(filteredUsers);
-  };
-
   // Dashboard: Handle change main page
 
   const getActiveComponent = () => {
@@ -131,261 +118,217 @@ function AdminPage() {
       case "AdminDashboard":
         return <AdminDashboard />;
       case "AdminCustomer":
-        return (
+        return checkPermission("View Customer List") ? (
           <AdminCustomer
             setActiveComponent={setActiveComponent}
             showAlert={showAlert}
           />
-        );
+        ) : null;
       case "AdminOrder":
-        return (
+        return checkPermission("View Order List") ? (
           <AdminOrder
             setActiveComponent={setActiveComponent}
             showAlert={showAlert}
           />
-        );
+        ) : null;
       case "AdminProduct":
-        return (
+        return checkPermission("View Product List") ? (
           <AdminProduct
             setActiveComponent={setActiveComponent}
             showAlert={showAlert}
           />
-        );
+        ) : null;
       case "AdminStaff":
-        return (
+        return checkPermission("View Staff List") ? (
           <AdminStaff
             setActiveComponent={setActiveComponent}
             showAlert={showAlert}
           />
-        );
+        ) : null;
       case "AdminAddCustomer":
-        return (
+        return checkPermission("Create Customer") ? (
           <AdminAddCustomer
             setActiveComponent={setActiveComponent}
             showAlert={showAlert}
           />
-        );
+        ) : null;
       case "AdminCategory":
-        return (
+        return checkPermission("View Category List") ? (
           <AdminCategory
             setActiveComponent={setActiveComponent}
             showAlert={showAlert}
           />
-        );
+        ) : null;
       case "AdminManufacturer":
-        return (
+        return checkPermission("View Manufacturer List") ? (
           <AdminManufacturer
             setActiveComponent={setActiveComponent}
             showAlert={showAlert}
           />
-        );
+        ) : null;
       case "AdminAddManufacturer":
-        return (
+        return checkPermission("Create Manufacturer") ? (
           <AdminAddManufacturer
             setActiveComponent={setActiveComponent}
             showAlert={showAlert}
           />
-        );
-
+        ) : null;
       case "AdminEditManufacturer":
-        return (
-            <AdminEditManufacturer
-              id={activeComponent.props.id}
-              setActiveComponent={setActiveComponent}
-              showAlert={showAlert}
-            />
-          );
-          case "AdminViewManufacturer":
-            return (
-                <AdminViewManufacturer
-                  id={activeComponent.props.id}
-                  setActiveComponent={setActiveComponent}
-                  showAlert={showAlert}
-                />
-              );
-      
-      
-
+        return checkPermission("Edit Manufacturer") ? (
+          <AdminEditManufacturer
+            id={activeComponent.props.id}
+            setActiveComponent={setActiveComponent}
+            showAlert={showAlert}
+          />
+        ) : null;
+      case "AdminViewManufacturer":
+        return checkPermission("View Manufacturer List") ? (
+          <AdminViewManufacturer
+            id={activeComponent.props.id}
+            setActiveComponent={setActiveComponent}
+            showAlert={showAlert}
+          />
+        ) : null;
       case "AdminViewCustomer":
-        return (
+        return checkPermission("View Customer List") ? (
           <AdminViewCustomer
             id={activeComponent.props.id}
             setActiveComponent={setActiveComponent}
             showAlert={showAlert}
           />
-        );
+        ) : null;
       case "AdminEditCustomer":
-        return (
+        return checkPermission("Edit Customer") ? (
           <AdminEditCustomer
             id={activeComponent.props.id}
             setActiveComponent={setActiveComponent}
             showAlert={showAlert}
           />
-        );
+        ) : null;
       case "AdminViewProduct":
-        return (
+        return checkPermission("View Product List") ? (
           <AdminViewProduct
             id={activeComponent.props.id}
             setActiveComponent={setActiveComponent}
             showAlert={showAlert}
           />
-        );
-
-        case "AdminViewCategory":
-          return (
-            <AdminViewCategory
-              id={activeComponent.props.id}
-              setActiveComponent={setActiveComponent}
-              showAlert={showAlert}
-            />
-          );
+        ) : null;
+      case "AdminViewCategory":
+        return checkPermission("View Category List") ? (
+          <AdminViewCategory
+            id={activeComponent.props.id}
+            setActiveComponent={setActiveComponent}
+            showAlert={showAlert}
+          />
+        ) : null;
       case "AdminEditProduct":
-        return (
+        return checkPermission("Edit Product") ? (
           <AdminEditProduct
             id={activeComponent.props.id}
             setActiveComponent={setActiveComponent}
             showAlert={showAlert}
           />
-        );
+        ) : null;
       case "AdminAddProduct":
-        return (
+        return checkPermission("Create Product") ? (
           <AdminAddProduct
             setActiveComponent={setActiveComponent}
             showAlert={showAlert}
           />
-        );
-        
+        ) : null;
       case "AdminEditCategory":
-        return (
+        return checkPermission("Edit Category") ? (
           <AdminEditCategory
-          id={activeComponent.props.id}
+            id={activeComponent.props.id}
             setActiveComponent={setActiveComponent}
             showAlert={showAlert}
           />
-        );
-
+        ) : null;
       case "AdminEditOrder":
-        return (
+        return checkPermission("Edit Order") ? (
           <AdminEditOrder
             id={activeComponent.props.id}
             setActiveComponent={setActiveComponent}
             showAlert={showAlert}
           />
-        );
-
+        ) : null;
       case "AdminAddStaff":
-        return (
+        return checkPermission("Create Staff") ? (
           <AdminAddStaff
             setActiveComponent={setActiveComponent}
             showAlert={showAlert}
           />
-        );
+        ) : null;
       case "AdminViewStaff":
-        return (
+        return checkPermission("View Staff List") ? (
           <AdminViewStaff
             id={activeComponent.props.id}
             setActiveComponent={setActiveComponent}
             showAlert={showAlert}
           />
-        );
-
+        ) : null;
       case "AdminEditStaff":
-        return (
+        return checkPermission("Edit Staff") ? (
           <AdminEditStaff
             id={activeComponent.props.id}
             setActiveComponent={setActiveComponent}
             showAlert={showAlert}
           />
-        );
-      case "AdminAddCategory":
-        return (
-          <AdminAddCategory
-            setActiveComponent={setActiveComponent}
-            showAlert={showAlert}
-          />
-        );
-      case "AdminChart":
-        return (
-          <AdminChart
-            setActiveComponent={setActiveComponent}
-            showAlert={showAlert}
-          />
-        );
+        ) : null;
       case "AdminAccess":
-        return (
+        return checkPermission("View Access List") ? (
           <AdminAccess
             setActiveComponent={setActiveComponent}
             showAlert={showAlert}
           />
-        );
-      case "AdminAddAccess":
-        return (
-          <AdminAddAccess
-            setActiveComponent={setActiveComponent}
-            showAlert={showAlert}
-          />
-        );
+        ) : null;
       case "AdminEditAccess":
-        return (
+        return checkPermission("Edit Access") ? (
           <AdminEditAccess
             id={activeComponent.props.id}
             setActiveComponent={setActiveComponent}
             showAlert={showAlert}
           />
-        );
-
-      case "AdminRole":
-        return (
-          <AdminRole
+        ) : null;
+      case "AdminAddAccess":
+        return checkPermission("Create Access") ? (
+          <AdminAddAccess
             setActiveComponent={setActiveComponent}
             showAlert={showAlert}
           />
-        );
-
+        ) : null;
+      case "AdminChart":
+        return checkPermission("View Chart") ? (
+          <AdminChart />
+        ) : null;
       default:
-        return <div>Component not found</div>;
+          handleAccessDenied(); 
+          return null;
+    }
+  };
+  
+  const handleAccessDenied = () => {
+    if (!open) { // Chỉ mở Snackbar nếu nó chưa mở
+      setOpen(true);
     }
   };
 
-  /*------- Database function -------*/
-  // Set element User
-
-  const [users, setUsers] = useState([]);
-  const [filteredUsers, setFilteredUsers] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
-
-  // GET: List of User from Database
-
-  const loadUsers = async () => {
-    try {
-      const result = await axios.get(
-        "http://localhost:8080/api/v1/admin/listUsers"
-      );
-      setUsers(result.data);
-      setFilteredUsers(result.data); // Initialize filteredUsers with all users
-    } catch (error) {
-      console.error("Failed to load users:", error);
+    const handleClose = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
     }
+    setOpen(false); // Đóng Snackbar
   };
 
-  // GET: Current User Logged or No validation
-  const location = useLocation();
-  const navigate = useNavigate();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const isInitialMount = useRef(true);
 
-  useEffect(() => {
-    const token = localStorage.getItem("authToken");
-    setIsLoggedIn(!!token);
+const checkPermission = (permissionName) => {
+  // Kiểm tra xem người dùng có quyền truy cập vào chức năng không
+  if (!userCurrentLogged || !userCurrentLogged.decentralization || !userCurrentLogged.decentralization.functionIds) return false;
 
-    if (isInitialMount.current) {
-      isInitialMount.current = false;
-      if (!token) {
-        alert("PLEASE LOGIN BEFORE CONTINUING");
-        navigate("/websiteDoAn/Login");
-      }
-    }
-  }, [navigate]); // Removed location from dependencies
+  return userCurrentLogged.decentralization.functionIds.some(func => 
+    func.functionName === permissionName && func.status
+  );
+};
 
   return (
     <ThemeProvider theme={theme}> {/* Thêm ThemeProvider */}
@@ -395,7 +338,7 @@ function AdminPage() {
             activeIndex={activeIndex}
             handleMouseOver={handleMouseOver}
             setActiveComponent={setActiveComponent}
-            menuActive={menuActive} // Truyền menuActive
+            menuActive={menuActive} 
           />
 
           <Box className={`main ${menuActive ? "active" : ""}`}>
@@ -412,6 +355,19 @@ function AdminPage() {
           </Box>
         </Box>
       </Box>
+
+       {/* Snackbar thông báo */}
+       <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
+        <MuiAlert onClose={handleClose} severity="error" sx={{ width: '100%' }}>
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <FaExclamationCircle style={{ marginRight: '8px' }} /> {/* Biểu tượng */}
+            <div>
+              <div style={{ fontWeight: 'bold' }}>Access Denied</div> {/* Tiêu đề */}
+              <div>You are not allowed to go there.</div> {/* Dòng chữ bên dưới */}
+            </div>
+          </div>
+        </MuiAlert>
+      </Snackbar>
     </ThemeProvider>
   );
 }

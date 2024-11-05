@@ -1,6 +1,4 @@
 import { keyframes } from '@emotion/react';
-import { faTrash } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   Box, Button, ButtonGroup, Dialog, DialogActions, DialogContent, DialogTitle,
   Grid, IconButton, Stack, Tooltip, Typography,
@@ -9,56 +7,66 @@ import {
 } from '@mui/material';
 import React, { useState } from 'react';
 import { toast } from 'react-hot-toast';
+import { AiFillDelete } from 'react-icons/ai';
+import { useDispatch, useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
+import { cartThunk } from '../../../../services/redux/thunks/thunk';
 import "../CartItem/CartItem.scss";
-
-const dummyCartProduct = {
-  id: 1,
-  name: "Premium Leather Wallet",
-  price: 59.99,
-  quantity: 1,
-  total: 59.99,
-  image: "http://res.cloudinary.com/dy53gt8yd/image/upload/v1726574589/rbduwtkahn5l9nyvpz6v.jpg",
-  shortDescription: "Handcrafted genuine leather wallet with multiple card slots and RFID protection."
-};
 
 const fadeIn = keyframes`
   from { opacity: 0; }
   to { opacity: 1; }
 `;
 
-export default function CartItem({ cart }) { // Giảm kích thước tối đa
+export default function CartItem({ cart }) {
   const [open, setOpen] = useState(false);
-  const [cartProduct, setCartProduct] = useState(dummyCartProduct);
+  const dispatch = useDispatch();
+  const [cartProduct, setCartProduct] = useState(cart);
   const theme = useTheme();
+  const userCurrentLogged = useSelector((state) => state.user.userCurrentLogged);
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
-  const increaseQuantity = () => {
-    setCartProduct(prev => ({
-      ...prev,
-      quantity: prev.quantity + 1,
-      total: (prev.quantity + 1) * prev.price,
-    }));
-  };
+  const handleQuantityChange = async (item, increase = true) => {
+    const newQuantity = item.quantity + (increase ? 1 : -1);
 
-  const reduceQuantity = () => {
-    if (cartProduct.quantity === 1) {
+    if (newQuantity <= 0) {
       setOpen(true);
       return;
     }
-    
-    setCartProduct(prev => ({
-      ...prev,
-      quantity: prev.quantity - 1,
-      total: (prev.quantity - 1) * prev.price,
-    }));
+
+    const updatedCartData = {
+      quantity: newQuantity,
+      status: true,
+      user: { id: userCurrentLogged.id },
+      product: { id: item.product.id },
+    };
+
+    try {
+      await dispatch(cartThunk.updateCartItem({ id: item.id, cartData: updatedCartData })).unwrap();
+      dispatch(cartThunk.getUserCart(userCurrentLogged.id));
+    } catch (error) {
+      console.error("Failed to update item quantity:", error);
+      toast.error("Có lỗi xảy ra khi cập nhật số lượng sản phẩm.");
+    }
+  };
+
+  const handleRemoveFromCart = async (itemId) => {
+    try {
+      await dispatch(cartThunk.removeFromCart(itemId)).unwrap();
+      dispatch(cartThunk.getUserCart(userCurrentLogged.id));
+      toast.success('Sản phẩm đã được xóa khỏi giỏ hàng!');
+    } catch (error) {
+      console.error("Failed to remove item from cart:", error);
+      toast.error("Có lỗi xảy ra khi xóa sản phẩm khỏi giỏ hàng.");
+    }
+  };
+
+  const handleConfirmDelete = () => {
+    handleRemoveFromCart(cart.id);
+    setOpen(false);
   };
 
   const handleClose = () => setOpen(false);
-  const handleConfirmDelete = () => {
-    toast.success('Product removed from cart successfully!');
-    setOpen(false);
-  };
 
   return (
     <Box 
@@ -82,14 +90,14 @@ export default function CartItem({ cart }) { // Giảm kích thước tối đa
             position: 'absolute',
             top: '50%',
             left: 10,
-            transform: 'translateY(-50%)', // Căn giữa biểu tượng thùng rác
+            transform: 'translateY(-50%)',
             transition: 'color 0.3s',
             '&:hover': {
               color: '#FFA500',
             },
           }}
         >
-          <FontAwesomeIcon icon={faTrash} fontSize={20} />
+          <AiFillDelete fontSize={20} />
         </IconButton>
       </Tooltip>
 
@@ -107,7 +115,7 @@ export default function CartItem({ cart }) { // Giảm kích thước tối đa
               component="img"
               src={cart.product.product_image.find((img) => img.mainImage)?.url}
               sx={{ 
-                width: isMobile ? '90px' : '150px', // Giảm kích thước ảnh
+                width: isMobile ? '90px' : '150px',
                 height: isMobile ? '90px' : '150px',
                 objectFit: 'cover', 
                 borderRadius: 1,
@@ -144,7 +152,7 @@ export default function CartItem({ cart }) { // Giảm kích thước tối đa
           >
             <ButtonGroup variant="outlined" size="medium">
               <Button 
-                onClick={reduceQuantity} 
+                onClick={() => handleQuantityChange(cart, false)} 
                 sx={{ 
                   backgroundColor: '#76B900',
                   color: '#000',
@@ -169,7 +177,7 @@ export default function CartItem({ cart }) { // Giảm kích thước tối đa
                 {cart.quantity}
               </Button>
               <Button 
-                onClick={increaseQuantity} 
+                onClick={() => handleQuantityChange(cart)} 
                 sx={{ 
                   backgroundColor: '#76B900',
                   color: '#000',
@@ -189,7 +197,7 @@ export default function CartItem({ cart }) { // Giảm kích thước tối đa
               fontWeight="bold" 
               color="#FFD700"
             >
-              ${cartProduct.total.toFixed(2)}
+              ${cart.totalPrice.toFixed(2)}
             </Typography>
           </Stack>
         </Grid>
@@ -202,23 +210,23 @@ export default function CartItem({ cart }) { // Giảm kích thước tối đa
         aria-describedby="alert-dialog-description"
       >
         <DialogTitle id="alert-dialog-title" sx={{ color: '#76B900' }}>
-          Confirm Deletion
+          Xác nhận xóa
         </DialogTitle>
         <DialogContent>
           <Typography variant="body2">
-            Do you want to remove this product from your cart?
+            Bạn có muốn xóa sản phẩm này khỏi giỏ hàng không?
           </Typography>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose} sx={{ color: '#76B900' }}>
-            Cancel
+            Hủy bỏ
           </Button>
           <Button 
             onClick={handleConfirmDelete} 
             sx={{ color: '#FF5252' }} 
             autoFocus
           >
-            Delete
+            Xóa
           </Button>
         </DialogActions>
       </Dialog>

@@ -8,45 +8,37 @@ import {
   Select,
   TextField,
   Typography,
-  useTheme, // Thêm useTheme
+  useTheme,
 } from "@mui/material";
-import axios from "axios";
 import React, { useEffect, useState } from "react";
-import { getAllProduct } from "../../../Serivce/ApiService";
+import { useDispatch, useSelector } from "react-redux";
+import { clearSelectedManufacturerId } from "../../../../services/redux/slices/manufacturerSlice";
+import { manufacturerThunk } from "../../../../services/redux/thunks/thunk";
 import "./assets/css/style.scss";
-import { getManufacturerById } from "./service/AdminService";
 
 function AdminEditManufacturer({ id, setActiveComponent, showAlert }) {
-  const theme = useTheme(); // Khởi tạo theme
-  const [manufacturer, setManufacturer] = useState({});
+  const theme = useTheme();
   const [products, setProducts] = useState([]);
   const [selectedProducts, setSelectedProducts] = useState([]);
   const [imageFile, setImageFile] = useState(null);
+  const dispatch = useDispatch();
 
+  // Lấy dữ liệu nhà sản xuất từ Redux store
+  const selectedManufacturer = useSelector((state) => state.manufacturer.selectedManufacturer);
+  
   useEffect(() => {
-    getManufacturer(id);
-    getAllProducts();
-  }, [id]);
+    dispatch(manufacturerThunk.getManufacturerById(id));
+  }, [dispatch, id]);
 
-  const getManufacturer = async (id) => {
-    try {
-      const response = await getManufacturerById(id);
-      setManufacturer(response.data);
-      setSelectedProducts(response.data.products.map(product => product.id));
-    } catch (error) {
-      console.error("Error fetching manufacturer:", error);
-      showAlert("Failed to fetch manufacturer details.", "error");
+  // Thiết lập manufacturer khi selectedManufacturer thay đổi
+  useEffect(() => {
+    if (selectedManufacturer) {
+      setManufacturer(selectedManufacturer);
+      setSelectedProducts(selectedManufacturer.products.map((product) => product.id)); // Thiết lập selectedProducts
     }
-  };
+  }, [selectedManufacturer]);
 
-  const getAllProducts = async () => {
-    try {
-      const response = await getAllProduct();
-      setProducts(response.data);
-    } catch (error) {
-      console.error("Failed to get products:", error);
-    }
-  };
+  const [manufacturer, setManufacturer] = useState({});
 
   const handleInputChange = (setter) => (e) => {
     setter(e.target.value);
@@ -78,19 +70,10 @@ function AdminEditManufacturer({ id, setActiveComponent, showAlert }) {
     }
 
     try {
-      const response = await axios.put(
-        `http://localhost:8080/api/manufacturers/${id}`,
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
-      if (response.status === 200) {
+        await dispatch(manufacturerThunk.updateManufacturer({id: selectedManufacturer.id,manufacturerData:formData }))
         showAlert("Manufacturer updated successfully", "success");
+        dispatch(clearSelectedManufacturerId());
         setActiveComponent({ name: "AdminManufacturer" });
-      }
     } catch (error) {
       console.error("Error updating manufacturer:", error);
       showAlert("Failed to update manufacturer.", "error");
@@ -104,7 +87,7 @@ function AdminEditManufacturer({ id, setActiveComponent, showAlert }) {
           <Typography variant="h4" sx={{ marginBottom: 2 }}>
             Edit Manufacturer
           </Typography>
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={(e) => { e.preventDefault(); handleSubmit(id); }}>
             {/* Product Selection */}
             <FormControl fullWidth margin="normal" variant="outlined">
               <InputLabel id="product-select-label">Select Products</InputLabel>
@@ -192,7 +175,7 @@ function AdminEditManufacturer({ id, setActiveComponent, showAlert }) {
               label="Created At"
               InputLabelProps={{ shrink: true }}
               value={manufacturer.createdAt ? new Date(manufacturer.createdAt).toISOString().substring(0, 16) : ''}
-              onChange={(e) => setManufacturer(prev => ({ ...prev, createdAt: new Date(e.target.value) }))}
+              onChange={(e) => setManufacturer(prev => ({ ...prev, createdAt: new Date(e.target.value) }))} 
             />
             <TextField
               fullWidth
@@ -201,7 +184,7 @@ function AdminEditManufacturer({ id, setActiveComponent, showAlert }) {
               label="Updated At"
               InputLabelProps={{ shrink: true }}
               value={manufacturer.updatedAt ? new Date(manufacturer.updatedAt).toISOString().substring(0, 16) : ''}
-              onChange={(e) => setManufacturer(prev => ({ ...prev, updatedAt: new Date(e.target.value) }))}
+              onChange={(e) => setManufacturer(prev => ({ ...prev, updatedAt: new Date(e.target.value) }))} 
             />
 
             {/* Image Upload */}
@@ -227,8 +210,8 @@ function AdminEditManufacturer({ id, setActiveComponent, showAlert }) {
             <Button
               fullWidth
               variant="contained"
-              sx={{ backgroundColor: theme.palette.primary.main }} // Sử dụng màu từ theme
-              onClick={() => handleSubmit(id)}
+              sx={{ backgroundColor: theme.palette.primary.main }} 
+              type="submit" // Thay đổi thành type="submit"
             >
               Update Manufacturer
             </Button>

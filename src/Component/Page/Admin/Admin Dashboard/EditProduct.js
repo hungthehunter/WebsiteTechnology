@@ -3,36 +3,28 @@ import {
   Button,
   Card,
   CardContent,
+  FormControl,
   Grid,
+  InputLabel,
+  MenuItem,
+  Select,
   TextField,
   Typography,
 } from "@mui/material";
 import axios from "axios";
-import imageCompression from "browser-image-compression";
 import React, { useEffect, useState } from "react";
-import { getAllCategory, getAllManufacturer, getProductById } from "../../../Serivce/ApiService";
+import { useDispatch, useSelector } from "react-redux";
+import { clearSelectedProductId } from "../../../../services/redux/slices/productSlice";
+import { productThunk } from "../../../../services/redux/thunks/thunk";
 import "./assets/css/style.scss";
 
 function AdminEditProduct({ id, setActiveComponent, showAlert }) {
-  const defaultSpecifications = [
-    { specificationName: "CPU", specificationData: "" },
-    { specificationName: "RAM", specificationData: "" },
-    { specificationName: "Hard Drive", specificationData: "" },
-    { specificationName: "Graphics Card", specificationData: "" },
-    { specificationName: "Screen", specificationData: "" },
-    { specificationName: "Port", specificationData: "" },
-    { specificationName: "Keyboard", specificationData: "" },
-    { specificationName: "LAN", specificationData: "" },
-    { specificationName: "Wireless", specificationData: "" },
-    { specificationName: "Bluetooth", specificationData: "" },
-    { specificationName: "Operating System", specificationData: "" },
-    { specificationName: "Battery", specificationData: "" },
-    { specificationName: "Weight", specificationData: "" },
-    { specificationName: "Color", specificationData: "" },
-    { specificationName: "Size", specificationData: "" },
-    { specificationName: "Relationship", specificationData: "" },
-  ];
-
+  const dispatch = useDispatch();
+  const selectedProduct = useSelector((state) => state.product.selectedProduct);
+  const listCategory = useSelector((state) => state.category.listCategory);
+  const listManufacturer = useSelector((state) => state.manufacturer.listManufacturer);
+  const listPromotion = useSelector((state) => state.promotion.listPromotion);
+  const [mainFile, setMainFile] = useState();
   const [product, setProduct] = useState({
     unitPrice: "",
     unitInStock: "",
@@ -40,164 +32,84 @@ function AdminEditProduct({ id, setActiveComponent, showAlert }) {
     productName: "",
     status: "Available",
     manufacturer: { id: "" },
-    specification: defaultSpecifications,
-    product_image: [], // Thêm trường cho hình ảnh sản phẩm
+    specification: [],
+    product_image: [],
   });
-  const [categories, setCategories] = useState([]);
-  const [manufacturers, setManufacturers] = useState([]);
+
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedManufacturer, setSelectedManufacturer] = useState("");
+  const [selectedPromotion, setSelectedPromotion] = useState("");
   const [newCategory, setNewCategory] = useState("");
   const [newManufacturer, setNewManufacturer] = useState("");
   const [files, setFiles] = useState([]);
-  const [mainFile, setMainFile] = useState(null);
-  const [clonedImages, setClonedImages] = useState([]); // Biến để lưu hình ảnh cũ
-
-  const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
+  const [clonedImages, setClonedImages] = useState([]);
 
   useEffect(() => {
-    loadProduct();
-    loadCategories();
-    loadManufacturers();
-  }, []);
+    dispatch(productThunk.getProductById(id));
+  }, [dispatch, id]);
 
-  const loadProduct = async () => {
-    try {
-      const response = await getProductById(id);
-      setProduct(response.data);
-      setSelectedCategory(response.data.category.id);
-      setSelectedManufacturer(response.data.manufacturer.id);
-      setClonedImages(response.data.product_image); // Lưu hình ảnh cũ vào biến clone
-    } catch (error) {
-      console.error("Error fetching product:", error);
+  useEffect(() => {
+    if (selectedProduct) {
+      setProduct({
+        ...selectedProduct,
+        manufacturer: { id: selectedProduct.manufacturer.id },
+        specification: selectedProduct.specification || [],
+      });
+      setClonedImages(selectedProduct.product_image || []); // Set existing images
     }
-  };
+  }, [selectedProduct]);
 
-  const loadCategories = async () => {
-    try {
-      const response = await getAllCategory();
-      setCategories(response.data);
-    } catch (error) {
-      console.error("Error fetching categories:", error);
-    }
-  };
-
-  const loadManufacturers = async () => {
-    try {
-      const response = await getAllManufacturer();
-      setManufacturers(response.data);
-    } catch (error) {
-      console.error("Error fetching manufacturers:", error);
-    }
-  };
-
-  const handleMainImageChange = async (event) => {
-    const file = event.target.files[0];
-
-    if (file && file.size <= MAX_FILE_SIZE) {
-      try {
-        const options = {
-          maxSizeMB: 1,
-          maxWidthOrHeight: 1920,
-          useWebWorker: true,
-        };
-
-        const compressedFile = await imageCompression(file, options);
-        setMainFile(compressedFile);
-      } catch (error) {
-        console.error("Error during main image compression:", error);
-      }
-    } else {
-      console.warn("Main image exceeds the size limit of 2MB.");
-    }
-  };
-
-  const handleFilesChange = async (event) => {
+  const handleFilesChange = (event) => {
     const fileList = event.target.files;
-    const validFiles = [];
-
-    for (const file of fileList) {
-      const originalSizeMB = file.size / (1024 * 1024);
-      console.log(`Original file size: ${originalSizeMB.toFixed(2)} MB`);
-
-      if (originalSizeMB <= 2) {
-        try {
-          const options = {
-            maxSizeMB: 1, // Maximum file size in MB
-            maxWidthOrHeight: 1920, // Maximum width or height in px
-            useWebWorker: true, // Use web workers for compression
-          };
-
-          const compressedFile = await imageCompression(file, options);
-          const compressedSizeMB = compressedFile.size / (1024 * 1024);
-          console.log(`Compressed file size: ${compressedSizeMB.toFixed(2)} MB`);
-
-          validFiles.push(compressedFile);
-        } catch (error) {
-          console.error("Error during image compression:", error);
-        }
-      } else {
-        console.warn(`${file.name} exceeds the size limit of 2MB.`);
-      }
-    }
-
-    setFiles(validFiles);
+    setFiles([...fileList]); // Set files directly without compression
   };
+
+  const handleMainImagesChange = (e) => {
+    setMainFile(e.target.files[0]);
+  };
+  
 
   const handleUpdate = async () => {
     let categoryId = selectedCategory;
     let manufacturerId = selectedManufacturer;
 
-    // Check if new category needs to be added
+    // Check for new category
     if (newCategory) {
-      const existingCategory = categories.find(
-        (category) =>
-          category.categoryName.toLowerCase() === newCategory.toLowerCase()
+      const existingCategory = listCategory.find(
+        (category) => category.categoryName.toLowerCase() === newCategory.toLowerCase()
       );
       if (existingCategory) {
         categoryId = existingCategory.id;
       } else {
         const response = await axios.post(
           "http://localhost:8080/api/categories",
-          {
-            categoryName: newCategory,
-          }
+          { categoryName: newCategory }
         );
         categoryId = response.data.id;
-        setCategories([...categories, response.data]);
       }
     }
 
-    // Check if new manufacturer needs to be added
+    // Check for new manufacturer
     if (newManufacturer) {
-      const existingManufacturer = manufacturers.find(
-        (manufacturer) =>
-          manufacturer.manufacturerName.toLowerCase() ===
-          newManufacturer.toLowerCase()
+      const existingManufacturer = listManufacturer.find(
+        (manufacturer) => manufacturer.manufacturerName.toLowerCase() === newManufacturer.toLowerCase()
       );
       if (existingManufacturer) {
         manufacturerId = existingManufacturer.id;
       } else {
         const response = await axios.post(
           "http://localhost:8080/api/manufacturers",
-          {
-            manufacturerName: newManufacturer,
-          }
+          { manufacturerName: newManufacturer }
         );
         manufacturerId = response.data.id;
-        setManufacturers([...manufacturers, response.data]);
       }
     }
 
     // Prepare product data
     const updatedProduct = {
-      unitPrice: product.unitPrice,
-      unitInStock: product.unitInStock,
-      unitInOrder: product.unitInOrder,
-      productName: product.productName,
-      status: product.status,
+      ...product,
       manufacturer: { id: manufacturerId },
-      specification: product.specification || [],
+      product_image: [...clonedImages, ...files], // Combine existing and new images
     };
 
     // Create FormData to send to the server
@@ -207,33 +119,21 @@ function AdminEditProduct({ id, setActiveComponent, showAlert }) {
       new Blob([JSON.stringify(updatedProduct)], { type: "application/json" })
     );
 
-    // Append the main image if it exists
     if (mainFile) {
       formData.append("mainImage", mainFile);
     }
 
-    // Kết hợp hình ảnh cũ và hình ảnh mới
-    const combinedImages = [...clonedImages, ...files];
-    combinedImages.forEach((image) => {
-      formData.append("images", image); // Append all images (old + new)
+    // Append new images
+    files.forEach((file) => {
+      formData.append("images", file);
     });
 
-    try {
-      // Gửi yêu cầu cập nhật sản phẩm
-      const response = await axios.put(
-        `http://localhost:8080/api/products/${id}`,
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
-
-      if (response.status === 200) {
+    try {    
+        await dispatch(productThunk.updateProduct({id: id , productData: formData}))
         showAlert("Edit product successfully.", "success");
+        dispatch(clearSelectedProductId());
         setTimeout(() => setActiveComponent({ name: "AdminProduct" }), 1000);
-      }
+
     } catch (error) {
       console.error("Error updating product:", error);
       showAlert("Failed to edit product.", "error");
@@ -291,6 +191,63 @@ function AdminEditProduct({ id, setActiveComponent, showAlert }) {
                 onChange={(e) => setProduct({ ...product, unitInOrder: e.target.value })}
               />
             </Grid>
+              {/* Manufacturer Selection */}
+              <Grid item xs={12} md={6}>
+              <FormControl fullWidth margin="normal">
+                <InputLabel>Manufacturer</InputLabel>
+                <Select
+                  value={selectedManufacturer}
+                  onChange={(e) => {
+                    setSelectedManufacturer(e.target.value);
+                    setProduct({ ...product, manufacturer: { id: e.target.value } });
+                  }}
+                >
+                  {listManufacturer.map((manufacturer) => (
+                    <MenuItem key={manufacturer.id} value={manufacturer.id}>
+                      {manufacturer.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+            {/* Category Selection */}
+            <Grid item xs={12} md={6}>
+              <FormControl fullWidth margin="normal">
+                <InputLabel>Category</InputLabel>
+                <Select
+                  value={selectedCategory}
+                  onChange={(e) => {
+                    setSelectedCategory(e.target.value);
+                    setProduct({ ...product, category: { id: e.target.value } });
+                  }}
+                >
+                  {listCategory.map((category) => (
+                    <MenuItem key={category.id} value={category.id}>
+                      {category.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+            {/* Promotion Selection */}
+            <Grid item xs={12} md={6}>
+              <FormControl fullWidth margin="normal">
+                <InputLabel>Promotion</InputLabel>
+                <Select
+                  value={selectedPromotion}
+                  onChange={(e) => {
+                    setSelectedPromotion(e.target.value);
+                    setProduct({ ...product, promotion: { id: e.target.value } });
+                  }}
+                >
+                  {listPromotion.map((promotion) => (
+                    <MenuItem key={promotion.id} value={promotion.id}>
+                      {promotion.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
             {/* Specifications */}
             {product.specification.map((spec, index) => (
               <Grid item xs={12} md={6} key={index}>
@@ -298,11 +255,6 @@ function AdminEditProduct({ id, setActiveComponent, showAlert }) {
                   fullWidth
                   label="Specification Name"
                   value={spec.specificationName}
-                  onChange={(e) => {
-                    const newSpecifications = [...product.specification];
-                    newSpecifications[index].specificationName = e.target.value;
-                    setProduct({ ...product, specification: newSpecifications });
-                  }}
                   margin="normal"
                   disabled // Disable the default specification name field
                 />
@@ -334,13 +286,9 @@ function AdminEditProduct({ id, setActiveComponent, showAlert }) {
                 fullWidth
                 margin="normal"
                 label="Main Product Image"
-                InputLabelProps={{
-                  shrink: true,
-                }}
-                inputProps={{
-                  accept: "image/*",
-                }}
-                onChange={handleMainImageChange}
+                InputLabelProps={{ shrink: true }}
+                inputProps={{ accept: "image/*" }}
+                onChange={handleMainImagesChange}
               />
             </Grid>
             <Grid item xs={12}>
@@ -349,12 +297,8 @@ function AdminEditProduct({ id, setActiveComponent, showAlert }) {
                 fullWidth
                 margin="normal"
                 label="Additional Images"
-                InputLabelProps={{
-                  shrink: true,
-                }}
-                inputProps={{
-                  multiple: true,
-                }}
+                InputLabelProps={{ shrink: true }}
+                inputProps={{ multiple: true }}
                 onChange={handleFilesChange}
               />
             </Grid>
@@ -362,16 +306,15 @@ function AdminEditProduct({ id, setActiveComponent, showAlert }) {
             <Grid item xs={12}>
               <Typography variant="h6">Existing Images</Typography>
               <Grid container spacing={2}>
-                {clonedImages &&
-                  clonedImages.map((image, index) => (
-                    <Grid item xs={4} key={index}>
-                      <img
-                        src={image.url}
-                        alt={`Product Image ${index}`}
-                        style={{ width: "100%", height: "auto" }}
-                      />
-                    </Grid>
-                  ))}
+                {clonedImages.map((image, index) => (
+                  <Grid item xs={4} key={index}>
+                    <img
+                      src={image.url}
+                      alt={`Product Image ${index}`}
+                      style={{ width: "100%", height: "auto" }}
+                    />
+                  </Grid>
+                ))}
               </Grid>
             </Grid>
             {/* Save Changes */}

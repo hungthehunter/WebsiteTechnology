@@ -27,7 +27,9 @@ const PaymentConfirmation = ({ open, handleClose, note }) => {
    const [expiryYear, setExpiryYear] = useState("");
    const [cvv, setCvv] = useState("");
    const listCartItems = useSelector((state) => state.cart.listCartItems);
-   const totalPrice = listCartItems?.reduce((sum, item) => sum + item?.totalPrice, 0);
+   const totalPrice = listCartItems?.reduce((sum, item) => {
+       return sum + (item?.totalPrice || 0);
+   }, 0);
   
    // User Information
    const dispatch = useDispatch();
@@ -83,7 +85,7 @@ const PaymentConfirmation = ({ open, handleClose, note }) => {
         user: { id: userCurrentLogged.id }, // Sử dụng thông tin user
         product: { id: item.product.id },
         quantity: item.quantity,
-        price: item.totalPrice, // Sử dụng giá từ item
+        totalPrice: item.totalPrice, 
         status: item.status,
     }));
 
@@ -140,27 +142,36 @@ const PaymentConfirmation = ({ open, handleClose, note }) => {
             />
             {/* Phần chọn địa chỉ */}
 
-            <FormControl
-              fullWidth
-              margin="dense"
-              style={{ marginBottom: "20px" }}
-            >
-              <InputLabel style={{ fontSize: "16px" }}>
-                Select Address
-              </InputLabel>
-              <Select
-                value={selectedAddress}
-                onChange={(e) => setSelectedAddress(e.target.value)}
-                fullWidth
-                inputProps={{ style: { fontSize: "16px" } }}
-              >
-                {userCurrentLogged?.addresses?.map((address) => (
-                  <MenuItem key={address.id} value={address.id}>
-                    {address.street}, {address.city}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+{/* Phần chọn địa chỉ */}
+<FormControl fullWidth margin="dense" style={{ marginBottom: "20px" }}>
+  {userCurrentLogged?.addresses?.length > 0 ? (
+    <>
+      <InputLabel style={{ fontSize: "16px" }}>Select Address</InputLabel>
+      <Select
+        value={selectedAddress}
+        onChange={(e) => setSelectedAddress(e.target.value)}
+        fullWidth
+        inputProps={{ style: { fontSize: "16px" } }}
+      >
+        {userCurrentLogged?.addresses?.map((address) => (
+          <MenuItem key={address.id} value={address.id}>
+            {address.street}, {address.city}
+          </MenuItem>
+        ))}
+      </Select>
+    </>
+  ) : (
+    <TextField
+      label="Enter Address"
+      variant="outlined"
+      fullWidth
+      margin="dense"
+      style={{ fontSize: "16px" }}
+      onChange={(e) => setSelectedAddress(e.target.value)}
+    />
+  )}
+</FormControl>
+
           </Grid>
 
           {/* Phần thông tin thanh toán */}

@@ -12,24 +12,15 @@ const CART_ENDPOINTS = {
 const cartApi = {
     getAllCartItems: async (loadingScreen = true) => {
         const res = await shopAPI.get(CART_ENDPOINTS.GET_ALL_CART_ITEMS);
-        if (loadingScreen) {
-            await new Promise((state) => setTimeout(state, 2000));
-        }
         return res;
     },
     getCartItemById: async (id, loadingScreen = true) => {
         const res = await shopAPI.get(CART_ENDPOINTS.GET_CART_ITEM_BY_ID.replace(":id", id));
-        if (loadingScreen) {
-            await new Promise((state) => setTimeout(state, 2000));
-        }
         return res;
     },
 
     getUserCart: async (userId, loadingScreen = true) => {
         const res = await shopAPI.get(CART_ENDPOINTS.GET_USER_CART.replace(":userId", userId));
-        if (loadingScreen) {
-            await new Promise((state) => setTimeout(state, 2000));
-        }
         return res;
     },
      
@@ -41,10 +32,6 @@ const cartApi = {
             }
         });
     
-        if (loadingScreen) {
-            await new Promise((resolve) => setTimeout(resolve, 2000));
-        }
-    
         return res;
     },
     updateCartItem: async (id, cartData, loadingScreen = true) => {
@@ -53,16 +40,11 @@ const cartApi = {
                 'Content-Type': 'application/json',
             }
         });
-        if (loadingScreen) {
-            await new Promise((state) => setTimeout(state, 2000));
-        }
         return res;
     },
     removeFromCart: async (id, loadingScreen = true) => {
         const res = await shopAPI.delete(CART_ENDPOINTS.REMOVE_FROM_CART.replace(":id", id));
-        if (loadingScreen) {
-            await new Promise((state) => setTimeout(state, 2000));
-        }
+
         return res;
     },
 }

@@ -1,64 +1,19 @@
 import { Box, Button, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material';
-import { useEffect, useState } from "react";
-import { deleteProductById, getAllProduct } from "../../../Serivce/ApiService";
+import { useDispatch, useSelector } from 'react-redux';
+import { productThunk } from '../../../../services/redux/thunks/thunk';
 import "./assets/css/style.scss";
 function AdminProduct({ setActiveComponent ,showAlert}) {
   /*------- Page function -------*/
-  const [activeIndex, setActiveIndex] = useState(null);
-  const [menuActive, setMenuActive] = useState(false);
-
-  const handleMouseOver = (index) => {
-    setActiveIndex(index);
-  };
-
-  const toggleMenu = () => {
-    setMenuActive((prev) => !prev); // Correctly toggle the state
-  };
-
-  // Customer: Load List of Users when component mounts
-
-  useEffect(() => {
-    loadUsers();
-  }, []);
-
-  // Customer: Handle search bar
-
-  const handleInputSearch = (event) => {
-    const searchTerm = event.target.value;
-    setSearchTerm(searchTerm);
-    const filteredUsers = products.filter((product) =>
-      product.username.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-    setFilteredUsers(filteredUsers);
-  };
-
-  /*------- Database function -------*/
-  // Set element User
-
-  const [products, setProducts] = useState([]);
-  const [filteredUsers, setFilteredUsers] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
-
-  // GET: Get Product by id from Database
-
-  const loadUsers = async () => {
-    try {
-      const result = await getAllProduct();
-      setProducts(result.data);
-      setFilteredUsers(result.data);
-    } catch (error) {
-      console.error("Failed to load users:", error);
-    }
-  };
-
+  const listProduct = useSelector((state) => state.product.listProduct);
+  const dispatch = useDispatch();
   // DELETE: Delete User by id from Database
   const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this product?")) {
       try {
-        const result = await deleteProductById(id);
+        await dispatch(productThunk.deleteProduct(id));
+        await dispatch(productThunk.getAllProduct())
         showAlert("Delete product successfully.", "success");
-        // Cập nhật danh sách sản phẩm sau khi xóa
-      loadUsers();
+      
       } catch (error) {
         console.error("Error deleting product:", error);
         showAlert("Failed to delete product.", "error");
@@ -101,7 +56,7 @@ function AdminProduct({ setActiveComponent ,showAlert}) {
               </TableRow>
             </TableHead>
             <TableBody>
-              {filteredUsers.map((product) => (
+              {listProduct.map((product) => (
                 <TableRow key={product.id}>
                   <TableCell style={{ textAlign: "start",fontSize: '1.3rem' }}>{product.id}</TableCell>
                   <TableCell style={{ textAlign: "start",fontSize: '1.3rem' }}>{product.productName}</TableCell>
@@ -145,7 +100,7 @@ function AdminProduct({ setActiveComponent ,showAlert}) {
                   </TableCell>
                 </TableRow>
               ))}
-              {filteredUsers.length === 0 && (
+              {listProduct.length === 0 && (
                 <TableRow className="nouser">
                   <TableCell colSpan={6} className="inform" style={{ textAlign: "center", paddingTop: 100 }}>
                     No products found

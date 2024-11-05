@@ -1,12 +1,15 @@
 import { Box, Button, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material';
-import { useEffect, useState } from "react";
-import { deleteCategoryId, getAllCategory } from "../../../Serivce/ApiService";
+import { useState } from "react";
+import { useDispatch, useSelector } from 'react-redux';
+import { categoryThunk } from '../../../../services/redux/thunks/thunk';
 import "./assets/css/style.scss";
-import { getAllProducts } from "./service/AdminService";
 function AdminCategory({ setActiveComponent, showAlert }) {
   /*------- Page function -------*/
   const [activeIndex, setActiveIndex] = useState(null);
   const [menuActive, setMenuActive] = useState(false);
+  const dispatch = useDispatch();
+  const listProduct = useSelector((state) => state.product.listProduct);
+  const listCategory = useSelector((state) => state.category.listCategory);
 
   const handleMouseOver = (index) => {
     setActiveIndex(index);
@@ -16,60 +19,11 @@ function AdminCategory({ setActiveComponent, showAlert }) {
     setMenuActive((prev) => !prev); // Correctly toggle the state
   };
 
-  // Category: Load List of Users when component mounts
-
-  useEffect(() => {
-    loadCategories();
-    loadProducts();
-  }, []);
-
-  // Category: Handle search bar
-
-  const handleInputSearch = (event) => {
-    const searchTerm = event.target.value;
-    setSearchTerm(searchTerm);
-    const filteredCategories = category.filter((category) =>
-      category.username.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-    setFilteredUsers(filteredCategories);
-  };
-
-  //Category: Check category exist
   const checkCategoryNameExists = (name) => {
-    return products.some(
+    return listProduct.some(
       (product) =>
         product.category.categoryName.toLowerCase() === name.toLowerCase()
     );
-  };
-
-  /*------- Database function -------*/
-  // Set element User
-
-  const [category, setCategory] = useState([]);
-  const [filteredCategories, setFilteredUsers] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [products, setProducts] = useState("");
-
-  // GET: Get User by id from Database
-
-  const loadCategories = async () => {
-    try {
-      const result = await getAllCategory();
-      setCategory(result.data);
-      setFilteredUsers(result.data); // Initialize filteredCategories with all category
-    } catch (error) {
-      console.error("Failed to load category:", error);
-    }
-  };
-
-  // GET: Get list of product from Database
-  const loadProducts = async () => {
-    try {
-      const result = await getAllProducts();
-      setProducts(result.data);
-    } catch (error) {
-      console.error("Failed to load users:", error);
-    }
   };
 
   // DELETE: Delete User by id from Database
@@ -84,9 +38,10 @@ function AdminCategory({ setActiveComponent, showAlert }) {
         });
       } else {
         try {
-          await deleteCategoryId(id)
+          dispatch(categoryThunk.deleteCategory(id));
+          dispatch(categoryThunk.getAllCategories());
           showAlert("Delete category successfully", "success");
-          loadCategories(); // Reload categories after delete
+          
         } catch (error) {
           showAlert("Failed to delete category successfully", "error");
           console.error("Error deleting category:", error);
@@ -127,7 +82,7 @@ function AdminCategory({ setActiveComponent, showAlert }) {
               </TableRow>
             </TableHead>
             <TableBody>
-              {filteredCategories.map((category, index) => (
+              {listCategory.map((category, index) => (
                 <TableRow key={index}>
                   <TableCell style={{ textAlign: "start" , fontSize: '1.3rem'}}>{category.id}</TableCell>
                   <TableCell style={{ textAlign: "start", fontSize: '1.3rem' }}>
@@ -141,7 +96,7 @@ function AdminCategory({ setActiveComponent, showAlert }) {
                   </TableCell>
                 </TableRow>
               ))}
-              {filteredCategories.length === 0 && (
+              {listCategory.length === 0 && (
                 <TableRow className="nouser">
                   <TableCell colSpan={4} className="inform" style={{ textAlign: "center", paddingTop: 100 }}>
                     No category found

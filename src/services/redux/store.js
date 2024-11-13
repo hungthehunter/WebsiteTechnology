@@ -8,7 +8,9 @@ import addressReducer from './slices/addressSlice';
 import cartReducer from './slices/cartSlice';
 import categoryReducer from './slices/categorySlice';
 import decentralizationReducer from './slices/decentralizationSlice';
+import exportReducer from './slices/exportSlice';
 import functionReducer from './slices/functionSlice';
+import importReducer from './slices/importSlice';
 import invoiceReducer from './slices/invoiceSlice';
 import manufacturerReducer from './slices/manufacturerSlice';
 import orderReducer from './slices/orderSlice';
@@ -18,7 +20,6 @@ import promotionReducer from './slices/promotionSlice';
 import purchaseHistoryReducer from './slices/purchaseHistorySlice';
 import reviewReducer from './slices/reviewSlice';
 import userReducer from './slices/userSlice';
-
 // Kết hợp các reducers lại
 const rootReducer = combineReducers({
   product: productReducer,
@@ -36,6 +37,8 @@ const rootReducer = combineReducers({
   purchaseHistory: purchaseHistoryReducer,
   review: reviewReducer,
   user: userReducer,
+  import: importReducer,
+  export: exportReducer
 });
 
 // Cấu hình persist
@@ -51,6 +54,8 @@ const persistedReducer = persistReducer(persistConfig, rootReducer);
 // Tạo store với persistedReducer
 const store = configureStore({
   reducer: persistedReducer,
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware({ serializableCheck: false }),
 });
 
 // Tạo persistor

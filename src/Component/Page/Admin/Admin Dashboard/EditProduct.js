@@ -1,10 +1,13 @@
+import { Delete } from "@mui/icons-material";
 import {
   Box,
   Button,
   Card,
   CardContent,
+  CircularProgress,
   FormControl,
   Grid,
+  IconButton,
   InputLabel,
   MenuItem,
   Select,
@@ -19,10 +22,13 @@ import { productThunk } from "../../../../services/redux/thunks/thunk";
 import "./assets/css/style.scss";
 
 function AdminEditProduct({ id, setActiveComponent, showAlert }) {
+  const isLoading = useSelector((state) => state.product.isLoading);
   const dispatch = useDispatch();
   const selectedProduct = useSelector((state) => state.product.selectedProduct);
   const listCategory = useSelector((state) => state.category.listCategory);
-  const listManufacturer = useSelector((state) => state.manufacturer.listManufacturer);
+  const listManufacturer = useSelector(
+    (state) => state.manufacturer.listManufacturer
+  );
   const listPromotion = useSelector((state) => state.promotion.listPromotion);
   const [mainFile, setMainFile] = useState();
   const [product, setProduct] = useState({
@@ -43,8 +49,10 @@ function AdminEditProduct({ id, setActiveComponent, showAlert }) {
   const [newManufacturer, setNewManufacturer] = useState("");
   const [files, setFiles] = useState([]);
   const [clonedImages, setClonedImages] = useState([]);
+  const [errors, setErrors] = useState({});
 
   useEffect(() => {
+    
     dispatch(productThunk.getProductById(id));
   }, [dispatch, id]);
 
@@ -67,16 +75,39 @@ function AdminEditProduct({ id, setActiveComponent, showAlert }) {
   const handleMainImagesChange = (e) => {
     setMainFile(e.target.files[0]);
   };
-  
+
+  const validateFields = () => {
+    let tempErrors = {};
+    if (!product.productName)
+      tempErrors.productName = "Product Name is required";
+    if (!product.unitPrice) tempErrors.unitPrice = "Unit Price is required";
+    if (!product.unitInStock)
+      tempErrors.unitInStock = "Unit In Stock is required";
+    if (!product.unitInOrder)
+      tempErrors.unitInOrder = "Unit In Order is required";
+    if (!selectedManufacturer)
+      tempErrors.selectedManufacturer = "Manufacturer is required";
+    if (!selectedCategory) tempErrors.selectedCategory = "Category is required";
+     if (!mainFile) tempErrors.mainFile = "Main product image is required";
+  if (files.length === 0 && clonedImages.length === 0) tempErrors.additionalImages = "At least one additional image is required";
+    setErrors(tempErrors);
+    return Object.keys(tempErrors).length === 0;
+  };
 
   const handleUpdate = async () => {
+    if (!validateFields()) {
+      showAlert("Please fill in all required fields.", "error");
+      return;
+    }
+
     let categoryId = selectedCategory;
     let manufacturerId = selectedManufacturer;
 
     // Check for new category
     if (newCategory) {
       const existingCategory = listCategory.find(
-        (category) => category.categoryName.toLowerCase() === newCategory.toLowerCase()
+        (category) =>
+          category.categoryName.toLowerCase() === newCategory.toLowerCase()
       );
       if (existingCategory) {
         categoryId = existingCategory.id;
@@ -92,7 +123,9 @@ function AdminEditProduct({ id, setActiveComponent, showAlert }) {
     // Check for new manufacturer
     if (newManufacturer) {
       const existingManufacturer = listManufacturer.find(
-        (manufacturer) => manufacturer.manufacturerName.toLowerCase() === newManufacturer.toLowerCase()
+        (manufacturer) =>
+          manufacturer.manufacturerName.toLowerCase() ===
+          newManufacturer.toLowerCase()
       );
       if (existingManufacturer) {
         manufacturerId = existingManufacturer.id;
@@ -128,17 +161,55 @@ function AdminEditProduct({ id, setActiveComponent, showAlert }) {
       formData.append("images", file);
     });
 
-    try {    
-        await dispatch(productThunk.updateProduct({id: id , productData: formData}))
-        showAlert("Edit product successfully.", "success");
-        dispatch(clearSelectedProductId());
-        setTimeout(() => setActiveComponent({ name: "AdminProduct" }), 1000);
-
+    try {
+      await dispatch(
+        productThunk.updateProduct({ id: id, productData: formData })
+      );
+      showAlert("Edit product successfully.", "success");
+      dispatch(clearSelectedProductId());
+      setTimeout(() => setActiveComponent({ name: "AdminProduct" }), 1000);
     } catch (error) {
       console.error("Error updating product:", error);
       showAlert("Failed to edit product.", "error");
     }
   };
+
+  const handleRemoveImage = (index) => {
+    setClonedImages(clonedImages.filter((_, imgIndex) => imgIndex !== index));
+  };
+
+  const handleRemoveSpecification = (index) => {
+    setProduct({
+      ...product,
+      specification: product.specification.filter(
+        (_, specIndex) => specIndex !== index
+      ),
+    });
+  };
+
+
+  if (isLoading) {
+    return (
+      <Box sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100vh',
+        width: '100vw',
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        backgroundColor: 'black',
+        zIndex: 9999
+      }}>
+        <CircularProgress size={60} thickness={4}  sx={{ color: '#4CAF50' }}  />
+        <Typography variant="h6" sx={{ mt: 2, color: '#4CAF50' }}>
+          PLEASE WAIT...
+        </Typography>
+      </Box>
+    );
+  }
 
   return (
     <Box sx={{ padding: 2 }}>
@@ -155,7 +226,11 @@ function AdminEditProduct({ id, setActiveComponent, showAlert }) {
                 label="Product Name"
                 name="productName"
                 value={product.productName}
-                onChange={(e) => setProduct({ ...product, productName: e.target.value })}
+                onChange={(e) =>
+                  setProduct({ ...product, productName: e.target.value })
+                }
+                error={!!errors.productName}
+                helperText={errors.productName}
               />
             </Grid>
             <Grid item xs={12} md={6}>
@@ -166,7 +241,11 @@ function AdminEditProduct({ id, setActiveComponent, showAlert }) {
                 name="unitPrice"
                 type="number"
                 value={product.unitPrice || ""}
-                onChange={(e) => setProduct({ ...product, unitPrice: e.target.value })}
+                onChange={(e) =>
+                  setProduct({ ...product, unitPrice: e.target.value })
+                }
+                error={!!errors.unitPrice}
+                helperText={errors.unitPrice}
               />
             </Grid>
             <Grid item xs={12} md={6}>
@@ -177,7 +256,11 @@ function AdminEditProduct({ id, setActiveComponent, showAlert }) {
                 name="unitInStock"
                 type="number"
                 value={product.unitInStock || ""}
-                onChange={(e) => setProduct({ ...product, unitInStock: e.target.value })}
+                onChange={(e) =>
+                  setProduct({ ...product, unitInStock: e.target.value })
+                }
+                error={!!errors.unitInStock}
+                helperText={errors.unitInStock}
               />
             </Grid>
             <Grid item xs={12} md={6}>
@@ -188,18 +271,28 @@ function AdminEditProduct({ id, setActiveComponent, showAlert }) {
                 name="unitInOrder"
                 type="number"
                 value={product.unitInOrder || ""}
-                onChange={(e) => setProduct({ ...product, unitInOrder: e.target.value })}
+                onChange={(e) =>
+                  setProduct({ ...product, unitInOrder: e.target.value })
+                }
+                error={!!errors.unitInOrder}
+                helperText={errors.unitInOrder}
               />
             </Grid>
-              {/* Manufacturer Selection */}
-              <Grid item xs={12} md={6}>
-              <FormControl fullWidth margin="normal">
+            <Grid item xs={12} md={6}>
+              <FormControl
+                fullWidth
+                margin="normal"
+                error={!!errors.selectedManufacturer}
+              >
                 <InputLabel>Manufacturer</InputLabel>
                 <Select
                   value={selectedManufacturer}
                   onChange={(e) => {
                     setSelectedManufacturer(e.target.value);
-                    setProduct({ ...product, manufacturer: { id: e.target.value } });
+                    setProduct({
+                      ...product,
+                      manufacturer: { id: e.target.value },
+                    });
                   }}
                 >
                   {listManufacturer.map((manufacturer) => (
@@ -209,16 +302,27 @@ function AdminEditProduct({ id, setActiveComponent, showAlert }) {
                   ))}
                 </Select>
               </FormControl>
+              {errors.selectedManufacturer && (
+                <Typography color="error">
+                  {errors.selectedManufacturer}
+                </Typography>
+              )}
             </Grid>
-            {/* Category Selection */}
             <Grid item xs={12} md={6}>
-              <FormControl fullWidth margin="normal">
+              <FormControl
+                fullWidth
+                margin="normal"
+                error={!!errors.selectedCategory}
+              >
                 <InputLabel>Category</InputLabel>
                 <Select
                   value={selectedCategory}
                   onChange={(e) => {
                     setSelectedCategory(e.target.value);
-                    setProduct({ ...product, category: { id: e.target.value } });
+                    setProduct({
+                      ...product,
+                      category: { id: e.target.value },
+                    });
                   }}
                 >
                   {listCategory.map((category) => (
@@ -228,8 +332,10 @@ function AdminEditProduct({ id, setActiveComponent, showAlert }) {
                   ))}
                 </Select>
               </FormControl>
+              {errors.selectedCategory && (
+                <Typography color="error">{errors.selectedCategory}</Typography>
+              )}
             </Grid>
-            {/* Promotion Selection */}
             <Grid item xs={12} md={6}>
               <FormControl fullWidth margin="normal">
                 <InputLabel>Promotion</InputLabel>
@@ -237,7 +343,10 @@ function AdminEditProduct({ id, setActiveComponent, showAlert }) {
                   value={selectedPromotion}
                   onChange={(e) => {
                     setSelectedPromotion(e.target.value);
-                    setProduct({ ...product, promotion: { id: e.target.value } });
+                    setProduct({
+                      ...product,
+                      promotion: { id: e.target.value },
+                    });
                   }}
                 >
                   {listPromotion.map((promotion) => (
@@ -248,15 +357,21 @@ function AdminEditProduct({ id, setActiveComponent, showAlert }) {
                 </Select>
               </FormControl>
             </Grid>
-            {/* Specifications */}
             {product.specification.map((spec, index) => (
-              <Grid item xs={12} md={6} key={index}>
+              <Grid item xs={12} key={index}>
                 <TextField
                   fullWidth
                   label="Specification Name"
                   value={spec.specificationName}
+                  onChange={(e) => {
+                    const newSpecifications = [...product.specification];
+                    newSpecifications[index].specificationName = e.target.value; // Thay đổi giá trị specificationName
+                    setProduct({
+                      ...product,
+                      specification: newSpecifications,
+                    });
+                  }}
                   margin="normal"
-                  disabled // Disable the default specification name field
                 />
                 <TextField
                   fullWidth
@@ -265,29 +380,46 @@ function AdminEditProduct({ id, setActiveComponent, showAlert }) {
                   onChange={(e) => {
                     const newSpecifications = [...product.specification];
                     newSpecifications[index].specificationData = e.target.value;
-                    setProduct({ ...product, specification: newSpecifications });
+                    setProduct({
+                      ...product,
+                      specification: newSpecifications,
+                    });
                   }}
                   margin="normal"
                 />
+                <IconButton
+                  color="error"
+                  onClick={() => handleRemoveSpecification(index)}
+                >
+                  <Delete />
+                </IconButton>
               </Grid>
             ))}
+
             <Grid item xs={12}>
-              <Button variant="outlined" onClick={() => {
-                const newSpecifications = [...product.specification, { specificationName: "", specificationData: "" }];
-                setProduct({ ...product, specification: newSpecifications });
-              }}>
+              <Button
+                variant="outlined"
+                onClick={() => {
+                  const newSpecifications = [
+                    ...product.specification,
+                    { specificationName: "", specificationData: "" },
+                  ];
+                  setProduct({ ...product, specification: newSpecifications });
+                }}
+              >
                 Add Specification
               </Button>
             </Grid>
-            {/* File Input for Images */}
             <Grid item xs={12}>
               <TextField
                 type="file"
                 fullWidth
                 margin="normal"
-                label="Main Product Image"
+                label="Main Product Image ( 1 image only)"
                 InputLabelProps={{ shrink: true }}
                 inputProps={{ accept: "image/*" }}
+                error={!!errors.mainFile}
+                helperText={errors.mainFile}
                 onChange={handleMainImagesChange}
               />
             </Grid>
@@ -296,28 +428,37 @@ function AdminEditProduct({ id, setActiveComponent, showAlert }) {
                 type="file"
                 fullWidth
                 margin="normal"
-                label="Additional Images"
+                label="Additional Images (at least 2 image and less than 5 image)"
                 InputLabelProps={{ shrink: true }}
                 inputProps={{ multiple: true }}
+                error={!!errors.additionalImages}
+                helperText={errors.additionalImages}
                 onChange={handleFilesChange}
               />
             </Grid>
-            {/* Display Existing Images */}
             <Grid item xs={12}>
               <Typography variant="h6">Existing Images</Typography>
               <Grid container spacing={2}>
                 {clonedImages.map((image, index) => (
                   <Grid item xs={4} key={index}>
-                    <img
-                      src={image.url}
-                      alt={`Product Image ${index}`}
-                      style={{ width: "100%", height: "auto" }}
-                    />
+                    <div style={{ position: "relative" }}>
+                      <img
+                        src={image.url}
+                        alt={`Product Image ${index}`}
+                        style={{ width: "100%", height: "auto" }}
+                      />
+                      <IconButton
+                        style={{ position: "absolute", top: 0, right: 0 }}
+                        color="error"
+                        onClick={() => handleRemoveImage(index)}
+                      >
+                        <Delete />
+                      </IconButton>
+                    </div>
                   </Grid>
                 ))}
               </Grid>
             </Grid>
-            {/* Save Changes */}
             <Grid item xs={12}>
               <Button
                 variant="contained"
@@ -326,6 +467,14 @@ function AdminEditProduct({ id, setActiveComponent, showAlert }) {
                 sx={{ marginTop: 2 }}
               >
                 Update Product
+              </Button>
+              <Button
+                variant="outlined"
+                color="secondary"
+                onClick={() => setActiveComponent({ name: "AdminProduct" })}
+                sx={{ marginTop: 2, marginLeft: 2 }}
+              >
+                Return to AdminProduct
               </Button>
             </Grid>
           </Grid>

@@ -114,6 +114,7 @@ function AdminEditAccess({ setActiveComponent, id, showAlert }) {
           </Box>
 
           <form className="form-account" onSubmit={handleSubmit}>
+          <Grid container spacing={2}>
             <FormHelperText
               sx={{ fontSize: "18px", fontWeight: "bold", color: "black" }}
             >
@@ -152,16 +153,23 @@ function AdminEditAccess({ setActiveComponent, id, showAlert }) {
               </Grid>
             </Box>
 
-            <Box sx={{ marginTop: 3 }}>
+            <Grid item xs={12}>
               <Button
                 type="submit"
                 variant="contained"
-                size="large"
-                className="button"
               >
-                Cập nhật
+                Update
               </Button>
-            </Box>
+              <Button
+                variant="outlined"
+                color="secondary"
+                onClick={() => setActiveComponent({ name: "AdminAccess" })}
+                sx={{ marginTop: 0, marginLeft: 2 }}
+              >
+                Return to Access
+              </Button>
+            </Grid>
+            </Grid>
           </form>
         </Box>
       </Box>

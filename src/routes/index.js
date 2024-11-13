@@ -16,9 +16,13 @@ import AdminChart from "../Component/Page/Admin/Admin Dashboard/Chart.js";
 import AdminCustomer from "../Component/Page/Admin/Admin Dashboard/Customer.js";
 import AdminEditAccess from "../Component/Page/Admin/Admin Dashboard/EditAccess.js";
 import AdminEditCategory from "../Component/Page/Admin/Admin Dashboard/EditCategory.js";
+import AdminEditExport from "../Component/Page/Admin/Admin Dashboard/EditExport.js";
+import AdminEditImport from "../Component/Page/Admin/Admin Dashboard/EditImport.js";
 import AdminEditManufacturer from "../Component/Page/Admin/Admin Dashboard/EditManufacturer.js";
 import AdminEditOrder from "../Component/Page/Admin/Admin Dashboard/EditOrder.js";
 import AdminEditStaff from "../Component/Page/Admin/Admin Dashboard/EditStaff.js";
+import AdminExport from "../Component/Page/Admin/Admin Dashboard/Export.js";
+import AdminImport from "../Component/Page/Admin/Admin Dashboard/Import.js";
 import {
   default as AdminDecentralization,
   default as AdminManufacturer,
@@ -29,6 +33,7 @@ import AdminStaff from "../Component/Page/Admin/Admin Dashboard/Staff.js";
 import AdminViewCategory from "../Component/Page/Admin/Admin Dashboard/ViewCategory.js";
 import AdminViewCustomer from "../Component/Page/Admin/Admin Dashboard/ViewCustomer.js";
 import AdminViewManufacturer from "../Component/Page/Admin/Admin Dashboard/ViewManufacturer.js";
+import AdminViewOrder from "../Component/Page/Admin/Admin Dashboard/ViewOrder.js";
 import AdminViewStaff from "../Component/Page/Admin/Admin Dashboard/ViewStaff.js";
 import {
   default as AdminDashboard,
@@ -132,6 +137,13 @@ const publicRoutes = [
   {
     path: "/websiteDoAn/AdminViewCustomer",
     component: AdminViewCustomer,
+    layout: BodyOnly,
+  },
+
+
+  {
+    path: "/websiteDoAn/AdminViewOrder",
+    component: AdminViewOrder,
     layout: BodyOnly,
   },
 
@@ -258,10 +270,36 @@ const publicRoutes = [
   },
 
   {
+    path: "/websiteDoAn/AdminExport",
+    component: AdminExport,
+    layout: BodyOnly,
+  },
+
+  {
+    path: "/websiteDoAn/AdminImport",
+    component: AdminImport,
+    layout: BodyOnly,
+  },
+  
+  {
+    path: "/websiteDoAn/AdminEditImport",
+    component: AdminEditImport,
+    layout: BodyOnly,
+  },
+
+  {
+    path: "/websiteDoAn/AdminEditExport",
+    component: AdminEditExport,
+    layout: BodyOnly,
+  },
+
+  {
     path: "/websiteDoAn/Review",
     component: ProductReview,
     layout: BodyOnly,
   },
+
+
 
   /*--- Cart ---*/
   {

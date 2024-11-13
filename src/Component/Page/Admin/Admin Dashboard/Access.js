@@ -27,9 +27,9 @@ function AdminAccess({ setActiveComponent, showAlert }) {
 
   // Hàm kiểm tra tồn tại Role
   const checkRoleNameExists = (roleName) => {
-    return listUser.some(
+    return listUser?.some(
       (user) =>
-        user.decentralization.access.roleName.toLowerCase() ===
+        user?.decentralization?.access?.roleName?.toLowerCase() ===
         roleName.toLowerCase()
     );
   };

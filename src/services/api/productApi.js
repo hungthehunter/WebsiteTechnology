@@ -2,6 +2,7 @@ import shopAPI from "../axios/configAxios";
 
 const PRODUCT_ENDPOINTS = {
   GET_ALL_PRODUCT: "/products",
+  GET_ALL_PRODUCT_BY_MANUFACTURER_ID: "/products/manufacturer/:id",
   GET_PRODUCT_BY_ID: "/products/:id",
   CREATE_PRODUCT: "/products",
   UPDATE_PRODUCT: "/products/:id",
@@ -14,6 +15,18 @@ const productApi = {
     if (loadingScreen) {
       await new Promise((resolve) => setTimeout(resolve, 2000));
     }
+    return res;
+  },
+
+  getAllProductByManufacturerId: async (id, loadingScreen = true) => {
+    const res = await shopAPI.get(
+      PRODUCT_ENDPOINTS.GET_ALL_PRODUCT_BY_MANUFACTURER_ID.replace(":id", id)
+    );
+
+    if (loadingScreen) {
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+    }
+
     return res;
   },
 

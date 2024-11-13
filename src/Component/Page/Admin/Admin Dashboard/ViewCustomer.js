@@ -18,19 +18,24 @@ import {
   ListItemText,
   Typography,
 } from "@mui/material";
+import CircularProgress from '@mui/material/CircularProgress';
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { userThunk } from "../../../../services/redux/thunks/thunk";
 import "./assets/css/style.scss";
 
 function AdminViewCustomer({ id, setActiveComponent }) {
+  const isLoading = useSelector((state) => state.user.isLoading);
   const [fullname, setFullname] = useState("");
   const [mobile, setMobile] = useState("");
   const [email, setEmail] = useState("");
   const [dateOfBirth, setDateOfBirth] = useState("");
   const [addresses, setAddresses] = useState([]);
+  const listAddress = useSelector((state) => 
+    state.address.listAddress.filter(address => address.user.id === id)
+  );
+  
   const dispatch = useDispatch();
-
   useEffect(() => {
     if (id) {
       dispatch(userThunk.getUserById(id));
@@ -38,7 +43,7 @@ function AdminViewCustomer({ id, setActiveComponent }) {
   }, [dispatch, id]);
 
   const selectedUser = useSelector((state) => state.user.selectedUser);
-
+  
   // Update local state when selectedUser changes
   useEffect(() => {
     if (selectedUser) {
@@ -46,13 +51,35 @@ function AdminViewCustomer({ id, setActiveComponent }) {
       setMobile(selectedUser?.mobile || "");
       setEmail(selectedUser?.email || "");
       setDateOfBirth(
-        typeof selectedUser?.dateofbirth === "object"
-          ? selectedUser.dateofbirth.toLocaleDateString()
-          : selectedUser.dateofbirth || ""
-      );
-      setAddresses(selectedUser?.addresses || []);
+        selectedUser?.dateofbirth
+         
+      )
+      setAddresses(listAddress || []);
     }
   }, [selectedUser]);
+
+  if (isLoading) {
+    return (
+      <Box sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100vh',
+        width: '100vw',
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        backgroundColor: 'black',
+        zIndex: 9999
+      }}>
+        <CircularProgress size={60} thickness={4}  sx={{ color: '#4CAF50' }}  />
+        <Typography variant="h6" sx={{ mt: 2, color: '#4CAF50' }}>
+          PLEASE WAIT...
+        </Typography>
+      </Box>
+    );
+  }
 
   return (
     <Container maxWidth="md">

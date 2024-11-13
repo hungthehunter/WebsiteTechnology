@@ -10,6 +10,7 @@ import {
   Card,
   CardContent,
   CardHeader,
+  CircularProgress,
   Container,
   Divider,
   Grid,
@@ -24,14 +25,16 @@ import { userThunk } from "../../../../services/redux/thunks/thunk";
 import "./../Admin Dashboard/assets/css/style.scss";
 
 function AdminViewStaff({ id, setActiveComponent }) {
+  const isLoading = useSelector((state) => state.user.isLoading);
   const [mobile, setMobile] = useState("");
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [addresses, setAddresses] = useState([]);
   const [dateOfBirth, setDateOfBirth] = useState("");
   const [fullname, setFullname] = useState("");
   const dispatch = useDispatch();
-
+  const listAddress = useSelector((state) => 
+    state.address.listAddress.filter(address => address.user.id === id)
+  );
   useEffect(()=>{
    dispatch(userThunk.getUserById(id));
   },[dispatch])
@@ -44,9 +47,32 @@ function AdminViewStaff({ id, setActiveComponent }) {
       setMobile(selectedUser.mobile || "");
       setEmail(selectedUser.email || "");
       setDateOfBirth(selectedUser.dateofbirth || "");
-      setAddresses(selectedUser.addresses || []);
+      setAddresses(listAddress || []);
     }
   }, [selectedUser]);
+
+  if (isLoading) {
+    return (
+      <Box sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100vh',
+        width: '100vw',
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        backgroundColor: 'black',
+        zIndex: 9999
+      }}>
+        <CircularProgress size={60} thickness={4}  sx={{ color: '#4CAF50' }}  />
+        <Typography variant="h6" sx={{ mt: 2, color: '#4CAF50' }}>
+          PLEASE WAIT...
+        </Typography>
+      </Box>
+    );
+  }
   return (
     <Container maxWidth="md">
       <Card sx={{ mt: 4 }}>

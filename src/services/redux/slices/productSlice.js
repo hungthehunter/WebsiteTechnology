@@ -2,6 +2,7 @@ import { createSlice } from "@reduxjs/toolkit";
 import { productThunk } from "../thunks/thunk";
 const initialState={
     listProduct:[],
+    listProductByManufacturer: [],
     selectedProduct:null,
     isLoading:false,
     isError:false
@@ -55,6 +56,24 @@ extraReducers:(builder)=>{
         state.isError = true
         state.selectedProduct = null;
       })
+
+    //getProductByManufacturerId
+    builder
+    .addCase(productThunk.getAllProductByManufacturerId.pending, (state) => {
+      state.isLoading = true;
+    })
+    .addCase(
+      productThunk.getAllProductByManufacturerId.fulfilled,
+      (state, action) => {
+        state.isLoading = false;
+        state.isError = false;
+        state.listProductByManufacturer = action.payload;
+      }
+    )
+    .addCase(productThunk.getAllProductByManufacturerId.rejected, (state) => {
+      state.isLoading = false;
+      state.isError = true;
+    });
 
 
     // createProduct

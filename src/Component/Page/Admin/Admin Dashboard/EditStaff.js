@@ -25,6 +25,7 @@ function AdminEditStaff({ id, setActiveComponent, showAlert }) {
   const [role, setRole] = useState("");
   const [status, setStatus] = useState("true");
   const [dateOfBirth, setDateOfBirth] = useState("");
+  const [decentralization, setDecentralization] = useState("");
   const [addresses, setAddresses] = useState([
     {
       houseNumber: "",
@@ -57,9 +58,10 @@ function AdminEditStaff({ id, setActiveComponent, showAlert }) {
       setMobile(selectedUser.mobile || "");
       setEmail(selectedUser.email || "");
       setStatus(selectedUser.status ? "true" : "false");
-      setDateOfBirth(selectedUser.dateofbirth || "");
-      setRole(selectedUser.role || ""); // Cập nhật vai trò
-      setAddresses(selectedUser.addresses || []); // Cập nhật danh sách địa chỉ
+      setDateOfBirth(selectedUser?.dateofbirth?.split("T")[0] || "");
+      setRole(selectedUser.role || ""); 
+      setDecentralization(selectedUser?.decentralization?.access.id );
+      setAddresses(selectedUser.addresses || []); 
     }
   }, [selectedUser]);
 
@@ -124,6 +126,7 @@ function AdminEditStaff({ id, setActiveComponent, showAlert }) {
       status: status,
       role: "Employee",
       dateofbirth: formatDate,
+      decentralization: { id: decentralization },
       addresses: addresses || [],
     };
 
@@ -214,14 +217,14 @@ function AdminEditStaff({ id, setActiveComponent, showAlert }) {
 
               <Grid item xs={12} md={6}>
                 <FormControl fullWidth variant="outlined">
-                  <InputLabel>Role</InputLabel>
+                  <InputLabel>Access</InputLabel>
                   <Select
-                    value={role}
-                    onChange={(e) => setRole(e.target.value)}
-                    label="Role"
+                    value={decentralization}
+                    onChange={(e) => setDecentralization(e.target.value)}
+                    label="Access"
                   >
                     <MenuItem value="" disabled>
-                      Select role
+                      Select Access
                     </MenuItem>
                     {listAccess.map((accessItem) => (
                       <MenuItem key={accessItem.id} value={accessItem.id}>
@@ -333,6 +336,14 @@ function AdminEditStaff({ id, setActiveComponent, showAlert }) {
                 <Button type="submit" variant="contained" color="primary">
                   Save Changes
                 </Button>
+                <Button
+                variant="outlined"
+                color="secondary"
+                onClick={() => setActiveComponent({ name: "AdminStaff" })}
+                sx={{ marginTop: 0, marginLeft: 2 }}
+              >
+                Return to Staff
+              </Button>
               </Grid>
             </Grid>
           </form>

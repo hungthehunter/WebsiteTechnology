@@ -16,7 +16,7 @@ import { useSelector } from "react-redux";
 
 // Define color arrays
 const productSalesColor = ["orange", "black", "purple"];
-const orderStatusColor = ["blue", "red", "green", "yellow"];
+const orderStatusColor = ['#ffb300', '#f44336', '#4caf50', '#2196f3'];  // Example colors for Pending, Return, Shipped, In Progress
 const productColors = [
   "orange",
   "blue",
@@ -38,8 +38,6 @@ const productColors = [
 const AdminChart = () => {
   const [selectedChart, setSelectedChart] = useState("Product Sales");
   const [selectedMonth, setSelectedMonth] = useState("");
-  const [revenueSales, setRevenueSales] = useState([]);
-  const [performanceKPI, setPerFormanceKPI] = useState([]);
   const listOrder = useSelector((state) => state.order.listOrder);
   const listProduct = useSelector((state) => state.product.listProduct);
 
@@ -51,8 +49,8 @@ const AdminChart = () => {
         acc[productName] = {
           id: item.id,
           label: productName,
-          value: item.quanitty,
-          totalValue: item.price,
+          value: item.quantity,
+          totalValue: item.totalPrice,
         };
       } else {
         acc[productName].quantity += item.quanitty;
@@ -63,37 +61,64 @@ const AdminChart = () => {
   }, {});
   const dataProductSales = Object.values(mergedProducts);
 
+
   // Order status bar chart data processing (2 function: monthlyOrderStatus , dataForBarChart)
-  const monthlyOrderStatus = listOrder.reduce((acc, item) => {
-    const month = new Date(item.order_date).getMonth() + 1;
-    console.log("month:", month);
-    const status = item.order_status;
-    if (!acc[month]) {
-      acc[month] = {
-        month,
-        statuses: { Pending: 0, Return: 0, Shipped: 0, inProgress: 0 },
-      };
-    }
-    acc[month].statuses[status] += 1;
-    return acc;
-  }, {});
+const monthlyOrderStatus = listOrder.reduce((acc, item) => {
+  const orderDate = new Date(item.order_date);
+  const month = orderDate.getMonth() + 1;  // Get month (1-based)
+  const year = orderDate.getFullYear();   // Get year
+  const status = item.order_status;
+  const key = `${year}-${month}`; // Combine year and month to create a unique key
 
-  const dataForBarChart = Object.values(monthlyOrderStatus).map((item) => ({
-    month: `Tháng ${item.month}`,
-    Pending: item.statuses.Pending,
-    Return: item.statuses.Return,
-    Shipped: item.statuses.Shipped,
-    inProgress: item.statuses.inProgress,
-  }));
+  if (!acc[key]) {
+    acc[key] = {
+      year,
+      month,
+      statuses: { Pending: 0, Return: 0, Shipped: 0, inProgress: 0 },
+    };
+  }
+  acc[key].statuses[status] += 1;
+  return acc;
+}, {});
 
-  const orderStatusData = Object.values(monthlyOrderStatus).map((item) => ({
-    month: `Tháng ${item.month}`,
-    Pending: item.statuses.Pending,
-    Return: item.statuses.Return,
-    Shipped: item.statuses.Shipped,
-    inProgress: item.statuses.inProgress,
-  }));
 
+const dataForBarChart = Object.values(monthlyOrderStatus).map((item) => ({
+  month: `Tháng ${item.month} - ${item.year}`,  // Display both month and year
+  Pending: item.statuses.Pending,
+  Return: item.statuses.Return,
+  Shipped: item.statuses.Shipped,
+  inProgress: item.statuses.inProgress,
+}));
+
+const pieChartData = Object.values(monthlyOrderStatus).map((item) => ({
+  label: `Tháng ${item.month} - ${item.year}`,  // Label with both month and year
+  Pending: item.statuses.Pending,
+  Return: item.statuses.Return,
+  Shipped: item.statuses.Shipped,
+  inProgress: item.statuses.inProgress,
+}));
+
+const filteredDataForBarChart = selectedMonth
+  ? dataForBarChart.filter((item) => {
+      const [selectedYear, selectedMonthNumber] = selectedMonth.split("-");
+      return (
+        item.month.includes(selectedYear) && item.month.includes(selectedMonthNumber)
+      );
+    })
+  : dataForBarChart;
+
+const filteredPieChartData = selectedMonth
+  ? pieChartData.filter((item) => {
+      const [selectedYear, selectedMonthNumber] = selectedMonth.split("-");
+      return (
+        item.label.includes(selectedYear) && item.label.includes(selectedMonthNumber)
+      );
+    })
+  : pieChartData;
+
+
+
+  
   // Inventory levels bar chart data processing (1 function: dataInventoryLevels)
   const dataInventoryLevels = listProduct.map((inventory, index) => ({
     productName: inventory.productName,
@@ -125,7 +150,7 @@ const AdminChart = () => {
 
       // Sum up the total number of carts purchased by this user
       const totalCarts = order.orderItem.reduce((sum, history) => {
-        return sum + history.quanitty;
+        return sum + history.quantity;
       }, 0);
 
       if (!acc[userName]) {
@@ -229,47 +254,65 @@ const AdminChart = () => {
           </Box>
         )}
 
-        {selectedChart === "Order Status by Month" && (
-          <Box flexGrow={2} minWidth={300} marginBottom={2}>
-            <Typography sx={{ marginTop: 2 }}>Order Status by Month</Typography>
-            <PieChart
-              colors={orderStatusColor}
-              series={[{ data: orderStatusData }]}
-              height={200}
-              sx={{
-                [`& .${pieArcLabelClasses.root}`]: {
-                  fill: "white",
-                  fontWeight: "bold",
-                },
-              }}
-            />
-            {/* Table for Order Status by Month */}
-            <Box sx={{ width: "50%", overflowX: "auto", marginTop: 2 }}>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Month</TableCell>
-                    <TableCell>Pending</TableCell>
-                    <TableCell>Return</TableCell>
-                    <TableCell>Shipped</TableCell>
-                    <TableCell>In Progress</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {dataForBarChart.map((item) => (
-                    <TableRow key={item.month}>
-                      <TableCell>{item.month}</TableCell>
-                      <TableCell>{item.Pending}</TableCell>
-                      <TableCell>{item.Return}</TableCell>
-                      <TableCell>{item.Shipped}</TableCell>
-                      <TableCell>{item.inProgress}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </Box>
-          </Box>
-        )}
+
+
+{selectedChart === "Order Status by Month" && (
+  <Box flexGrow={2} minWidth={300} marginBottom={2}>
+    <Typography sx={{ marginTop: 2 }}>Order Status by Month</Typography>
+
+    {/* Pie Chart for Order Status */}
+    <PieChart
+      series={[
+        {
+          data: [
+            { label: 'Pending', value: filteredPieChartData.reduce((sum, item) => sum + item.Pending, 0) },
+            { label: 'Return', value: filteredPieChartData.reduce((sum, item) => sum + item.Return, 0) },
+            { label: 'Shipped', value: filteredPieChartData.reduce((sum, item) => sum + item.Shipped, 0) },
+            { label: 'In Progress', value: filteredPieChartData.reduce((sum, item) => sum + item.inProgress, 0) }
+          ]
+        }
+      ]}
+      height={200}
+      colors={['#ffb300', '#f44336', '#4caf50', '#2196f3']}  // Màu sắc cho các phần
+      sx={{
+        [`& .${pieArcLabelClasses.root}`]: {
+          fill: "white",
+          fontWeight: "bold",
+        },
+      }}
+    />
+
+    {/* Table for Order Status by Month */}
+    <Box sx={{ width: "50%", overflowX: "auto", marginTop: 2 }}>
+      <Table>
+        <TableHead>
+          <TableRow>
+            <TableCell>Month</TableCell>
+            <TableCell>Pending</TableCell>
+            <TableCell>Return</TableCell>
+            <TableCell>Shipped</TableCell>
+            <TableCell>In Progress</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {filteredDataForBarChart.map((item) => (
+            <TableRow key={item.month}>
+              <TableCell>{item.month}</TableCell>
+              <TableCell>{item.Pending}</TableCell>
+              <TableCell>{item.Return}</TableCell>
+              <TableCell>{item.Shipped}</TableCell>
+              <TableCell>{item.inProgress}</TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </Box>
+  </Box>
+)}
+
+
+
+
 
         {selectedChart === "Inventory Levels" && (
           <Box flexGrow={2} minWidth={300} marginBottom={2}>

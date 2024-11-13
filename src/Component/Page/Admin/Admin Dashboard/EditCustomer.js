@@ -59,9 +59,9 @@ function AdminEditCustomer({ id, setActiveComponent, showAlert }) {
       setMobile(selectedUser.mobile || "");
       setEmail(selectedUser.email || "");
       setStatus(selectedUser.status ? "true" : "false");
-      setDateOfBirth(selectedUser.dateofbirth || "");
-      setDecentralization(selectedUser.decentralization?.id || "");
-      setAddresses(selectedUser.addresses || []); // Cập nhật danh sách địa chỉ
+      setDateOfBirth(selectedUser?.dateofbirth.split("T")[0] || "");
+      setDecentralization(selectedUser?.decentralization?.access.id );
+      setAddresses(selectedUser?.addresses || []); 
     }
   }, [selectedUser]);
 
@@ -342,6 +342,14 @@ function AdminEditCustomer({ id, setActiveComponent, showAlert }) {
                 <Button variant="contained" type="submit">
                   Save Changes
                 </Button>
+                <Button
+                variant="outlined"
+                color="secondary"
+                onClick={() => setActiveComponent({ name: "AdminCustomer" })}
+                sx={{ marginTop: 0, marginLeft: 2 }}
+              >
+                Return to Customer
+              </Button>
               </Grid>
             </Grid>
           </form>

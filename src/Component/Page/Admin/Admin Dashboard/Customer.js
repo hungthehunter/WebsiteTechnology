@@ -146,7 +146,7 @@ function AdminCustomer({ setActiveComponent, showAlert }) {
                     <Button
                       variant="outlined"
                       // onClick={() => setActiveComponent({ name: "AdminViewCustomer", props: { id: user.id }  })}
-                      onClick={()=> handleView(user)}
+                      onClick={()=> handleView(user.id)}
                    > 
                       View
                     </Button>

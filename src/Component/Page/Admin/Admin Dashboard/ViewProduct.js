@@ -22,8 +22,8 @@ import "react-image-gallery/styles/css/image-gallery.css";
 import { useDispatch, useSelector } from "react-redux";
 import { productThunk } from "../../../../services/redux/thunks/thunk";
 import "./assets/css/style.scss";
-
 function AdminViewProduct({ id, setActiveComponent }) {
+  const isLoading = useSelector((state) => state.product.isLoading);
   const dispatch = useDispatch();
   const [showFullSpecs, setShowFullSpecs] = useState(false);
   const [visibleSpecs, setVisibleSpecs] = useState(5); // Chỉnh số lượng hiển thị ở đây
@@ -54,6 +54,29 @@ function AdminViewProduct({ id, setActiveComponent }) {
       selectedProduct?.product_image?.find((img) => img.mainImage)?.url
   );
   const otherImages = images.filter((img) => img !== mainImage);
+
+  if (isLoading) {
+    return (
+      <Box sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100vh',
+        width: '100vw',
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        backgroundColor: 'black',
+        zIndex: 9999
+      }}>
+        <CircularProgress size={60} thickness={4}  sx={{ color: '#4CAF50' }}  />
+        <Typography variant="h6" sx={{ mt: 2, color: '#4CAF50' }}>
+          PLEASE WAIT...
+        </Typography>
+      </Box>
+    );
+  }
 
   return (
     <Container className="no-margin-container" style={{ marginTop: '20px', maxWidth: '100%' }}>

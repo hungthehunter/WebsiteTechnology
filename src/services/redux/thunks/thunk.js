@@ -4,7 +4,9 @@ import addressApi from "../../api/addressApi.js";
 import cartApi from "../../api/cartApi.js";
 import categoryApi from "../../api/categoryApi.js";
 import decentralizationApi from "../../api/decentralizationApi.js";
+import exportApi from "../../api/exportApi.js";
 import functionApi from "../../api/functionApi.js";
+import importApi from "../../api/importApi.js";
 import invoiceApi from "../../api/invoiceApi.js";
 import manufacturerApi from "../../api/manufacturerApi.js";
 import orderApi from "../../api/orderApi.js";
@@ -249,6 +251,10 @@ export const productThunk = {
         const res = await productApi.getAllProduct();
         return res;
     }),
+    getAllProductByManufacturerId: createAsyncThunk("product/getAllByManufacturerId", async(id) => {
+        const res = await productApi.getAllProductByManufacturerId(id);
+        return res;
+    }),
     getProductById: createAsyncThunk("product/getProductById", async (id) => {
         const res = await productApi.getProductById(id);
         return res;
@@ -373,3 +379,41 @@ export const userThunk = {
         return res;
     }),
 };
+
+export const importThunk = {
+    getAllImports: createAsyncThunk("import/getAllImports", async () => {
+        const res = await importApi.getAllImport();
+        return res;
+    }),
+    getImportById: createAsyncThunk("import/getImportById", async (id) => {
+        const res = await importApi.getImportById(id);
+        return res;
+    }),
+    createImport: createAsyncThunk("import/createImport", async (importData) => {
+        const res = await importApi.createImport(importData);
+        return res;
+    }),
+    updateImport: createAsyncThunk("import/updateImport", async ({id, importData}) => {
+        const res = await importApi.updateImport(id, importData);
+        return res;
+    })
+}
+
+export const exportThunk = {
+    getAllExports: createAsyncThunk("import/getAllExports", async () => {
+        const res = await exportApi.getAllExport();
+        return res;
+    }),
+    getExportById: createAsyncThunk("import/getExportById", async (id) => {
+        const res = await exportApi.getExportById(id);
+        return res;
+    }),
+    createExport: createAsyncThunk("import/createExport", async (exportData) => {
+        const res = await exportApi.createExport(exportData);
+        return res;
+    }),
+    updateExport: createAsyncThunk("import/updateExport", async ({id, exportData}) => {
+        const res = await exportApi.updateExport(id, exportData);
+        return res;
+    })
+}

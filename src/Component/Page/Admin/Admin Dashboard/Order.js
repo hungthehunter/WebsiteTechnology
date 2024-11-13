@@ -44,7 +44,6 @@ function AdminOrder({ setActiveComponent, showAlert }) {
   const open = Boolean(anchorEl);
   const id = open ? "simple-popover" : undefined;
 
-
   const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this order?")) {
       try {
@@ -176,6 +175,17 @@ function AdminOrder({ setActiveComponent, showAlert }) {
                     </span>
                   </TableCell>
                   <TableCell style={{ textAlign: "end", fontSize: "1.3rem" }}>
+                    <Button
+                      variant="outlined"
+                      onClick={() =>
+                        setActiveComponent({
+                          name: "AdminViewOrder",
+                          props: { id: order.id },
+                        })
+                      }
+                    >
+                      View
+                    </Button>
                     <Button
                       variant="outlined"
                       onClick={() =>

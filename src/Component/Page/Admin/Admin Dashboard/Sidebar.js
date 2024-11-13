@@ -1,5 +1,7 @@
 import { IonIcon } from "@ionic/react";
 import {
+  arrowDownCircleOutline,
+  arrowUpCircleOutline,
   cashOutline,
   desktopOutline,
   gridOutline,
@@ -9,7 +11,7 @@ import {
   manOutline,
   peopleOutline,
   shieldOutline,
-  statsChartOutline,
+  statsChartOutline
 } from "ionicons/icons";
 import React, { useEffect, useState } from "react";
 import { BsNvidia } from "react-icons/bs";
@@ -64,6 +66,12 @@ const SidebarAdmin = ({
     "Delete Category": "AdminDeleteCategory",  
     "View Dashboard": "AdminDashboard",
     "View Chart": "AdminChart",
+    "View Import List": "AdminImport",
+    "Create Import": "AdminAddImport",
+    "Edit Import": "AdminEditImport",
+    "View Export List": "AdminExport",
+    "Create Export": "AdminAddExport",
+    "Edit Export": "AdminEditExport",
   };
 
   // Sidebar items with links and components
@@ -122,6 +130,18 @@ const SidebarAdmin = ({
       link: "/websiteDoAn/AdminAccess",
       component: "AdminAccess",
     },
+    {
+      icon: arrowDownCircleOutline,
+      title: "Import",
+      link: "/websiteDoAn/AdminImport",
+      component: "AdminImport",
+    },
+    {
+      icon: arrowUpCircleOutline,
+      title: "Export",
+      link: "/websiteDoAn/AdminExport",
+      component: "AdminExport"
+    }
   ];
 
   // Populate user functions based on decentralization data
@@ -149,8 +169,6 @@ const SidebarAdmin = ({
       )
     )
   );
-
-  console.log("đây là filteredSidebarItems",filteredSidebarItems)
 
   return (
     <div className={`navigation ${menuActive ? "active" : ""}`}>
@@ -182,8 +200,8 @@ const SidebarAdmin = ({
           </li>
         ))}
         <li
-          onMouseOver={() => handleMouseOver(10)}
-          className={activeIndex === 10 ? "hovered" : ""}
+          onMouseOver={() => handleMouseOver(11)}
+          className={activeIndex === 11 ? "hovered" : ""}
           onClick={handleLoginLogout}
         >
           <a href="#">

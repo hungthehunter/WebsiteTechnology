@@ -1,0 +1,71 @@
+.wrapper {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 0px;
+  position: relative;
+}
+
+.controlQuantity {
+  composes: wrapper;
+}
+
+.controlQuantity:hover {
+  animation: unset;
+}
+
+.controlQuantity:disabled {
+  background-color: #424242;
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.text {
+  width: 300px;
+}
+
+.quantity-control {
+  .MuiButtonGroup-root {
+    .MuiButton-root {
+      &.decrease {
+        background-color: #4CAF50 !important;
+        &:hover {
+          background-color: #45a049 !important;
+        }
+      }
+      &.increase {
+        background-color: #4CAF50 !important;
+        &:hover {
+          background-color: #45a049 !important;
+        }
+      }
+      &.quantity {
+        background-color: #333333 !important;
+        color: #FFFFFF !important;
+      }
+    }
+  }
+}
+
+@media (max-width: 1200px) {
+  .text {
+    width: 300px;
+  }
+}
+
+@media (max-width: 900px) {
+  .text {
+    width: 250px;
+  }
+}
+
+@media (max-width: 600px) {
+  .text {
+    width: 200px;
+  }
+}
+
+.deleteBtn {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  transform: translate(-50%, -50%);
+}

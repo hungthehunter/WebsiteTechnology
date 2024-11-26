@@ -8,6 +8,7 @@ import AccountOrder from "./AccountOrder";
 import AccountProductHistory from "./AccountProductHistory";
 import "./css/style.scss";
 import SidebarAccountHistory from "./SideBar";
+import { Box, Container, Alert } from '@mui/material';
 
 const AccountHistory = () => {
   /*------- Page function -------*/
@@ -89,36 +90,35 @@ const AccountHistory = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const isInitialMount = useRef(true);
 
-  useEffect(() => {
-    const token = localStorage.getItem("authToken");
-    setIsLoggedIn(!!token);
-
-    if (isInitialMount.current) {
-      isInitialMount.current = false;
-      if (!token) {
-        alert("PLEASE LOGIN BEFORE CONTINUING");
-        navigate("/websiteDoAn/Login");
-      }
-    }
-  }, [navigate]); // Removed location from dependencies
+   // Removed location from dependencies
 
   return (
-    <div className="account-history">
-      <div className="container">
-        <SidebarAccountHistory
-          activeIndex={activeIndex}
-          handleMouseOver={handleMouseOver}
-          setActiveComponent={setActiveComponent}
-          setMenuActive={setMenuActive}
-        />
+    <Box className="account-history">
+      <Container>
+        <Box sx={{ display: 'flex'}}>
+          <SidebarAccountHistory id="sidebar-account-history" 
+          style={{
+            marginTop: '50px',
+          }}
+            activeIndex={activeIndex}
+            handleMouseOver={handleMouseOver}
+            setActiveComponent={setActiveComponent}
+            setMenuActive={setMenuActive}
+          />
 
-        <div className={`main ${menuActive ? "active" : ""}`}>
-          <AccountHeader toggleMenu={toggleMenu} menuActive={menuActive} />
-
-          {getActiveComponent(activeComponent)}
-        </div>
-      </div>
-    </div>
+          <Box 
+            sx={{ 
+              flexGrow: 1,
+              marginLeft: menuActive ? '240px' : '0',
+              transition: 'margin 0.3s ease-in-out'
+            }}
+          >
+            <AccountHeader toggleMenu={toggleMenu} menuActive={menuActive} />
+            {getActiveComponent(activeComponent)}
+          </Box>
+        </Box>
+      </Container>
+    </Box>
   );
 };
 

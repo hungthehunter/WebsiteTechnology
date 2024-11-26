@@ -5,77 +5,79 @@ import {
   Grid,
   InputLabel,
   MenuItem,
-  Select
+  Select,
+  TextField,
+  Container,
+  Paper,
+  Box,
+  Typography
 } from "@mui/material";
-import axios from "axios";
 import React, { useEffect, useState } from "react";
+import { getUserLogged, updateUserLogged } from "../../Serivce/ApiService";
+import { styled } from "@mui/material/styles";
 import "./css/style.scss";
 
-const AccountDetail = () => {
-  /*------- Page function -------*/
+// Styled components
+const StyledContainer = styled(Paper)({
+  borderRadius: '8px',
+  boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+  overflow: 'hidden',
+  marginTop: '24px',
+});
 
+const HeaderBox = styled(Box)({
+  padding: '16px 24px',
+  backgroundColor: '#f5f5f5',
+  borderBottom: '1px solid #e0e0e0',
+});
+
+const Title = styled(Typography)({
+  fontSize: '20px',
+  fontWeight: 'bold',
+  color: '#3f51b5',
+});
+
+const ContentBox = styled(Box)({
+  padding: '24px',
+});
+
+const StyledAlert = styled(Alert)({
+  marginBottom: '24px',
+  fontSize: '16px', // Increase font size for alert
+});
+
+const StyledFormBox = styled(Box)(({ theme }) => ({
+  '& .MuiTextField-root': { 
+    marginBottom: theme.spacing(3), 
+    fontSize: '16px'  // Increase font size for input fields
+  }
+}));
+
+const BirthLabel = styled(Typography)({
+  fontWeight: '500',
+  marginBottom: '8px',
+  fontSize: '18px', // Increase font size for label
+});
+
+const SaveButton = styled(Button)({
+  textAlign: 'center',
+  fontSize: '16px', // Increase font size for button text
+  fontWeight: 'bold',
+});
+
+const AccountDetail = () => {
   const [birthDay, setBirthDay] = useState("");
   const [birthMonth, setBirthMonth] = useState("");
   const [birthYear, setBirthYear] = useState("");
-
   const [email, setEmail] = useState("");
   const [fullname, setFullname] = useState("");
   const [mobile, setMobile] = useState("");
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [id, setId] = useState();
   const [password, setPassword] = useState("");
-  
   const [alertMessage, setAlertMessage] = useState('');
   const [alertSeverity, setAlertSeverity] = useState('');
 
-  const handleDayChange = (event) => setBirthDay(event.target.value);
-  const handleMonthChange = (event) => setBirthMonth(event.target.value);
-  const handleYearChange = (event) => setBirthYear(event.target.value);
-  const handleFullNameChange = (event) => setFullname(event.target.value);
-  const handlePhoneChange = (event) => setMobile(event.target.value);
-  const handleEmailChange = (event) => setEmail(event.target.value);
-  const handlePasswordChange = (event) => setPassword(event.target.value);
-
-  const renderDays = () => {
-    const days = [];
-    for (let i = 1; i <= 31; i++) {
-      days.push(
-        <MenuItem key={i} value={i}>
-          {i}
-        </MenuItem>
-      );
-    }
-    return days;
-  };
-
-  const renderMonths = () => {
-    const months = [];
-    for (let i = 1; i <= 12; i++) {
-      months.push(
-        <MenuItem key={i} value={i}>
-          {i}
-        </MenuItem>
-      );
-    }
-    return months;
-  };
-
-  const renderYears = () => {
-    const years = [];
-    const currentYear = new Date().getFullYear();
-    for (let i = currentYear; i >= 1900; i--) {
-      years.push(
-        <MenuItem key={i} value={i}>
-          {i}
-        </MenuItem>
-      );
-    }
-    return years;
-  };
-
   useEffect(() => {
     const token = localStorage.getItem("authToken");
-    setIsLoggedIn(!!token);
     if (token) {
       GetUserAccount(token);
     }
@@ -83,20 +85,15 @@ const AccountDetail = () => {
 
   const GetUserAccount = async (token) => {
     try {
-      const result = await axios.get("http://localhost:8080/api/v1/auth/me", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      const { dateofbirth } = result.data;
+      const result = await getUserLogged(token);
+      const { dateofbirth, email, fullname, mobile, id } = result.data;
       const birthDate = new Date(dateofbirth);
-      setEmail(result.data.email);
-      setFullname(result.data.fullname);
-      setMobile(result.data.mobile);
+      setEmail(email);
+      setFullname(fullname);
+      setMobile(mobile);
       setBirthDay(birthDate.getDate());
       setBirthMonth(birthDate.getMonth() + 1);
       setBirthYear(birthDate.getFullYear());
-      setId(result.data.id);
     } catch (error) {
       console.error("Failed to load account details:", error);
     }
@@ -104,9 +101,7 @@ const AccountDetail = () => {
 
   const handleSaveChange = async () => {
     try {
-      const token = localStorage.getItem("authToken");
       const birthDate = new Date(birthYear, birthMonth - 1, birthDay);
-
       const updatedData = {
         email,
         fullname,
@@ -115,140 +110,128 @@ const AccountDetail = () => {
         dateofbirth: birthDate.toISOString(),
       };
 
-      await axios.put(`http://localhost:8080/api/v1/admin/update/${id}`, updatedData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      // Set success alert
+      await updateUserLogged(updatedData);
       setAlertMessage('Account details updated successfully!');
       setAlertSeverity('success');
     } catch (error) {
       console.error("Failed to update account details:", error);
-
-      // Set error alert
       setAlertMessage('Failed to update account details. Please try again.');
       setAlertSeverity('error');
     }
   };
 
   return (
-    <div>
-      {/* ================ Account Detail ================= */}
-      <div className="details_table details">
-        <div className="table recentOrders">
-          <div className="cardHeader">
-            <h2>Account Detail</h2>
-          </div>
+    <Container>
+      <StyledContainer elevation={3}>
+        <HeaderBox>
+          <Title>Account Detail</Title>
+        </HeaderBox>
 
-          {/* Conditionally render Alert */}
+        <ContentBox>
           {alertMessage && (
-            <Alert severity={alertSeverity} onClose={() => setAlertMessage('')}>
+            <StyledAlert severity={alertSeverity} onClose={() => setAlertMessage('')}>
               {alertMessage}
-            </Alert>
+            </StyledAlert>
           )}
 
-          <form className="form-account">
-            <div className="form__line-wrap">
-              <label className="form-label" htmlFor="Full Name">
-                Full Name
-              </label>
-              <input
-                className="form-input"
-                placeholder="Full Name"
-                name="Full Name"
-                value={fullname}
-                onChange={handleFullNameChange}
-              />
-            </div>
+          <StyledFormBox component="form">
+            <TextField
+              fullWidth
+              label="Full Name"
+              variant="outlined"
+              value={fullname}
+              onChange={(e) => setFullname(e.target.value)}
+              InputProps={{ style: { fontSize: '16px' } }} // Font size for input text
+            />
+            <TextField
+              fullWidth
+              label="Phone Number"
+              variant="outlined"
+              value={mobile}
+              onChange={(e) => setMobile(e.target.value)}
+              InputProps={{ style: { fontSize: '16px' } }}
+            />
+            <TextField
+              fullWidth
+              label="Email"
+              variant="outlined"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              InputProps={{ style: { fontSize: '16px' } }}
+            />
+            <TextField
+              fullWidth
+              label="Password"
+              variant="outlined"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              InputProps={{ style: { fontSize: '16px' } }}
+            />
 
-            <div className="form__line-wrap">
-              <label className="form-label" htmlFor="Phone Number">
-                Phone Number
-              </label>
-              <input
-                className="form-input"
-                placeholder="Phone Number"
-                name="Phone Number"
-                value={mobile}
-                onChange={handlePhoneChange}
-              />
-            </div>
-
-            <div className="form__line-wrap">
-              <label className="form-label" htmlFor="Email">
-                Email
-              </label>
-              <input
-                className="form-input"
-                placeholder="Email"
-                name="Email"
-                value={email}
-                onChange={handleEmailChange}
-              />
-            </div>
-
-            <div className="form__line-wrap">
-              <label className="form-label" htmlFor="Password">
-                Password
-              </label>
-              <input
-                className="form-input"
-                placeholder="Password"
-                name="Password"
-                value={password}
-                onChange={handlePasswordChange}
-              />
-            </div>
-
-            <div className="form__line-wrap">
-              <Grid container spacing={2}>
-                <Grid item xs={3}>
-                  <label className="form-label">Birth</label>
-                </Grid>
-                <Grid item xs={3}>
-                  <FormControl fullWidth>
-                    <InputLabel>Day</InputLabel>
-                    <Select value={birthDay} onChange={handleDayChange}>
-                      {renderDays()}
-                    </Select>
-                  </FormControl>
-                </Grid>
-                <Grid item xs={3}>
-                  <FormControl fullWidth>
-                    <InputLabel>Month</InputLabel>
-                    <Select value={birthMonth} onChange={handleMonthChange}>
-                      {renderMonths()}
-                    </Select>
-                  </FormControl>
-                </Grid>
-                <Grid item xs={3}>
-                  <FormControl fullWidth>
-                    <InputLabel>Year</InputLabel>
-                    <Select value={birthYear} onChange={handleYearChange}>
-                      {renderYears()}
-                    </Select>
-                  </FormControl>
-                </Grid>
+            <Grid container spacing={2} mb={3}>
+              <Grid item xs={3}>
+                <BirthLabel>Birth</BirthLabel>
               </Grid>
-            </div>
-            <label></label>
-            <div className="form__input-wrapper">
-              <Button
-                variant="contained"
-                size="large"
-                className="button"
-                onClick={handleSaveChange}
-              >
+              <Grid item xs={3}>
+                <FormControl fullWidth>
+                  <InputLabel>Day</InputLabel>
+                  <Select 
+                    value={birthDay} 
+                    onChange={(e) => setBirthDay(e.target.value)}
+                    sx={{ fontSize: '16px' }} // Increase font size for dropdown
+                  >
+                    {[...Array(31)].map((_, i) => (
+                      <MenuItem key={i + 1} value={i + 1} sx={{ fontSize: '16px' }}>
+                        {i + 1}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item xs={3}>
+                <FormControl fullWidth>
+                  <InputLabel>Month</InputLabel>
+                  <Select 
+                    value={birthMonth} 
+                    onChange={(e) => setBirthMonth(e.target.value)}
+                    sx={{ fontSize: '16px' }}
+                  >
+                    {[...Array(12)].map((_, i) => (
+                      <MenuItem key={i + 1} value={i + 1} sx={{ fontSize: '16px' }}>
+                        {i + 1}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item xs={3}>
+                <FormControl fullWidth>
+                  <InputLabel>Year</InputLabel>
+                  <Select 
+                    value={birthYear} 
+                    onChange={(e) => setBirthYear(e.target.value)}
+                    sx={{ fontSize: '16px' }}
+                  >
+                    {[...Array(121)].map((_, i) => (
+                      <MenuItem key={2023 - i} value={2023 - i} sx={{ fontSize: '16px' }}>
+                        {2023 - i}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+            </Grid>
+
+            <Box textAlign="center">
+              <SaveButton variant="contained" size="large" onClick={handleSaveChange}>
                 Save change
-              </Button>
-            </div>
-          </form>
-        </div>
-        {/* ================= New Customers ================ */}
-      </div>
-    </div>
+              </SaveButton>
+            </Box>
+          </StyledFormBox>
+        </ContentBox>
+      </StyledContainer>
+    </Container>
   );
 };
 

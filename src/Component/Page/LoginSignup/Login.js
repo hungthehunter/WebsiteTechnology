@@ -12,12 +12,34 @@ const Login = () => {
   const [user, setUser] = useState({
     email: "",
     password: "",
+    // phone: "",
   });
 
+  // Validate email
+  const [emailError, setEmailError] = useState("");
   const { email, password } = user;
+  const validateEmail = (email) => {
+    const validDomains = ['@gmail.com', '@email.com'];
+    return validDomains.some(domain => email.toLowerCase().endsWith(domain));
+  };
+  // Validate phone
+  // const [phoneError, setPhoneError] = useState("");
+  // const validatePhone = (phone) => {
+  //   const phoneRegex = /^[0-9]{10}$/;  
+  //   return phoneRegex.test(phone);
+  // };
 
   const onInputChange = (e) => {
     setUser({ ...user, [e.target.name]: e.target.value });
+
+    if (e.target.name === 'email') {
+      const newEmail = e.target.value;
+      if (newEmail && !validateEmail(newEmail)) {
+        setEmailError("Email không hợp lệ");
+      } else {
+        setEmailError("");
+      }
+    }
   };
 
   const GetRoleToken = async (token) => {
@@ -45,6 +67,12 @@ const Login = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault(); 
+
+    if (emailError) {
+      alert("Vui lòng kiểm tra lại email");
+      return;
+    }
+    
     try {
       // Post login credentials to the server
       const response = await axios.post(

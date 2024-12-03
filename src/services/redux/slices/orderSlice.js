@@ -75,10 +75,10 @@ const orderSlice = createSlice({
             .addCase(orderThunk.updateOrder.fulfilled, (state, action) => {
                 state.isLoading = false;
                 state.isError = false;
-                const index = state.listOrder.findIndex(order => order.id === action.payload.id);
-                if (index !== -1) {
-                    state.listOrder[index] = action.payload;
-                }
+                const updatedOrders = state.listOrder.map(order =>
+                    order.id === action.payload.id ? action.payload : order
+                );
+                state.listOrder = updatedOrders; 
             })
             .addCase(orderThunk.updateOrder.rejected, (state) => {
                 state.isLoading = false;

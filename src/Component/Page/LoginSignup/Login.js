@@ -1,3 +1,4 @@
+import { Box, Button, Divider, TextField, Typography } from "@mui/material";
 import React, { useState } from "react";
 import toast from "react-hot-toast";
 import { FaGoogle } from "react-icons/fa";
@@ -5,134 +6,207 @@ import { MdFacebook } from "react-icons/md";
 import { RxDiscordLogo } from "react-icons/rx";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
-import { setLoginError, setUserLoggedIn } from "../../../services/redux/slices/userSlice";
+import {
+  setLoginError,
+  setUserLoggedIn,
+} from "../../../services/redux/slices/userSlice";
 import { cartThunk, userThunk } from "../../../services/redux/thunks/thunk";
-import PICTURE from "../../Assests/PICTURE";
+import { loginValidationSchema } from "../../../services/yup/loginValidation";
+import LoadingOverlay from "../Admin/Admin Dashboard/overlay/LoadingOverlay";
 import "./LoginSignup.scss";
 
 const Login = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const userCurrentLogged = useSelector((state) => state.user.userCurrentLogged);
-
-  const [user, setUser] = useState({
+  const isLoading = useSelector((state) => state.user.isLoading);
+  const [formValues, setFormValues] = useState({
     email: "",
     password: "",
   });
+  const [formErrors, setFormErrors] = useState({});
 
-  const { email, password } = user;
-
-  const onInputChange = (e) => {
-    setUser({ ...user, [e.target.name]: e.target.value });
-  };
-
-  const handleLogin = (e) => {
-    e.preventDefault();
-    dispatch(userThunk.loginUser(user))
+  const handleLogin = (values) => {
+    console.log("Handling login with values:", values);
+    dispatch(userThunk.loginUser(values))
       .unwrap()
       .then((user) => {
-        dispatch(setUserLoggedIn(user))
-        console.log("user id", user?.id)
+        console.log("Login successful:", user);
+        dispatch(setUserLoggedIn(user));
         dispatch(cartThunk.getUserCart(user?.id));
         toast.success("Login successfully");
-        navigate('/websiteDoAn/')
+        navigate("/websiteDoAn/");
       })
       .catch((error) => {
+        console.log("Login failed:", error);
         dispatch(setLoginError(error));
         toast.error("Failed to login");
       });
   };
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await loginValidationSchema.validate(formValues, { abortEarly: false }); // Validate form values
+      setFormErrors({}); // Clear any previous errors
+      handleLogin(formValues); // Proceed with the login
+    } catch (error) {
+      const newErrors = {};
+      error.inner.forEach((err) => {
+        newErrors[err.path] = err.message; // Set validation errors
+      });
+      setFormErrors(newErrors);
+    }
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormValues({
+      ...formValues,
+      [name]: value,
+    });
+  };
+
   return (
-    <div className="account-section">
-      <div className="box">
-        <div className="login-container">
-          <form className="inputs" onSubmit={handleLogin}>
-            <div className="header">
-              <div className="text">Your NVIDIA Account</div>
-              <div className="underline"></div>
-            </div>
+    <Box
+      className="account-section"
+      sx={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        height: "100vh",
+        width: "130%",
+        bgcolor: "background.default",
+        p: 3,
+      }}
+    >
+      {isLoading && (
+        <LoadingOverlay isLoading={isLoading} message="Loading..." />
+      )}
+      <Box
+        sx={{
+          width: 500,
+          p: 4,
+          borderRadius: 2,
+          boxShadow: 3,
+          bgcolor: "background.paper",
+        }}
+      >
+        <Typography variant="h5" align="center" gutterBottom>
+          Your NVIDIA Account
+        </Typography>
 
-            <div className="input">
-              <img src={PICTURE.email} alt="email" />
-              <input
-                type="text"
-                placeholder="Email"
-                name="email"
-                required
-                value={email}
-                onChange={onInputChange}
-              />
-            </div>
+        <form onSubmit={handleSubmit}>
+          <Box sx={{ mb: 2 }}>
+            <TextField
+              label="Email"
+              variant="outlined"
+              fullWidth
+              name="email"
+              value={formValues.email}
+              onChange={handleChange}
+              error={Boolean(formErrors.email)}
+              helperText={formErrors.email}
+            />
+          </Box>
 
-            <div className="input">
-              <img src={PICTURE.password} alt="password" />
-              <input
-                type="password"
-                placeholder="Password"
-                name="password"
-                required
-                value={password}
-                onChange={onInputChange}
-              />
-            </div>
+          <Box sx={{ mb: 2 }}>
+            <TextField
+              label="Password"
+              type="password"
+              variant="outlined"
+              fullWidth
+              name="password"
+              value={formValues.password}
+              onChange={handleChange}
+              error={Boolean(formErrors.password)}
+              helperText={formErrors.password}
+            />
+          </Box>
 
-            <div className="forgot-password">
-              Don't have an account yet?{" "}
-              <Link to="/websiteDoAn/SignUp">
+          <Box sx={{ textAlign: "center", mb: 3 }}>
+            <Typography variant="body2">
+              Don't have an account?{" "}
+              <Link to="/websiteDoAn/SignUp" style={{ textDecoration: "none" }}>
                 <span>click here</span>
               </Link>
-            </div>
+            </Typography>
+          </Box>
 
-            <div className="submit-container">
-              <button className="submit" type="submit">
-                Continue
-              </button>
-            </div>
+          <Button
+            type="submit"
+            variant="contained"
+            fullWidth
+            sx={{ mt: 2, mb: 2 }}
+            color="primary"
+            style={{ color: "#888", backgroundColor: "#F8F8F8" }}
+          >
+            Continue
+          </Button>
 
-            <div className="separator-container">
-              <div className="separator">or</div>
-            </div>
+          <Box sx={{ my: 2 }}>
+            <Divider>or</Divider>
+          </Box>
 
-            <div className="other-container">
-              <button className="other-item">
-                <span className="other-icon">
-                  <FaGoogle size={12} />
-                </span>
-                <span className="other-message">Log In With Google</span>
-              </button>
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 2,
+              color: "#000",
+            }}
+            style={{ color: "#000" }}
+          >
+            <Button
+              variant="outlined"
+              fullWidth
+              startIcon={<FaGoogle />}
+              sx={{ justifyContent: "flex-start" }}
+              style={{ color: "#000" }}
+            >
+              Log In With Google
+            </Button>
+            <Button
+              variant="outlined"
+              fullWidth
+              startIcon={<MdFacebook />}
+              sx={{ justifyContent: "flex-start" }}
+              style={{ color: "#000" }}
+            >
+              Log In With Facebook
+            </Button>
+            <Button
+              variant="outlined"
+              fullWidth
+              startIcon={<RxDiscordLogo />}
+              sx={{ justifyContent: "flex-start" }}
+              style={{ color: "#000" }}
+            >
+              Log In With Discord
+            </Button>
+          </Box>
 
-              <button className="other-item">
-                <span className="other-icon">
-                  <MdFacebook size={15} />
-                </span>
-                <span className="other-message">Log In With Facebook</span>
-              </button>
-
-              <button className="other-item">
-                <span className="other-icon">
-                  <RxDiscordLogo size={15} />
-                </span>
-                <span className="other-message">Log In With Discord</span>
-              </button>
-            </div>
-
-            <div className="footer">
-              <span>
-                <Link to="/terms">Terms</Link>
+          <Box sx={{ textAlign: "center", mt: 4 }}>
+            <Typography variant="body2">
+              <Link to="/terms" style={{ textDecoration: "none" }}>
+                Terms
+              </Link>{" "}
+              |{" "}
+              <Link to="/privacy" style={{ textDecoration: "none" }}>
+                Privacy
+              </Link>{" "}
+              |{" "}
+              <Link to="/docs" style={{ textDecoration: "none" }}>
+                Docs
+              </Link>{" "}
+              |{" "}
+              <span className="contact" style={{ cursor: "pointer" }}>
+                Contact Support
               </span>
-              <span>
-                <Link to="/privacy">Privacy</Link>
-              </span>
-              <span>
-                <Link to="/docs">Docs</Link>
-              </span>
-              <span className="contact">Contact Support</span>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
+            </Typography>
+          </Box>
+        </form>
+      </Box>
+    </Box>
   );
 };
 

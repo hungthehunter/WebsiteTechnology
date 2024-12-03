@@ -14,13 +14,11 @@ import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { accessThunk } from "../../../../services/redux/thunks/thunk";
 import "./assets/css/style.scss";
-
 function AdminAccess({ setActiveComponent, showAlert }) {
+  const isLoading = useSelector((state) => state.access.isLoading);
   const listFunction = useSelector((state) => state.function.listFunction);
   const listAccess = useSelector((state) => state.access.listAccess);
-  const listDecentralization = useSelector(
-    (state) => state.decentralization.listDecentralization
-  );
+  const listDecentralization = useSelector((state) => state.decentralization.listDecentralization);
   const listUser = useSelector((state) => state.user.listUser);
   const dispatch = useDispatch();
   const [showAccessTable, setShowAccessTable] = useState(true);
@@ -62,14 +60,13 @@ function AdminAccess({ setActiveComponent, showAlert }) {
     }
   };
 
+  useEffect(()=>{
+  loadAccessList()
+  },[dispatch])
+
   const toggleTable = () => {
     setShowAccessTable((prev) => !prev);
   };
-
-  // Tự động tải danh sách access khi component render
-  useEffect(() => {
-    loadAccessList();
-  }, [dispatch]);
 
   return (
     <Box sx={{ padding: 2 }}>
@@ -111,7 +108,7 @@ function AdminAccess({ setActiveComponent, showAlert }) {
             </Button>
           </Box>
         </Box>
-
+        {/* Dữ liệu bảng */}
         {showAccessTable ? (
           <TableContainer component={Paper}>
             <Table>
@@ -182,6 +179,7 @@ function AdminAccess({ setActiveComponent, showAlert }) {
                             props: { id: access.id },
                           })
                         }
+                        disabled = {isLoading}
                       >
                         Edit
                       </Button>
@@ -189,6 +187,7 @@ function AdminAccess({ setActiveComponent, showAlert }) {
                         variant="outlined"
                         color="error"
                         onClick={() => deleteAccess(access.roleName, access.id)}
+                        disabled = {isLoading}
                       >
                         Delete
                       </Button>

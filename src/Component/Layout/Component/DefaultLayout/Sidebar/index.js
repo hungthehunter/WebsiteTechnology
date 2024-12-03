@@ -249,11 +249,11 @@ function Sidebar({ show, onClose }) {
             justifyContent: "flex-start",
           }}
         >
-          <ListItem component={RouterLink} to="/websiteDoAn/Login">
+          <ListItem component={RouterLink} to="/websiteDoAn/CartPage">
             <ListItemIcon>
               <BiLogOut size={45} style={{ color: "white" }} />
             </ListItemIcon>
-            <ListItemText primary="Login" sx={{ color: "white" }} />
+            <ListItemText primary="Cart Page" sx={{ color: "white" }} />
           </ListItem>
         </List>
       </Box>

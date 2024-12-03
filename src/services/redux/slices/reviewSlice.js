@@ -32,6 +32,21 @@ const reviewSlice = createSlice({
                 state.isError = true;
             });
 
+        // getAllReviewsByProductId
+        builder
+            .addCase(reviewThunk.getAllReviewsByProductId.pending, (state) => {
+                state.isLoading = true;
+            })
+            .addCase(reviewThunk.getAllReviewsByProductId.fulfilled, (state, action) => {
+                state.isLoading = false;
+                state.isError = false;
+                state.listReview = action.payload;
+            })
+            .addCase(reviewThunk.getAllReviewsByProductId.rejected, (state) => {
+                state.isLoading = false;
+                state.isError = true;
+            });
+
         // getReviewById
         builder
             .addCase(reviewThunk.getReviewById.pending, (state) => {

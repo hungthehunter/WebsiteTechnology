@@ -14,6 +14,7 @@ import { manufacturerThunk } from "../../../../services/redux/thunks/thunk";
 import "./assets/css/style.scss";
 
 function AdminAddManufacturer({ setActiveComponent, showAlert }) {
+  const isLoading = useSelector((state) => state.manufacturer.isLoading);
   const [selectedProduct, setSelectedProduct] = useState([]);
   const [imageFile, setImageFile] = useState(null);
   const [name, setName] = useState("");
@@ -174,7 +175,9 @@ function AdminAddManufacturer({ setActiveComponent, showAlert }) {
           InputProps={{
             endAdornment: (
               <InputAdornment position="end">
-                <Button variant="contained" component="span">
+                <Button variant="contained" component="span"
+                 disabled = {isLoading}
+                >
                   Upload
                 </Button>
               </InputAdornment>
@@ -187,6 +190,7 @@ function AdminAddManufacturer({ setActiveComponent, showAlert }) {
           variant="contained"
           color="primary"
           onClick={handleAdd}
+          disabled = {isLoading}
         >
           Add Manufacturer
         </Button>

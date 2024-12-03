@@ -20,35 +20,35 @@ function AdminCategory({ setActiveComponent, showAlert }) {
   };
 
   const checkCategoryNameExists = (name) => {
-    return listProduct.some(
+    return listProduct?.some(
       (product) =>
-        product.category.categoryName.toLowerCase() === name.toLowerCase()
+        product?.category?.name?.toLowerCase() === name?.toLowerCase()
     );
   };
 
   // DELETE: Delete User by id from Database
   const handleDelete = async (id, name) => {
-    if (window.confirm("Are you sure you want to delete this category?")) {
-      if (checkCategoryNameExists(name)) {
-        alert(
-          "This manufacturer is associated with existing products. Cannot delete."
-        );
-        setActiveComponent({
-          name: "AdminProduct",
-        });
-      } else {
+      // if (checkCategoryNameExists(name)) {
+      //   alert(
+      //     "This manufacturer is associated with existing products. Cannot delete."
+      //   );
+      //   setActiveComponent({
+      //     name: "AdminProduct",
+      //   });
+      // } else {
         try {
           dispatch(categoryThunk.deleteCategory(id));
-          dispatch(categoryThunk.getAllCategories());
+          // dispatch(categoryThunk.getAllCategories());
           showAlert("Delete category successfully", "success");
           
         } catch (error) {
           showAlert("Failed to delete category successfully", "error");
           console.error("Error deleting category:", error);
         }
-      }
-    }
+      // }
+    // }
   };
+  
   return (
     <Box sx={{ padding: 2 }}>
       <Box 
@@ -92,7 +92,7 @@ function AdminCategory({ setActiveComponent, showAlert }) {
                   <TableCell style={{ textAlign: "end", fontSize: '1.3rem' }}>
                     <Button variant="outlined" onClick={() => setActiveComponent({ name: "AdminViewCategory", props: { id: category.id } })}>View</Button>
                     <Button variant="outlined" onClick={() => setActiveComponent({ name: "AdminEditCategory", props: { id: category.id } })}>Edit</Button>
-                    <Button variant="outlined" color="error" onClick={() => handleDelete(category.id, category.categoryName)}>Delete</Button>
+                    <Button variant="outlined" color="error" onClick={() => handleDelete(category.id, category.name)}>Delete</Button>
                   </TableCell>
                 </TableRow>
               ))}

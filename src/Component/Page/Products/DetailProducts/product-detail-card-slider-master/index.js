@@ -108,11 +108,6 @@ function ProductDetail() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showArrows, setShowArrows] = useState(false);
   const isLoading = useSelector((state) => state.product.isLoading);
-  const [reviews, setReviews] = useState({
-    total: 0,
-    average: 0,
-    distribution: [0, 0, 0, 0, 0], // 5 sao đến 1 sao
-  });
   const [showFullSpecs, setShowFullSpecs] = useState(false);
   const [showReviews, setShowReviews] = useState(false);
   const [visibleReviews, setVisibleReviews] = useState(3);
@@ -275,6 +270,15 @@ function ProductDetail() {
       </Box>
     );
   }
+
+  const handleProductClick = (id) => {
+    navigate(`/websiteDoAn/ProductDetail/${id}`);
+  };
+
+  const filteredProducts = listProduct.filter(
+    (product) => product.id !== selectedProduct?.id
+  );
+
   return (
     <ThemeProvider theme={theme}>
     
@@ -588,11 +592,12 @@ function ProductDetail() {
                   Other products
                 </Typography>
                 <List>
-                  {listProduct.map((product) => (
+                  {filteredProducts.map((product) => (
                     <ListItem
                       key={product.id}
                       alignItems="flex-start"
                       sx={{ mb: 2 }}
+                      onClick={() => handleProductClick(product.id)}
                     >
                       <Box
                         component="img"
@@ -619,7 +624,7 @@ function ProductDetail() {
               </Grid>
             </Grid>
           </Paper>
-          <ProductReview reviews={reviews} />
+          <ProductReview selectedProduct={selectedProduct} />
         </Box>
       </motion.div>
     </ThemeProvider>

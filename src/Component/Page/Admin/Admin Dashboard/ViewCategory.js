@@ -21,8 +21,10 @@ import {
 import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { categoryThunk } from "../../../../services/redux/thunks/thunk";
+import LoadingOverlay from "./overlay/LoadingOverlay";
 
 function AdminViewCategory({ id, setActiveComponent }) {
+  const isLoading = useSelector((state) => state.category.isLoading);
   const dispatch = useDispatch();
   const selectedCategory = useSelector(
     (state) => state.category.selectedCategory
@@ -34,6 +36,9 @@ function AdminViewCategory({ id, setActiveComponent }) {
 
   return (
     <Container maxWidth="md">
+      {isLoading && (
+        <LoadingOverlay isLoading={isLoading} message="Please wait..." />
+      )}
       <Card sx={{ mt: 4 }}>
         <CardHeader
           title="Category Information"

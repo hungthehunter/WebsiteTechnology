@@ -13,6 +13,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { decentralizationThunk } from "../../../../services/redux/thunks/thunk";
 
 function AdminAddAccess({ setActiveComponent, showAlert }) {
+  const isLoading = useSelector((state) => state.decentralization.isLoading);
   const [roleName, setRoleName] = useState("");
   const [checkedState, setCheckedState] = useState([]);
   const [roleNameError, setRoleNameError] = useState("");
@@ -117,7 +118,9 @@ function AdminAddAccess({ setActiveComponent, showAlert }) {
             ))}
           </Grid>
 
-          <Button type="submit" variant="contained" size="large" sx={{ marginTop: 3 }}>
+          <Button type="submit" variant="contained" size="large" sx={{ marginTop: 3 }}
+          disabled={isLoading}
+          >
             Submit change
           </Button>
         </form>

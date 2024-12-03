@@ -15,6 +15,7 @@ import { categoryThunk } from "../../../../services/redux/thunks/thunk";
 import "./assets/css/style.scss";
 
 function AdminAddCategory({ setActiveComponent, showAlert }) {
+  const isLoading = useSelector((state) => state.category.isLoading);
   const [categoryName, setCategoryName] = useState("");
   const dispatch = useDispatch();
   const [selectedPromotions, setSelectedPromotions] = useState(null); 
@@ -67,7 +68,7 @@ function AdminAddCategory({ setActiveComponent, showAlert }) {
     }
 
     try {
-         dispatch(categoryThunk.createCategory(formData));
+        dispatch(categoryThunk.createCategory(formData));
         showAlert("Category added successfully.", "success");
         setActiveComponent({ name: "AdminCategory" });
       
@@ -167,7 +168,9 @@ function AdminAddCategory({ setActiveComponent, showAlert }) {
           InputProps={{
             endAdornment: (
               <InputAdornment position="end">
-                <Button variant="contained" component="span">
+                <Button variant="contained" component="span"
+                disabled={isLoading}
+                >
                   Upload
                 </Button>
               </InputAdornment>
@@ -181,6 +184,7 @@ function AdminAddCategory({ setActiveComponent, showAlert }) {
           variant="contained"
           color="primary"
           onClick={handleAdd}
+          disabled={isLoading}
         >
           Add Category
         </Button>

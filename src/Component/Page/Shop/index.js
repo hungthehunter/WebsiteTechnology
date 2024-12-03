@@ -7,7 +7,6 @@ import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import { productThunk } from "../../../services/redux/thunks/thunk";
-import PICTURE from "../../Assests/PICTURE";
 import "../Shop/Shop.scss";
 import Shop_Fake from "./Shop_Fake";
 
@@ -280,60 +279,6 @@ function Shop() {
                           </div>
                           <div className="total-product-list">
                             {/* <div className="total-product">221 results found</div> */}
-                          </div>
-                          <div className="featured-container">
-                            <div className="call-out search-label">New Product</div>
-                            <div className="product-main-container">
-                              <div className="img-col-lg">
-                                <div className="img-lg">
-                                  <img src={PICTURE.GeForce_RTX4080} alt="" />
-                                </div>
-                              </div>
-                              <div className="detail-main-col">
-                                <Typography variant="h2" className="product-name">
-                                  NVIDIA GeForce RTX 4080
-                                </Typography>
-                                <div className="specs-contain">
-                                  <ul>
-                                    <li>
-                                      <div className="specs p-medium">
-                                        Cooling System: Fan
-                                      </div>
-                                    </li>
-                                    <li>
-                                      <div className="specs p-medium">
-                                        Boost Clock Speed: 2.52GHz
-                                      </div>
-                                    </li>
-                                    <li>
-                                      <div className="specs p-medium">
-                                        Cooling System: Fan
-                                      </div>
-                                    </li>
-                                  </ul>
-                                </div>
-                              </div>
-                              <div className="buy-main-col-lg">
-                                <div className="price">
-                                  $17.899
-                                  <span className="decimal">00</span>
-                                </div>
-                                <div className="buy-link">
-                                  <Link
-                                    to="/websiteDoAn/Products_gtx_4090"
-                                    className="link-btn featured-buy-link brand-green"
-                                  >
-                                    Add to Cart
-                                  </Link>
-                                </div>
-                                <div className="buy-bfp">
-                                  <Button className="buy-from-partner featured-buy-link no-brand">
-                                    Detail Product
-                                  </Button>
-                                </div>
-                              
-                              </div>
-                            </div>
                           </div>
 
                           <Shop_Fake

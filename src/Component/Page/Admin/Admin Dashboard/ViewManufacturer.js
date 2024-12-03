@@ -1,20 +1,46 @@
-import { Email as EmailIcon, LocationOn as LocationOnIcon, Phone as PhoneIcon, Web as WebIcon } from "@mui/icons-material";
-import { Avatar, Box, Button, Card, CardContent, CardHeader, Container, Divider, Grid, List, ListItem, ListItemText, Typography } from "@mui/material";
+import {
+  Email as EmailIcon,
+  LocationOn as LocationOnIcon,
+  Phone as PhoneIcon,
+  Web as WebIcon,
+} from "@mui/icons-material";
+import {
+  Avatar,
+  Box,
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  Container,
+  Divider,
+  Grid,
+  List,
+  ListItem,
+  ListItemText,
+  Typography,
+} from "@mui/material";
 import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { manufacturerThunk } from "../../../../services/redux/thunks/thunk";
+import LoadingOverlay from "./overlay/LoadingOverlay";
 
 function AdminViewManufacturer({ id, setActiveComponent, showAlert }) {
+  const isLoading = useSelector((state) => state.manufacturer.isLoading);
   const listProduct = useSelector((state) => state.product.listProduct);
   const dispatch = useDispatch();
-  useEffect(()=>{
-  dispatch(manufacturerThunk.getManufacturerById(id));
-  },[dispatch ,id ]);
+  useEffect(() => {
+    dispatch(manufacturerThunk.getManufacturerById(id));
+  }, [dispatch, id]);
 
-  const selectedManufacturer = useSelector((state) => state.manufacturer.selectedManufacturer);
+  const selectedManufacturer = useSelector(
+    (state) => state.manufacturer.selectedManufacturer
+  );
 
   return (
     <Container maxWidth="md">
+      {isLoading && (
+        <LoadingOverlay isLoading={isLoading} message="Please wait..." />
+      )}
       <Card sx={{ mt: 4 }}>
         <CardHeader
           title="Manufacturer Information"
@@ -25,16 +51,16 @@ function AdminViewManufacturer({ id, setActiveComponent, showAlert }) {
             <Grid item xs={12} md={4}>
               <Box display="flex" flexDirection="column" alignItems="center">
                 <Avatar
-                  src={selectedManufacturer?.imageCloud?.url || ''}
+                  src={selectedManufacturer?.imageCloud?.url || ""}
                   sx={{
                     width: 250,
                     height: 150,
-                    bgcolor: 'white',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    overflow: 'hidden',
-                    borderRadius: 0
+                    bgcolor: "white",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    overflow: "hidden",
+                    borderRadius: 0,
                   }}
                 >
                   {selectedManufacturer?.imageCloud?.url ? (
@@ -42,15 +68,20 @@ function AdminViewManufacturer({ id, setActiveComponent, showAlert }) {
                       src={selectedManufacturer?.imageCloud?.url}
                       alt="Manufacturer"
                       style={{
-                        width: '100%',
-                        height: '100%',
-                        maxWidth: '100px',
-                        maxHeight: '100px',
-                        objectFit: 'cover',
+                        width: "100%",
+                        height: "100%",
+                        maxWidth: "100px",
+                        maxHeight: "100px",
+                        objectFit: "cover",
                       }}
                     />
                   ) : (
-                    <Typography variant="body1" sx={{ color: 'text.secondary' }}>N/A</Typography>
+                    <Typography
+                      variant="body1"
+                      sx={{ color: "text.secondary" }}
+                    >
+                      N/A
+                    </Typography>
                   )}
                 </Avatar>
                 <Typography variant="h6" sx={{ mt: 2 }}>
@@ -69,10 +100,16 @@ function AdminViewManufacturer({ id, setActiveComponent, showAlert }) {
                     primary="Website"
                     secondary={
                       selectedManufacturer?.website ? (
-                        <a href={selectedManufacturer?.website} target="_blank" rel="noopener noreferrer">
+                        <a
+                          href={selectedManufacturer?.website}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
                           {selectedManufacturer?.website}
                         </a>
-                      ) : 'N/A'
+                      ) : (
+                        "N/A"
+                      )
                     }
                     primaryTypographyProps={{ variant: "h6" }}
                   />
@@ -82,7 +119,7 @@ function AdminViewManufacturer({ id, setActiveComponent, showAlert }) {
                   <EmailIcon sx={{ mr: 2 }} />
                   <ListItemText
                     primary="Email"
-                    secondary={selectedManufacturer?.email || 'N/A'}
+                    secondary={selectedManufacturer?.email || "N/A"}
                     primaryTypographyProps={{ variant: "h6" }}
                   />
                 </ListItem>
@@ -91,7 +128,7 @@ function AdminViewManufacturer({ id, setActiveComponent, showAlert }) {
                   <PhoneIcon sx={{ mr: 2 }} />
                   <ListItemText
                     primary="Phone"
-                    secondary={selectedManufacturer?.phone || 'N/A'}
+                    secondary={selectedManufacturer?.phone || "N/A"}
                     primaryTypographyProps={{ variant: "h6" }}
                   />
                 </ListItem>
@@ -100,7 +137,7 @@ function AdminViewManufacturer({ id, setActiveComponent, showAlert }) {
                   <LocationOnIcon sx={{ mr: 2 }} />
                   <ListItemText
                     primary="Address"
-                    secondary={selectedManufacturer?.address || 'N/A'}
+                    secondary={selectedManufacturer?.address || "N/A"}
                     primaryTypographyProps={{ variant: "h6" }}
                   />
                 </ListItem>
@@ -109,15 +146,19 @@ function AdminViewManufacturer({ id, setActiveComponent, showAlert }) {
                   <ListItemText
                     primary="Products"
                     secondary={
-                      selectedManufacturer?.products && selectedManufacturer?.products.length > 0 ? (
+                      selectedManufacturer?.products &&
+                      selectedManufacturer?.products.length > 0 ? (
                         <Box>
-                          {selectedManufacturer?.products.map(product => (
+                          {selectedManufacturer?.products.map((product) => (
                             <Typography key={product.id} variant="body1">
-                              {listProduct.find(p => p.id === product.id)?.productName || 'Unknown Product'}
+                              {listProduct.find((p) => p.id === product.id)
+                                ?.productName || "Unknown Product"}
                             </Typography>
                           ))}
                         </Box>
-                      ) : 'No products associated'
+                      ) : (
+                        "No products associated"
+                      )
                     }
                     primaryTypographyProps={{ variant: "h6" }}
                   />

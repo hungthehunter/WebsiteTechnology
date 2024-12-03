@@ -50,7 +50,9 @@ function AdminEditStaff({ id, setActiveComponent, showAlert }) {
   // Lấy thông tin nhân viên đã chọn
   const selectedUser = useSelector((state) => state.user.selectedUser);
   const isLoading = useSelector((state) => state.user.isLoading);
-
+  const listAddress = useSelector((state) => 
+    state.address.listAddress.filter(address => address.user.id === id)
+  );
   // Cập nhật trạng thái khi selectedUser thay đổi
   useEffect(() => {
     if (selectedUser) {
@@ -58,10 +60,15 @@ function AdminEditStaff({ id, setActiveComponent, showAlert }) {
       setMobile(selectedUser.mobile || "");
       setEmail(selectedUser.email || "");
       setStatus(selectedUser.status ? "true" : "false");
-      setDateOfBirth(selectedUser?.dateofbirth?.split("T")[0] || "");
+      setDateOfBirth(
+        selectedUser?.dateofbirth
+          ? selectedUser?.dateofbirth?.split("T")[0]
+          : ""
+      );
+      
       setRole(selectedUser.role || ""); 
       setDecentralization(selectedUser?.decentralization?.access.id );
-      setAddresses(selectedUser.addresses || []); 
+      setAddresses(listAddress || []); 
     }
   }, [selectedUser]);
 
@@ -327,13 +334,16 @@ function AdminEditStaff({ id, setActiveComponent, showAlert }) {
                   startIcon={<Add />}
                   onClick={addAddress}
                   variant="outlined"
+                  disabled = {isLoading}
                 >
                   Add Address
                 </Button>
               </Grid>
 
               <Grid item xs={12}>
-                <Button type="submit" variant="contained" color="primary">
+                <Button type="submit" variant="contained" color="primary"
+                disabled = {isLoading}
+                >
                   Save Changes
                 </Button>
                 <Button
@@ -341,6 +351,7 @@ function AdminEditStaff({ id, setActiveComponent, showAlert }) {
                 color="secondary"
                 onClick={() => setActiveComponent({ name: "AdminStaff" })}
                 sx={{ marginTop: 0, marginLeft: 2 }}
+                disabled = {isLoading}
               >
                 Return to Staff
               </Button>

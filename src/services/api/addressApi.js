@@ -34,17 +34,26 @@ const addressApi = {
         }
         return res;
     },
+
     updateAddress: async (id, addressData, loadingScreen = true) => {
-        const res = await shopAPI.put(ADDRESS_ENDPOINTS.UPDATE_ADDRESS.replace(":id", id), addressData, {
-            headers: {
-                'Content-Type': 'application/json',
+        try {
+            const res = await shopAPI.put(ADDRESS_ENDPOINTS.UPDATE_ADDRESS.replace(":id", id), addressData, {
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+    
+            if (loadingScreen) {
+                await new Promise((state) => setTimeout(state, 2000)); 
             }
-        });
-        if (loadingScreen) {
-            await new Promise((state) => setTimeout(state, 2000));
+            
+            return res;
+        } catch (error) {
+            console.error("Error updating address:", error);
+            throw error; 
         }
-        return res;
     },
+    
     deleteAddress: async (id, loadingScreen = true) => {
         const res = await shopAPI.delete(ADDRESS_ENDPOINTS.DELETE_ADDRESS.replace(":id", id));
         if (loadingScreen) {

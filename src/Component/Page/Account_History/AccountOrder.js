@@ -19,6 +19,7 @@ import { useState } from "react";
 import toast from "react-hot-toast";
 import { useDispatch, useSelector } from "react-redux";
 import { orderThunk } from "../../../services/redux/thunks/thunk";
+
 // Styled components
 const StyledPaper = styled(Paper)({
   padding: '24px',
@@ -64,45 +65,45 @@ const AccountOrder = ({ setActiveComponent }) => {
   const [value, setValue] = useState("1");
   const dispatch = useDispatch();
 
-  const userCurrentLogged = useSelector(
-    (state) => state.user.userCurrentLogged
-  );
+  const userCurrentLogged = useSelector((state) => state.user.userCurrentLogged);
   const listOrder = useSelector((state) => state.order.listOrder);
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
   };
 
-  const handleUpdate = async (id) => {
+  const handleUpdate = async (id, currentStatus) => {
     if (!id || isNaN(id)) {
       console.error("Invalid ID:", id);
       alert("Invalid order ID. Please try again.");
       return;
     }
+  
     const updatedOrder = {
-      order_status: "Canceled",
+      order_status: currentStatus === "Pending" ? "InProgress" :
+                    currentStatus === "InProgress" ? "Canceled" : "Pending",
     };
+  
     const formData = new FormData();
     formData.append("order", new Blob([JSON.stringify(updatedOrder)], { type: "application/json" }));
-    
+  
     try {
-       await dispatch(
-        orderThunk.updateOrder({ id:id, orderData: formData })
-      );
-      toast.success("Canceled product successfully");
+      await dispatch(orderThunk.updateOrder({ id: id, orderData: formData }));
+      await dispatch(orderThunk.getAllOrders());
+      toast.success(`${updatedOrder.order_status} product successfully`);
     } catch (error) {
       console.error("Error updating product:", error);
-      toast.error("Failed to canceled product ");;
+      toast.error(`Failed to update product status`);
     }
   };
-
+  
   const renderProductTable = (title, statusFilter) => {
-    // Lọc các đơn hàng theo user_id và trạng thái đơn hàng
-    const filteredOrders = listOrder.filter(
+    const filteredOrders = listOrder?.filter(
       (order) =>
-        order.user.id === userCurrentLogged.id &&
-        (!statusFilter || order.order_status.toLowerCase() === statusFilter)
+        order?.user?.id === userCurrentLogged?.id &&
+        (!statusFilter || order?.order_status?.toLowerCase() === statusFilter)
     );
+  
     return (
       <StyledPaper elevation={3}>
         <StyledTitle variant="h6">{title}</StyledTitle>
@@ -140,20 +141,36 @@ const AccountOrder = ({ setActiveComponent }) => {
                       </StatusButton>
                     </TableCell>
                     <TableCell align="right">
-                      {order.order_status.toLowerCase() === "shipped"
-                      || order.order_status.toLowerCase() === "canceled"
-                      ? (
+                      {order.order_status.toLowerCase() === "completed" ? (
                         <Button variant="contained" color="warning" disabled size="small">
                           Canceled
+                        </Button>
+                      ) : order.order_status.toLowerCase() === "pending" ? (
+                        <Button
+                          variant="contained"
+                          color="primary"
+                          size="small"
+                          onClick={() => handleUpdate(order.id, "Pending")}
+                        >
+                          Confirm
+                        </Button>
+                      ) : order.order_status.toLowerCase() === "canceled" ? (
+                        <Button
+                          variant="contained"
+                          color="secondary"
+                          size="small"
+                          onClick={() => handleUpdate(order.id, "Canceled")}
+                        >
+                          Restore
                         </Button>
                       ) : (
                         <Button
                           variant="contained"
                           color="error"
                           size="small"
-                          onClick={() => handleUpdate(order.id)}
+                          onClick={() => handleUpdate(order.id, "InProgress")}
                         >
-                          Canceled
+                          Cancel
                         </Button>
                       )}
                     </TableCell>
@@ -174,10 +191,7 @@ const AccountOrder = ({ setActiveComponent }) => {
       </StyledPaper>
     );
   };
-
-
-
-
+  
 
   return (
     <div>
@@ -195,8 +209,8 @@ const AccountOrder = ({ setActiveComponent }) => {
                 >
                   <Tab label="ALL" className="tab-title" value="1" />
                   <Tab label="In Progress" className="tab-title" value="2" />
-                  <Tab label="Return" className="tab-title" value="3" />
-                  <Tab label="Shipped" className="tab-title" value="4" />
+                  <Tab label="Canceled" className="tab-title" value="3" />
+                  <Tab label="Completed" className="tab-title" value="4" />
                 </Tabs>
               </Box>
               <TabPanel value="1">{renderProductTable("All Orders")}</TabPanel>
@@ -204,10 +218,10 @@ const AccountOrder = ({ setActiveComponent }) => {
                 {renderProductTable("In Progress Orders", "inprogress")}
               </TabPanel>
               <TabPanel value="3">
-                {renderProductTable("Return Orders", "return")}
+                {renderProductTable("Canceled Orders", "canceled")}
               </TabPanel>
               <TabPanel value="4">
-                {renderProductTable("Shipped Orders", "shipped")}
+                {renderProductTable("Completed Orders", "completed")}
               </TabPanel>
             </TabContext>
           </Box>
@@ -216,5 +230,6 @@ const AccountOrder = ({ setActiveComponent }) => {
     </div>
   );
 };
+
 
 export default AccountOrder;

@@ -17,6 +17,7 @@ import { createUser } from "../../../Serivce/ApiService";
 import "./assets/css/style.scss";
 
 function AdminAddStaff({ setActiveComponent, showAlert }) {
+  const isLoading = useSelector((state) => state.user.isLoading)
   // Form state
   const [fullname, setFullname] = useState("");
   const [mobile, setMobile] = useState("");
@@ -266,7 +267,9 @@ function AdminAddStaff({ setActiveComponent, showAlert }) {
           </Button>
         </Grid>
         <Grid item xs={12}>
-          <Button type="submit" variant="contained" color="primary">
+          <Button type="submit" variant="contained" color="primary"
+          disabled = {isLoading}
+          >
             Confirm
           </Button>
           <Button
@@ -274,6 +277,7 @@ function AdminAddStaff({ setActiveComponent, showAlert }) {
             variant="outlined"
             color="secondary"
             onClick={() => setActiveComponent({ name: "AdminCustomer" })}
+            disabled = {isLoading}
           >
             Return to Customer List
           </Button>

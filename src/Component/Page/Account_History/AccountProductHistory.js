@@ -70,10 +70,10 @@ const AccountProductHistory = ({ setActiveComponent }) => {
       order.orderItem.map(item => ({
         id: item.product.id,
         productName: item.product.productName, // Sửa tên thuộc tính nếu cần
-        unitPrice: item.price,
-        quantity: item.quanitty,
+        unitPrice: item.product.unitPrice,
+        quantity: item.quantity,
         productImage: `${item.product.product_image.find((img) => img.mainImage)?.url || ""}` ,
-        status: item.quanitty > 0 ? "In stock" : "Out of stock"
+        status: item.product.unitInStock > 0 ? "In stock" : "Out of stock"
       }))
     );
 
@@ -107,9 +107,9 @@ const AccountProductHistory = ({ setActiveComponent }) => {
                         width="50"
                       />
                 </TableCell>
-                <TableCell>{product.productName}</TableCell>
-                <TableCell align="right">${product.unitPrice.toFixed(2)}</TableCell>
-                <TableCell align="right">{product.quantity}</TableCell>
+                <TableCell>{product?.productName}</TableCell>
+                <TableCell align="right">${product?.unitPrice?.toFixed(2)}</TableCell>
+                <TableCell align="right">{product?.quantity}</TableCell>
                 <TableCell align="right">
                   <Typography
                     variant="body2"

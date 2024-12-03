@@ -103,22 +103,22 @@ const SLIDER = ({ images, activeSlide, onChangeSlide }) => {
     <SliderContainer id="slider">
       {images.map((image, index) => (
         <SliderItem key={index} className={index === currentIndex ? 'active' : ''}>
-            <SliderImage src={image.src} alt={image.alt} />
+            <SliderImage src={image?.imageCloud?.url} alt={image.alt} />
           <SliderContent>
             <Typography variant="h2" component="div" gutterBottom sx={{ fontWeight: 'bold' }}>
-              {image.brand}
+              {image?.name}
             </Typography>
-            {image.brand1 && (
+            {image?.name && (
               <Typography variant="h2" component="div" gutterBottom sx={{ fontWeight: 'bold' }}>
-                {image.brand1}
+                {image?.name}
               </Typography>
             )}
             <Typography variant="h3" component="div" gutterBottom sx={{ fontWeight: 'bold', marginBottom: 2 }}>
-              {image.heading}
+              {image?.description}
             </Typography>
             <SliderButton
               component={Link}
-              to={image.link}
+              to={'/websiteDoAn/Shop'}
               variant="contained"
               size="medium"
               sx={{ fontSize: 20, marginTop: 2, textTransform: 'none' , fontWeight: 'normal' }}

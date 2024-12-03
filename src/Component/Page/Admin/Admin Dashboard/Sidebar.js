@@ -10,9 +10,11 @@ import {
   logOutOutline,
   manOutline,
   peopleOutline,
+  pricetagOutline,
   shieldOutline,
   statsChartOutline
 } from "ionicons/icons";
+
 import React, { useEffect, useState } from "react";
 import { BsNvidia } from "react-icons/bs";
 import { useDispatch, useSelector } from "react-redux";
@@ -35,7 +37,6 @@ const SidebarAdmin = ({
   const navigate = useNavigate();
 
   const functionMap = {
-    // Mapping function names to components
     "View Customer List": "AdminCustomer",
     "Create Customer": "AdminAddCustomer",
     "Edit Customer": "AdminEditCustomer",
@@ -72,6 +73,10 @@ const SidebarAdmin = ({
     "View Export List": "AdminExport",
     "Create Export": "AdminAddExport",
     "Edit Export": "AdminEditExport",
+    "View Promotion List": "AdminPromotion",
+    "Create Promotion": "AdminPromotion",
+    "Edit Promotion": "AdminPromotion",
+    "Delete Promotion": "AdminDeletePromotion",
   };
 
   // Sidebar items with links and components
@@ -141,6 +146,12 @@ const SidebarAdmin = ({
       title: "Export",
       link: "/websiteDoAn/AdminExport",
       component: "AdminExport"
+    },
+    {
+      icon: pricetagOutline,
+      title: "Promotion",
+      link: "/websiteDoAn/AdminPromotion",
+      component: "AdminPromotion"
     }
   ];
 
@@ -200,8 +211,8 @@ const SidebarAdmin = ({
           </li>
         ))}
         <li
-          onMouseOver={() => handleMouseOver(11)}
-          className={activeIndex === 11 ? "hovered" : ""}
+          onMouseOver={() => handleMouseOver(12)}
+          className={activeIndex === 12 ? "hovered" : ""}
           onClick={handleLoginLogout}
         >
           <a href="#">

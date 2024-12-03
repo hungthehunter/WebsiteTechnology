@@ -16,9 +16,11 @@ import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { clearSelectedUserId } from "../../../../services/redux/slices/userSlice";
 import { userThunk } from "../../../../services/redux/thunks/thunk";
+import { editUserValidationSchema } from "../../../../services/yup/Admin/editUserValidation";
 import "./assets/css/style.scss";
 
 function AdminEditCustomer({ id, setActiveComponent, showAlert }) {
+  const [errors, setErrors] = useState({});
   const [fullname, setFullName] = useState("");
   const [mobile, setMobile] = useState("");
   const [email, setEmail] = useState("");
@@ -40,8 +42,11 @@ function AdminEditCustomer({ id, setActiveComponent, showAlert }) {
   ]);
   const [password, setPassword] = useState("");
   const listAccess = useSelector((state) => state.access.listAccess);
-  const listUser = useSelector((state) => state.user.listUser);
   const dispatch = useDispatch();
+
+  const listAddress = useSelector((state) => 
+    state.address.listAddress.filter(address => address.user.id === id)
+  );
   
   // Lấy thông tin người dùng theo ID
   useEffect(() => {
@@ -50,7 +55,7 @@ function AdminEditCustomer({ id, setActiveComponent, showAlert }) {
 
   // Lấy thông tin người dùng đã chọn
   const selectedUser = useSelector((state) => state.user.selectedUser);
-  const isLoading = useSelector((state) => state.user.isLoading);
+  const isLoading = useSelector((state) => state.address.isLoading);
 
   // Cập nhật trạng thái khi selectedUser thay đổi
   useEffect(() => {
@@ -59,9 +64,9 @@ function AdminEditCustomer({ id, setActiveComponent, showAlert }) {
       setMobile(selectedUser.mobile || "");
       setEmail(selectedUser.email || "");
       setStatus(selectedUser.status ? "true" : "false");
-      setDateOfBirth(selectedUser?.dateofbirth.split("T")[0] || "");
+      setDateOfBirth(selectedUser?.dateofbirth?.split("T")[0] || "");
       setDecentralization(selectedUser?.decentralization?.access.id );
-      setAddresses(selectedUser?.addresses || []); 
+      setAddresses(listAddress || []); 
     }
   }, [selectedUser]);
 
@@ -113,34 +118,44 @@ function AdminEditCustomer({ id, setActiveComponent, showAlert }) {
     event.preventDefault();
     const FormatDateOfBirth = new Date(dateOfBirth);
     const formatDate = FormatDateOfBirth.toISOString().split("T")[0];
-
-    if (!validateAddresses()) {
-      alert("Please fill out all address fields.");
-      return;
-    }
-
-    const requestBody = {
-      fullname: fullname,
-      mobile: mobile,
-      email: email,
-      password: password,
-      status: status,
-      role: "User",
+  
+    // Prepare data to validate
+    const userData = {
+      fullname,
+      mobile,
+      email,
+      password,
+      status,
+      role: "User", // Set default role if needed
       dateofbirth: formatDate,
       decentralization: { id: decentralization },
-      addresses: addresses || [],
+      addresses,
     };
-
+    console.log(userData);
+  
     try {
-      await  dispatch(userThunk.updateUser({id: selectedUser.id,userData: requestBody}))
+      // Validate with yup
+      await editUserValidationSchema.validate(userData, { abortEarly: false });
+      
+      if (!validateAddresses()) {
+        alert("Please fill out all address fields.");
+        return;
+      }
+  
+      // If validation passes, proceed with updating the user
+      await dispatch(userThunk.updateUser({ id: selectedUser.id, userData: userData  }));
       showAlert("Edit customer successfully.", "success");
       dispatch(clearSelectedUserId());
       setTimeout(() => setActiveComponent({ name: "AdminCustomer" }), 1000);
-    } catch (error) {
-      console.error("Error editing user:", error);
-      showAlert("Failed to edit customer.", "error");
+    } catch (validationErrors) {
+      const errorMessages = validationErrors.inner.reduce((acc, error) => {
+        acc[error.path] = error.message;
+        return acc;
+      }, {});
+      setErrors(errorMessages);
     }
   };
+  
 
   if (isLoading) {
     return (
@@ -180,6 +195,8 @@ function AdminEditCustomer({ id, setActiveComponent, showAlert }) {
                   label="Full Name"
                   value={fullname}
                   onChange={(e) => setFullName(e.target.value)}
+                  error={Boolean(errors.fullname)}
+                  helperText={errors.fullname}
                 />
               </Grid>
 
@@ -189,6 +206,8 @@ function AdminEditCustomer({ id, setActiveComponent, showAlert }) {
                   label="Email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  error={Boolean(errors.email)}
+                  helperText={errors.email}
                 />
               </Grid>
               
@@ -199,6 +218,8 @@ function AdminEditCustomer({ id, setActiveComponent, showAlert }) {
                   type="number"
                   value={mobile}
                   onChange={(e) => setMobile(e.target.value)}
+                  error={Boolean(errors.mobile)}
+                  helperText={errors.mobile}
                 />
               </Grid>
 
@@ -209,6 +230,8 @@ function AdminEditCustomer({ id, setActiveComponent, showAlert }) {
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  error={Boolean(errors.password)}
+                  helperText={errors.password}
                 />
               </Grid>
               
@@ -243,6 +266,7 @@ function AdminEditCustomer({ id, setActiveComponent, showAlert }) {
                       </MenuItem>
                     ))}
                   </Select>
+                  {errors.decentralization && <Typography color="error">{errors.decentralization}</Typography>}
                 </FormControl>
               </Grid>
 
@@ -255,6 +279,8 @@ function AdminEditCustomer({ id, setActiveComponent, showAlert }) {
                   InputLabelProps={{ shrink: true }}
                   value={dateOfBirth}
                   onChange={(e) => setDateOfBirth(e.target.value)}
+                  error={!!errors.dateOfBirth}
+                  helperText={errors.dateOfBirth}
                 />
               </Grid>
 
@@ -275,6 +301,8 @@ function AdminEditCustomer({ id, setActiveComponent, showAlert }) {
                       name="houseNumber"
                       value={address.houseNumber || ""}
                       onChange={(e) => handleAddressChange(index, e)}
+                      error={!!errors[`addresses[${index}].houseNumber`]}
+                      helperText={errors[`addresses[${index}].houseNumber`]}
                     />
                   </Grid>
                   <Grid item xs={6}>
@@ -284,6 +312,8 @@ function AdminEditCustomer({ id, setActiveComponent, showAlert }) {
                       name="street"
                       value={address.street || ""}
                       onChange={(e) => handleAddressChange(index, e)}
+                      error={!!errors[`addresses[${index}].street`]}
+                      helperText={errors[`addresses[${index}].street`]}
                     />
                   </Grid>
                   <Grid item xs={6}>
@@ -293,6 +323,8 @@ function AdminEditCustomer({ id, setActiveComponent, showAlert }) {
                       name="ward"
                       value={address.ward || ""}
                       onChange={(e) => handleAddressChange(index, e)}
+                      error={!!errors[`addresses[${index}].ward`]}
+                      helperText={errors[`addresses[${index}].ward`]}
                     />
                   </Grid>
                   <Grid item xs={6}>
@@ -302,6 +334,8 @@ function AdminEditCustomer({ id, setActiveComponent, showAlert }) {
                       name="district"
                       value={address.district || ""}
                       onChange={(e) => handleAddressChange(index, e)}
+                      error={!!errors[`addresses[${index}].district`]}
+                      helperText={errors[`addresses[${index}].district`]}
                     />
                   </Grid>
                   <Grid item xs={6}>
@@ -311,6 +345,8 @@ function AdminEditCustomer({ id, setActiveComponent, showAlert }) {
                       name="city"
                       value={address.city || ""}
                       onChange={(e) => handleAddressChange(index, e)}
+                      error={!!errors[`addresses[${index}].city`]}
+                      helperText={errors[`addresses[${index}].city`]}
                     />
                   </Grid>
                   <Grid item xs={6}>
@@ -320,6 +356,8 @@ function AdminEditCustomer({ id, setActiveComponent, showAlert }) {
                       name="country"
                       value={address.country || ""}
                       onChange={(e) => handleAddressChange(index, e)}
+                      error={!!errors[`addresses[${index}].country`]}
+                      helperText={errors[`addresses[${index}].country`]}
                     />
                   </Grid>
                   <Grid item xs={12}>
@@ -334,6 +372,7 @@ function AdminEditCustomer({ id, setActiveComponent, showAlert }) {
                   variant="contained"
                   startIcon={<Add />}
                   onClick={addAddress}
+                  disabled={addresses.length >= 5 || isLoading}
                 >
                   Add Address
                 </Button>

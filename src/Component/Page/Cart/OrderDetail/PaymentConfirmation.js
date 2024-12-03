@@ -38,6 +38,7 @@ const PaymentConfirmation = ({ open, handleClose, note }) => {
   const totalPrice = listCartItems?.reduce((sum, item) => {
     return sum + (item?.totalPrice || 0);
   }, 0);
+  
   const listAddress = useSelector((state) =>
     state?.address?.listAddress?.filter(
       (addr) => addr.user?.id === userCurrentLogged?.id && addr?.status

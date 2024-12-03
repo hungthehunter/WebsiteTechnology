@@ -14,8 +14,10 @@ import {
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { productThunk } from "../../../../services/redux/thunks/thunk";
+import LoadingOverlay from "./overlay/LoadingOverlay";
 
 const AdminAddProduct = ({ setActiveComponent, showAlert }) => {
+  const isLoading = useSelector((state) => state.product.isLoading);
   const defaultSpecifications = [
     { specificationName: "CPU", specificationData: "" },
     { specificationName: "RAM", specificationData: "" },
@@ -153,6 +155,9 @@ const AdminAddProduct = ({ setActiveComponent, showAlert }) => {
 
   return (
     <Grid container justifyContent="center" alignItems="center">
+        {isLoading && (
+        <LoadingOverlay isLoading={isLoading} message="Loading..." />
+      )}
       <Grid item xs={12} md={8}>
         <Card>
           <CardContent>
@@ -171,7 +176,7 @@ const AdminAddProduct = ({ setActiveComponent, showAlert }) => {
                     margin="normal"
                   />
                 </Grid>
-                <Grid item xs={12} md={6}>
+                {/* <Grid item xs={12} md={6}>
                   <TextField
                     fullWidth
                     label="CPU"
@@ -180,8 +185,8 @@ const AdminAddProduct = ({ setActiveComponent, showAlert }) => {
                     onChange={handleChange}
                     margin="normal"
                   />
-                </Grid>
-                <Grid item xs={12} md={6}>
+                </Grid> */}
+                {/* <Grid item xs={12} md={6}>
                   <TextField
                     fullWidth
                     label="GPU"
@@ -190,7 +195,7 @@ const AdminAddProduct = ({ setActiveComponent, showAlert }) => {
                     onChange={handleChange}
                     margin="normal"
                   />
-                </Grid>
+                </Grid> */}
                 <Grid item xs={12} md={6}>
                   <TextField
                     fullWidth
@@ -224,7 +229,7 @@ const AdminAddProduct = ({ setActiveComponent, showAlert }) => {
                     margin="normal"
                   />
                 </Grid>
-                <Grid item xs={12} md={6}>
+                {/* <Grid item xs={12} md={6}>
                   <TextField
                     fullWidth
                     label="Battery Capacity"
@@ -233,8 +238,8 @@ const AdminAddProduct = ({ setActiveComponent, showAlert }) => {
                     onChange={handleChange}
                     margin="normal"
                   />
-                </Grid>
-                <Grid item xs={12} md={6}>
+                </Grid> */}
+                {/* <Grid item xs={12} md={6}>
                   <TextField
                     fullWidth
                     label="Operating System"
@@ -243,8 +248,8 @@ const AdminAddProduct = ({ setActiveComponent, showAlert }) => {
                     onChange={handleChange}
                     margin="normal"
                   />
-                </Grid>
-                <Grid item xs={12} md={6}>
+                </Grid> */}
+                {/* <Grid item xs={12} md={6}>
                   <TextField
                     fullWidth
                     label="Screen"
@@ -253,8 +258,8 @@ const AdminAddProduct = ({ setActiveComponent, showAlert }) => {
                     onChange={handleChange}
                     margin="normal"
                   />
-                </Grid>
-                <Grid item xs={12} md={6}>
+                </Grid> */}
+                {/* <Grid item xs={12} md={6}>
                   <TextField
                     fullWidth
                     label="RAM"
@@ -263,8 +268,8 @@ const AdminAddProduct = ({ setActiveComponent, showAlert }) => {
                     onChange={handleChange}
                     margin="normal"
                   />
-                </Grid>
-                <Grid item xs={12} md={6}>
+                </Grid> */}
+                {/* <Grid item xs={12} md={6}>
                   <TextField
                     fullWidth
                     label="Design"
@@ -273,8 +278,8 @@ const AdminAddProduct = ({ setActiveComponent, showAlert }) => {
                     onChange={handleChange}
                     margin="normal"
                   />
-                </Grid>
-                <Grid item xs={12} md={6}>
+                </Grid> */}
+                {/* <Grid item xs={12} md={6}>
                   <TextField
                     fullWidth
                     label="Warranty Information"
@@ -293,7 +298,7 @@ const AdminAddProduct = ({ setActiveComponent, showAlert }) => {
                     onChange={handleChange}
                     margin="normal"
                   />
-                </Grid>
+                </Grid> */}
 
                 {/* Category */}
                 <Grid item xs={12} md={6}>
@@ -387,6 +392,7 @@ const AdminAddProduct = ({ setActiveComponent, showAlert }) => {
                     component="label"
                     fullWidth
                     sx={{ marginBottom: 2 }}
+                    disabled = {isLoading}
                   >
                     Choose Main Image
                     <input
@@ -406,6 +412,7 @@ const AdminAddProduct = ({ setActiveComponent, showAlert }) => {
                     component="label"
                     fullWidth
                     sx={{ marginBottom: 2 }}
+                    disabled = {isLoading}
                   >
                     Choose Files
                     <input
@@ -418,7 +425,9 @@ const AdminAddProduct = ({ setActiveComponent, showAlert }) => {
                 </Grid>
 
                 <Grid item xs={12}>
-                  <Button type="submit" variant="contained" color="primary">
+                  <Button type="submit" variant="contained" color="primary"
+                  disabled = {isLoading}
+                  >
                     Add Product
                   </Button>
                 </Grid>

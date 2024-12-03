@@ -1,35 +1,35 @@
-import { Delete } from "@mui/icons-material";
 import {
-    Box,
-    Button,
-    Card,
-    CardContent,
-    FormControl,
-    Grid,
-    IconButton,
-    InputLabel,
-    MenuItem,
-    Select,
-    TextField,
-    Typography,
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Divider,
+  FormControl,
+  Grid,
+  InputLabel,
+  MenuItem,
+  Select,
+  TextField,
+  Typography
 } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { useDispatch, useSelector } from "react-redux";
-import { exportThunk } from "../../../../services/redux/thunks/thunk";
+import {
+  exportThunk,
+  orderThunk,
+} from "../../../../services/redux/thunks/thunk";
 
 function AdminAddExport({ setActiveComponent, showAlert }) {
   //#region logic
   const [formData, setFormData] = useState({
     dateExport: "",
-    customer: {
+    order: {
       id: "",
     },
-    exportItems: [],
-    total: "0",
   });
 
-  const customers = useSelector((state) => state.user.listUser);
+  const orders = useSelector((state) => state.order.listOrder);
   const products = useSelector((state) => state.product.listProduct);
   const [stocks, setStocks] = useState({});
 
@@ -38,6 +38,12 @@ function AdminAddExport({ setActiveComponent, showAlert }) {
   useEffect(() => {
     loadStocks(products);
   }, [products]);
+
+  useEffect(() => {
+    dispatch(orderThunk.getOrderById(formData.order.id));
+  }, [formData.order.id]);
+
+  const selectedOrder = useSelector((state) => state.order.selectedOrder);
 
   const loadStocks = (productList) => {
     const mp = productList.reduce((accumulator, current) => {
@@ -48,19 +54,6 @@ function AdminAddExport({ setActiveComponent, showAlert }) {
     setStocks(mp);
   };
 
-  const getProduct = (id) => {
-    return products.find((product) => product.id === id);
-  };
-
-  const setQuantityLimit = (tf) => {
-    if (parseInt(tf.value) < parseInt(tf.min)) {
-      tf.value = tf.min;
-    }
-    if (parseInt(tf.value) > parseInt(tf.max)) {
-      tf.value = tf.max;
-    }
-  };
-
   const handleChange = (e) => {
     const { name, value } = e.target;
 
@@ -69,138 +62,38 @@ function AdminAddExport({ setActiveComponent, showAlert }) {
         setFormData({ ...formData, dateExport: value });
         break;
 
-      case "customer":
-        setFormData({ ...formData, customer: { id: value } });
+      case "order":
+        setFormData({ ...formData, order: { id: value } });
 
       default:
         break;
     }
   };
 
-  const handleAddExportItems = () => {
-    setFormData((prevFormData) => ({
-      ...prevFormData,
-      exportItems: [
-        ...prevFormData.exportItems,
-        {
-          price: "",
-          quantity: "",
-          product: {
-            id: "",
-          },
-          total: "",
-        },
-      ],
-    }));
-  };
-
-  const handleChooseProduct = (index, value) => {
-    const _product = getProduct(value);
-
-    let newExportItems = [...formData.exportItems];
-    newExportItems[index] = {
-      ...newExportItems[index],
-      product: {
-        id: value,
-      },
-      quantity: 0,
-      price: _product.unitPrice.toString(),
-      total: 0,
-    };
-
-    return newExportItems;
-  };
-
-  const handleExportItemsPropertyChange = (index, field, value) => {
-    const newExportItems = [...formData.exportItems];
-    newExportItems[index] = {
-      ...newExportItems[index],
-      [field]: value,
-    };
-
-    return newExportItems;
-  };
-
-  const handleExportItemsChange = (index, field, value) => {
-    let newExportItems;
-    let exportTotal = "";
-    if (field === "product") {
-      let isContain = formData.exportItems.find(
-        (model) => model.product.id === value
-      );
-      if (isContain !== undefined) {
-        toast.error("Product already added");
-        return;
+  const isEnoughStock = () => {
+    let orderItems = selectedOrder.orderItem;
+    for (var item of orderItems){
+      let stock = stocks[item.product.id];
+      if (item.quanitty > stock){
+        return {
+          product: item.product.productName,
+          result: false
+        };
       }
+    }
 
-      newExportItems = handleChooseProduct(index, value);
-      exportTotal = calExportTotal(newExportItems);
-    } 
-    else
-      newExportItems = handleExportItemsPropertyChange(index, field, value);
-
-    setFormData((prevFormData) => {
-      let total = exportTotal === "" ? prevFormData.total : exportTotal;
-
-      return ({
-        ...prevFormData,
-        exportItems: newExportItems,
-        total: total
-      })
-    });
-  };
-
-  const removeExportItems = (index) => {
-    const newExportItems = formData.exportItems.filter((_, i) => i !== index);
-    const exportTotal = calExportTotal(newExportItems);
-
-    setFormData((prevFormData) => ({
-      ...prevFormData,
-      exportItems: newExportItems,
-      total: exportTotal,
-    }));
-  };
-
-  const calItemTotal = (index) => {
-    let exportItems = formData.exportItems[index];
-
-    let itemTotal;
-    if (exportItems.price === "" || exportItems.quantity === "") {
-      itemTotal = 0;
-    } else
-      itemTotal =
-        parseFloat(exportItems.price) * parseFloat(exportItems.quantity);
-
-    let newExportItems = handleExportItemsPropertyChange(
-      index,
-      "total",
-      itemTotal.toString()
-    );
-
-    let exportTotal = calExportTotal(newExportItems);
-
-    setFormData((prevFormData) => ({
-      ...prevFormData,
-      exportItems: newExportItems,
-      total: exportTotal,
-    }));
-  };
-
-  const calExportTotal = (exportItems) => {
-    const sum = exportItems.reduce((accumulator, currentValue) => {
-      if (currentValue.total === "") return accumulator;
-
-      accumulator += parseFloat(currentValue.total);
-      return accumulator;
-    }, 0);
-    return sum.toString();
-  };
+    return {
+      result: true
+    };
+  }
 
   const handleCreateExport = (e) => {
     e.preventDefault();
 
-    if (formData.customer.id === "") {
-      showAlert("No customer is selected", "error");
+    var check = isEnoughStock();
+    if (!check.result){
+      toast.error(`${check.product} is out of stock`);
+      return;
     }
 
     const data = new FormData();
@@ -220,6 +113,20 @@ function AdminAddExport({ setActiveComponent, showAlert }) {
       console.error("There was an error creating the export!", error);
       showAlert("Failed to create export.", "error");
     }
+  };
+
+  const getAddressText = (address) => {
+    if (address === undefined) return "";
+    return `${address.houseNumber} ${address.district} ${address.country} ${address.city}`;
+  };
+
+  const getImage = (product) => {
+    if (product === undefined || product.product_image === undefined) return "";
+    for (var image of product.product_image) {
+      if (image.mainImage) return image.url;
+    }
+
+    return "";
   };
 
   //#endregion
@@ -247,113 +154,112 @@ function AdminAddExport({ setActiveComponent, showAlert }) {
                     onChange={handleChange}
                   />
                 </Grid>
-                {/* Manufacturer */}
+                {/* Order */}
                 <Grid item xs={12} md={6}>
                   <FormControl fullWidth margin="normal">
-                    <InputLabel>Customer</InputLabel>
+                    <InputLabel>Order Id</InputLabel>
                     <Select
-                      name="customer"
-                      value={formData.customer.id || ""}
+                      name="order"
+                      value={formData.order.id || ""}
                       onChange={handleChange}
                     >
-                      {customers.map((customer) => (
-                        <MenuItem key={customer.id} value={customer.id}>
-                          {customer.fullname}
+                      {orders.map((order) => (
+                        <MenuItem key={order.id} value={order.id}>
+                          {order.id}
                         </MenuItem>
                       ))}
                     </Select>
                   </FormControl>
                 </Grid>
+                <Grid
+                  display={selectedOrder?.user ? "block" : "none"}
+                  item
+                  xs={12}
+                  md={6}
+                >
+                  <TextField
+                    fullWidth
+                    label="Customer"
+                    InputLabelProps={{ shrink: true }}
+                    value={selectedOrder?.user?.fullname}
+                    disabled={true}
+                    sx={{
+                      "& .MuiInputBase-input.Mui-disabled": {
+                        color: "black !important",
+                        "-webkit-text-fill-color": "black !important",
+                      },
+                    }}
+                    margin="normal"
+                  />
+                </Grid>
+                <Grid
+                  display={selectedOrder?.user ? "block" : "none"}
+                  item
+                  xs={12}
+                  md={6}
+                >
+                  <TextField
+                    fullWidth
+                    label="Phone"
+                    InputLabelProps={{ shrink: true }}
+                    value={selectedOrder?.user?.mobile}
+                    disabled={true}
+                    sx={{
+                      "& .MuiInputBase-input.Mui-disabled": {
+                        color: "black !important",
+                        "-webkit-text-fill-color": "black !important",
+                      },
+                    }}
+                    margin="normal"
+                  />
+                </Grid>
+                <Grid
+                  display={selectedOrder?.user ? "block" : "none"}
+                  item
+                  xs={12}
+                  md={12}
+                >
+                  <TextField
+                    fullWidth
+                    label="Address"
+                    InputLabelProps={{ shrink: true }}
+                    value={getAddressText(selectedOrder?.address)}
+                    disabled={true}
+                    sx={{
+                      "& .MuiInputBase-input.Mui-disabled": {
+                        color: "black !important",
+                        "-webkit-text-fill-color": "black !important",
+                      },
+                    }}
+                    margin="normal"
+                  />
+                </Grid>
+                <Grid item xs={12} md={12}>
+                  <Divider sx={{ bgcolor: "black" }}></Divider>
+                </Grid>
               </Grid>
               {/* Export Items */}
-              {formData.exportItems.map((exportItem, index) => (
-                <Grid container spacing={2} key={index}>
-                  <Grid item xs={12} md={6}>
-                    <FormControl fullWidth margin="normal">
-                      <InputLabel>Product</InputLabel>
-                      <Select
-                        name="product"
-                        value={exportItem.product.id || ""}
-                        onChange={(e) => {
-                          handleExportItemsChange(
-                            index,
-                            "product",
-                            e.target.value
-                          );
-                        }}
-                      >
-                        {products.map((item) => (
-                          <MenuItem key={item.id} value={item.id}>
-                            {item.productName}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
+              {selectedOrder?.orderItem?.map((item, index) => (
+                <Grid
+                  container
+                  spacing={2}
+                  key={index}
+                  sx={{ marginTop: "10px !important" }}
+                >
+                  <Grid
+                    container
+                    item
+                    xs={12}
+                    md={12}
+                  >
+                    <Box component={"img"} src={getImage(item.product)}></Box>
                   </Grid>
                   <Grid item xs={12} md={6}>
                     <TextField
                       fullWidth
-                      label="Unit in Stock"
-                      value={stocks[exportItem.product.id]}
-                      disabled={true}
+                      label="Product"
                       InputLabelProps={{ shrink: true }}
-                      sx={{
-                        "& .MuiInputBase-input.Mui-disabled": {
-                          color: "black !exportant",
-                          "-webkit-text-fill-color": "black !exportant",
-                        },
-                      }}
-                      margin="normal"
-                    />
-                  </Grid>
-                  <Grid item xs={12} md={6}>
-                    <TextField
-                      fullWidth
-                      label="Export Price"
-                      value={exportItem.price}
-                      disabled={true}
-                      sx={{
-                        "& .MuiInputBase-input.Mui-disabled": {
-                          color: "black !exportant",
-                          "-webkit-text-fill-color": "black !exportant",
-                        },
-                      }}
-                      margin="normal"
-                    />
-                  </Grid>
-                  <Grid item xs={12} md={6}>
-                    <TextField
-                      fullWidth
-                      label="Quantity"
-                      type="number"
-                      InputProps={{
-                        inputProps: {
-                          min: 0,
-                          step: 1,
-                          max: stocks[exportItem.product.id],
-                        },
-                      }}
-                      onKeyUp={(e) => setQuantityLimit(e.target)}
-                      value={exportItem.quantity}
-                      onBlur={() => calItemTotal(index)}
-                      disabled={exportItem.product.id === "" ? true : false}
-                      onChange={(e) =>
-                        handleExportItemsChange(
-                          index,
-                          "quantity",
-                          e.target.value
-                        )
-                      }
-                      margin="normal"
-                    />
-                  </Grid>
-                  <Grid item xs={12} md={12}>
-                    <TextField
-                      fullWidth
-                      label="Total"
-                      value={
-                        exportItem.total === "" ? "$0" : `$${exportItem.total}`
-                      }
+                      value={item.product.productName}
                       disabled={true}
                       sx={{
                         "& .MuiInputBase-input.Mui-disabled": {
@@ -364,29 +270,78 @@ function AdminAddExport({ setActiveComponent, showAlert }) {
                       margin="normal"
                     />
                   </Grid>
+                  <Grid item xs={12} md={6}>
+                    <TextField
+                      fullWidth
+                      label="Unit in Stock"
+                      value={stocks[item.product.id]}
+                      disabled={true}
+                      sx={{
+                        "& .MuiInputBase-input.Mui-disabled": {
+                          color: "black !important",
+                          "-webkit-text-fill-color": "black !important",
+                        },
+                      }}
+                      InputLabelProps={{ shrink: true }}
+                      margin="normal"
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <TextField
+                      fullWidth
+                      label="Export Price"
+                      value={
+                        item?.product?.unitPrice
+                          ? `$${item.product.unitPrice}`
+                          : "$0"
+                      }
+                      InputLabelProps={{ shrink: true }}
+                      disabled={true}
+                      sx={{
+                        "& .MuiInputBase-input.Mui-disabled": {
+                          color: "black !important",
+                          "-webkit-text-fill-color": "black !important",
+                        },
+                      }}
+                      margin="normal"
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <TextField
+                      fullWidth
+                      label="Quantity"
+                      InputLabelProps={{ shrink: true }}
+                      sx={{
+                        "& .MuiInputBase-input.Mui-disabled": {
+                          color: "black !important",
+                          "-webkit-text-fill-color": "black !important",
+                        },
+                      }}
+                      value={item.quanitty}
+                      disabled={true}
+                      margin="normal"
+                    />
+                  </Grid>
                   <Grid item xs={12} md={12}>
-                    <IconButton
-                      color="error"
-                      onClick={() => removeExportItems(index)}
-                      style={{ marginTop: 10 }}
-                    >
-                      <Delete />
-                    </IconButton>
+                    <Divider sx={{ bgcolor: "black" }}></Divider>
                   </Grid>
                 </Grid>
               ))}
-              <Grid item xs={12}>
-                <Button variant="outlined" onClick={handleAddExportItems}>
-                  Add Product
-                </Button>
-              </Grid>
               <Grid item xs={12} md={12}>
-                <Typography variant="h5" gutterBottom>
+                <Typography
+                  variant="h5"
+                  gutterBottom
+                  sx={{ margin: "10px 0px 0px 0px !important" }}
+                >
                   Total
                 </Typography>
                 <TextField
                   fullWidth
-                  value={formData.total === "" ? "$0" : `$${formData.total}`}
+                  value={
+                    selectedOrder?.total_price
+                      ? `$${selectedOrder?.total_price}`
+                      : "$0"
+                  }
                   disabled={true}
                   sx={{
                     "& .MuiInputBase-input.Mui-disabled": {
@@ -396,10 +351,30 @@ function AdminAddExport({ setActiveComponent, showAlert }) {
                   }}
                   margin="normal"
                 />
-                <Grid item xs={12}>
-                  <Button type="submit" variant="contained" color="primary">
-                    Create Export
-                  </Button>
+                <Grid container item xs={12} md={12} spacing={2}>
+                  <Grid
+                    container
+                    item
+                    xs={12}
+                    md={6}
+                    justifyContent={"flex-end"}
+                  >
+                    <Button type="submit" variant="contained" color="primary">
+                      Create Export
+                    </Button>
+                  </Grid>
+                  <Grid container item xs={12} md={6}>
+                    <Button
+                      type="button"
+                      variant="contained"
+                      color="error"
+                      onClick={() => {
+                        setActiveComponent({ name: "AdminExport" });
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                  </Grid>
                 </Grid>
               </Grid>
             </Box>

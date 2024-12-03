@@ -10,6 +10,7 @@ import AdminAccess from "../Component/Page/Admin/Admin Dashboard/Access.js";
 import AdminAddAccess from "../Component/Page/Admin/Admin Dashboard/AddAccess.js";
 import AdminAddCategory from "../Component/Page/Admin/Admin Dashboard/AddCategory.js";
 import AdminAddManufacturer from "../Component/Page/Admin/Admin Dashboard/AddManufacturer.js";
+import AdminAddPromotion from "../Component/Page/Admin/Admin Dashboard/AddPromotion.js";
 import AdminAddStaff from "../Component/Page/Admin/Admin Dashboard/AddStaff.js";
 import AdminCategory from "../Component/Page/Admin/Admin Dashboard/Category.js";
 import AdminChart from "../Component/Page/Admin/Admin Dashboard/Chart.js";
@@ -20,6 +21,7 @@ import AdminEditExport from "../Component/Page/Admin/Admin Dashboard/EditExport.
 import AdminEditImport from "../Component/Page/Admin/Admin Dashboard/EditImport.js";
 import AdminEditManufacturer from "../Component/Page/Admin/Admin Dashboard/EditManufacturer.js";
 import AdminEditOrder from "../Component/Page/Admin/Admin Dashboard/EditOrder.js";
+import AdminEditPromotion from "../Component/Page/Admin/Admin Dashboard/EditPromotion.js";
 import AdminEditStaff from "../Component/Page/Admin/Admin Dashboard/EditStaff.js";
 import AdminExport from "../Component/Page/Admin/Admin Dashboard/Export.js";
 import AdminImport from "../Component/Page/Admin/Admin Dashboard/Import.js";
@@ -29,6 +31,7 @@ import {
 } from "../Component/Page/Admin/Admin Dashboard/Manufacturer.js";
 import AdminOrder from "../Component/Page/Admin/Admin Dashboard/Order.js";
 import AdminProduct from "../Component/Page/Admin/Admin Dashboard/Product.js";
+import AdminPromotion from "../Component/Page/Admin/Admin Dashboard/Promotion.js";
 import AdminStaff from "../Component/Page/Admin/Admin Dashboard/Staff.js";
 import AdminViewCategory from "../Component/Page/Admin/Admin Dashboard/ViewCategory.js";
 import AdminViewCustomer from "../Component/Page/Admin/Admin Dashboard/ViewCustomer.js";
@@ -39,13 +42,14 @@ import {
   default as AdminDashboard,
   default as AdminPage,
 } from "../Component/Page/Admin/Admin Dashboard/index.js";
+import NotAllowedPage from "../Component/Page/Admin/Admin Dashboard/warning/NotAllowPage.js";
 import CartPage from "../Component/Page/Cart/Cart.js";
 import CartItem from "../Component/Page/Cart/CartItem/CartItem.js";
 import CartList from "../Component/Page/Cart/CartList/CartList.js";
 import OrderDetail from "../Component/Page/Cart/OrderDetail/OrderDetail.js";
 import ErrorPage from "../Component/Page/Error/404.js";
 import Login from "../Component/Page/LoginSignup/Login.js";
-import SignUp from "../Component/Page/LoginSignup/LoginSignup.js";
+import SignUp from "../Component/Page/LoginSignup/SignUp.js";
 import NVDIA_STORE_MAIN from "../Component/Page/Main/NVDIA_STORE_MAIN.js";
 import Policy from "../Component/Page/Policy/index.js";
 import ProductDetail from "../Component/Page/Products/DetailProducts/product-detail-card-slider-master/index.js";
@@ -299,7 +303,11 @@ const publicRoutes = [
     layout: BodyOnly,
   },
 
-
+  {
+    path: "/websiteDoAn/NotAllowPage",
+    component: NotAllowedPage,
+    layout: BodyOnly,
+  },
 
   /*--- Cart ---*/
   {
@@ -322,6 +330,24 @@ const publicRoutes = [
   {
     path: "/websiteDoAn/OrderDetail",
     component: OrderDetail,
+    layout: BodyOnly,
+  },
+    
+  {
+    path: "/websiteDoAn/AdminPromotion",
+    component: AdminPromotion,
+    layout: BodyOnly,
+  },
+  
+  {
+    path: "/websiteDoAn/AdminAddPromotion",
+    component: AdminAddPromotion,
+    layout: BodyOnly,
+  },
+
+  {
+    path: "/websiteDoAn/AdminEditPromotion",
+    component: AdminEditPromotion,
     layout: BodyOnly,
   },
 

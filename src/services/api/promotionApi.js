@@ -27,9 +27,9 @@ getPromotionById: async (id,LoadingScreen=true) => {
 createPromotion: async (promotionData,LoadingScreen=true) => {
     const res = await shopAPI.post(PROMOTION_ENDPOINTS.CREATE_PROMOTION, promotionData ,
         {
-            header:{
-            'Content-type':'application/json',
-            }
+            headers: {
+                'Content-Type': 'multipart/form-data'
+              }
         }
     )
     if(LoadingScreen){
@@ -40,9 +40,9 @@ createPromotion: async (promotionData,LoadingScreen=true) => {
 updatePromotion: async (id,promotionData,LoadingScreen=true) => {
     const res = await shopAPI.put(PROMOTION_ENDPOINTS.UPDATE_PROMOTION.replace(":id",id), promotionData ,
 {
-    headers:{
-        'Content-Type':'application/json',
-    }
+    headers: {
+        'Content-Type': 'multipart/form-data'
+      }
 }
 )
 if(LoadingScreen){

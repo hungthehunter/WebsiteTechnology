@@ -11,8 +11,10 @@ import {
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { decentralizationThunk } from "../../../../services/redux/thunks/thunk";
+import LoadingOverlay from "./overlay/LoadingOverlay";
 
 function AdminEditAccess({ setActiveComponent, id, showAlert }) {
+  const isLoading = useSelector((state) => state.decentralization.isLoading);
   const [roleName, setRoleName] = useState("");
   const [roleNameError, setRoleNameError] = useState("");
   const dispatch = useDispatch();
@@ -86,8 +88,6 @@ function AdminEditAccess({ setActiveComponent, id, showAlert }) {
       access: { roleName },
       functionIds: selectedFunctions,
     };
-
-    console.log("decentralization ", decentralizationData)
     try {
       await dispatch(
         decentralizationThunk.updateDecentralization({
@@ -107,6 +107,9 @@ function AdminEditAccess({ setActiveComponent, id, showAlert }) {
 
   return (
     <Box sx={{ padding: 4 }}>
+        {isLoading && (
+        <LoadingOverlay isLoading={isLoading} message="Please wait..." />
+      )}
       <Box className="details_table">
         <Box className="table recentOrders">
           <Box className="cardHeader">

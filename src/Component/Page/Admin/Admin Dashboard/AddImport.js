@@ -1,33 +1,44 @@
 import { Delete } from "@mui/icons-material";
 import {
-    Box,
-    Button,
-    Card,
-    CardContent,
-    FormControl,
-    Grid,
-    IconButton,
-    InputLabel,
-    MenuItem,
-    Select,
-    TextField,
-    Typography,
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Divider,
+  FormControl,
+  Grid,
+  IconButton,
+  InputLabel,
+  MenuItem,
+  Select,
+  TextField,
+  Typography,
+  debounce,
 } from "@mui/material";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { useDispatch, useSelector } from "react-redux";
 import {
-    importThunk,
-    productThunk,
+  importThunk,
+  productThunk,
 } from "../../../../services/redux/thunks/thunk";
 // import { getAllProductByManufacturerId } from "../../../Serivce/ApiService";
 
 function AdminAddImport({ setActiveComponent, showAlert }) {
   //#region logic
+  const alert = useCallback(
+    debounce((value) => toast.error(value), 500)
+  , [])
+
   const manufacturers = useSelector(
     (state) => state.manufacturer.listManufacturer
   );
-  const products = useSelector((state) => state.product.listProductByManufacturer);
+  const products = useSelector(
+    (state) => state.product.listProductByManufacturer
+  );
+
+  const [blockAdd, setBlockAdd] = useState(true);
+
   let dispatch = useDispatch();
 
   const defaultImport = {
@@ -45,13 +56,28 @@ function AdminAddImport({ setActiveComponent, showAlert }) {
   });
 
   useEffect(() => {
+    setFormData((prev) => ({
+      ...prev,
+      importItems: [],
+      total: "0",
+    }));
+  }, [products]);
+
+  useEffect(() => {
     if (formData.manufacturer?.id === "" || formData.manufacturer?.id === null)
       return;
+
     loadProducts(formData.manufacturer.id);
+    setBlockAdd(true);
+    setTimeout(() => setBlockAdd(false), 1800);
   }, [formData.manufacturer.id]);
 
   const loadProducts = (id) => {
     dispatch(productThunk.getAllProductByManufacturerId(id));
+  };
+
+  const getImportItemProduct = (id) => {
+    return products.find((item) => item.id === id);
   };
 
   const handleChangeManufacturer = (value) => {
@@ -89,12 +115,12 @@ function AdminAddImport({ setActiveComponent, showAlert }) {
       importItems: [
         ...prevFormData.importItems,
         {
-          price: "",
-          quantity: "",
+          price: "0",
+          quantity: "0",
           product: {
             id: "",
           },
-          total: "",
+          total: "0",
         },
       ],
     }));
@@ -104,9 +130,7 @@ function AdminAddImport({ setActiveComponent, showAlert }) {
     const newImportItems = [...formData.importItems];
     newImportItems[index] = {
       ...newImportItems[index],
-      product: {
-        id: value,
-      },
+      product: getImportItemProduct(value),
     };
 
     return newImportItems;
@@ -179,6 +203,17 @@ function AdminAddImport({ setActiveComponent, showAlert }) {
     }));
   };
 
+  const handlePriceCondition = (e, max) => {
+    let min = 0;
+    let value = e.target.value;
+
+    if (parseFloat(value) < min) e.target.value = min;
+    if (parseFloat(value) >= max) {
+      e.target.value = max - 1;
+      alert("Import price cant be lower than Product price");
+    }
+  };
+
   const calImportTotal = (importItems) => {
     const sum = importItems.reduce((accumulator, currentValue) => {
       if (currentValue.total === "") return accumulator;
@@ -205,12 +240,20 @@ function AdminAddImport({ setActiveComponent, showAlert }) {
       dispatch(importThunk.createImport(data));
       showAlert("Create Import successfully.", "success");
       setTimeout(() => setActiveComponent({ name: "AdminImport" }), 1000);
-    } 
-    catch (error) {
+    } catch (error) {
       console.error("There was an error creating the import!", error);
       showAlert("Failed to create import.", "error");
     }
   };
+
+  const getImage = (product) => {
+    if (product === undefined || product.product_image === undefined) return "";
+    for (var image of product.product_image) {
+      if (image.mainImage) return image.url;
+    }
+
+    return "";
+  }
 
   //#endregion
 
@@ -254,17 +297,23 @@ function AdminAddImport({ setActiveComponent, showAlert }) {
                     </Select>
                   </FormControl>
                 </Grid>
+                <Grid item xs={12} md={12}>
+                  <Divider sx={{ bgcolor: "black" }}></Divider>
+                </Grid>
               </Grid>
               {/* Import Items */}
-              {formData.importItems.map((importItems, index) => (
+              {formData.importItems.map((importItem, index) => (
                 <Grid container spacing={2} key={index}>
+                  <Grid container item xs={12} md={12}>
+                    <Box component={"img"} src={getImage(importItem.product)}></Box>
+                  </Grid>
                   <Grid item xs={12} md={12}>
                     <Grid item xs={12} md={6}>
                       <FormControl fullWidth margin="normal">
                         <InputLabel>Product</InputLabel>
                         <Select
                           name="product"
-                          value={importItems.product.id || ""}
+                          value={importItem.product.id || ""}
                           onChange={(e) => {
                             handleImportItemsChange(
                               index,
@@ -287,13 +336,31 @@ function AdminAddImport({ setActiveComponent, showAlert }) {
                       fullWidth
                       label="Import Price"
                       type="number"
-                      InputProps={{ inputProps: { min: 0, step: 1 } }}
-                      value={importItems.price}
-                      disabled={importItems.product.id === "" ? true : false}
+                      InputProps={{
+                        inputProps: {
+                          min: 0,
+                          step: 1,
+                          max: importItem.product.unitPrice - 1 || 0,
+                        },
+                      }}
+                      value={importItem.price}
+                      disabled={importItem.product.id === "" ? true : false}
                       onBlur={() => calItemTotal(index)}
-                      onChange={(e) =>
-                        handleImportItemsChange(index, "price", e.target.value)
-                      }
+                      onChange={(e) => {
+                        handlePriceCondition(e, importItem.product.unitPrice);
+                        handleImportItemsChange(index, "price", e.target.value);
+                      }}
+                      margin="normal"
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <TextField
+                      fullWidth
+                      label="Product Price"
+                      type="number"
+                      InputLabelProps={{ shrink: true }}
+                      disabled
+                      value={importItem.product.unitPrice}
                       margin="normal"
                     />
                   </Grid>
@@ -303,9 +370,9 @@ function AdminAddImport({ setActiveComponent, showAlert }) {
                       label="Quantity"
                       type="number"
                       InputProps={{ inputProps: { min: 0, step: 1 } }}
-                      value={importItems.quantity}
+                      value={importItem.quantity}
                       onBlur={() => calItemTotal(index)}
-                      disabled={importItems.product.id === "" ? true : false}
+                      disabled={importItem.product.id === "" ? true : false}
                       onChange={(e) =>
                         handleImportItemsChange(
                           index,
@@ -316,14 +383,23 @@ function AdminAddImport({ setActiveComponent, showAlert }) {
                       margin="normal"
                     />
                   </Grid>
+                  <Grid item xs={12} md={6}>
+                    <TextField
+                      fullWidth
+                      label="Unit in Stock"
+                      type="number"
+                      InputLabelProps={{ shrink: true }}
+                      disabled
+                      value={importItem.product.unitInStock}
+                      margin="normal"
+                    />
+                  </Grid>
                   <Grid item xs={12} md={12}>
                     <TextField
                       fullWidth
                       label="Total"
                       value={
-                        importItems.total === ""
-                          ? "$0"
-                          : `$${importItems.total}`
+                        importItem.total === "" ? "$0" : `$${importItem.total}`
                       }
                       disabled={true}
                       sx={{
@@ -344,6 +420,9 @@ function AdminAddImport({ setActiveComponent, showAlert }) {
                       <Delete />
                     </IconButton>
                   </Grid>
+                  <Grid item xs={12} md={12}>
+                    <Divider sx={{ bgcolor: "black" }}></Divider>
+                  </Grid>
                 </Grid>
               ))}
               <Grid
@@ -353,12 +432,37 @@ function AdminAddImport({ setActiveComponent, showAlert }) {
                 item
                 xs={12}
               >
-                <Button variant="outlined" onClick={handleAddImportItems}>
-                  Add Product
-                </Button>
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: '20px'
+                  }}
+                >
+                  <Button
+                    sx={{ marginTop: "10px" }}
+                    variant="outlined"
+                    disabled={blockAdd}
+                    onClick={handleAddImportItems}
+                  >
+                    Add Product
+                  </Button>
+                  <Typography
+                    fontSize={"13px"}
+                    height={"10px"}
+                    sx={{
+                      display: blockAdd ? "block" : "none"
+                    }}>
+                    Loading products...
+                  </Typography>
+                </Box>
               </Grid>
               <Grid item xs={12} md={12}>
-                <Typography variant="h5" gutterBottom>
+                <Typography
+                  variant="h5"
+                  gutterBottom
+                  sx={{ margin: "10px 0px 0px 0px !important" }}
+                >
                   Total
                 </Typography>
                 <TextField
@@ -373,10 +477,40 @@ function AdminAddImport({ setActiveComponent, showAlert }) {
                   }}
                   margin="normal"
                 />
-                <Grid item xs={12}>
-                  <Button type="submit" variant="contained" color="primary">
-                    Create Import
-                  </Button>
+                <Grid container item xs={12} md={12} spacing={2}>
+                  <Grid
+                    container
+                    item
+                    xs={12}
+                    md={6}
+                    justifyContent={"flex-end"}
+                  >
+                    <Button
+                      disabled={
+                        !formData.manufacturer.id ||
+                        formData.importItems.length == 0 ||
+                        // formData.importItems.some(item => !item.id)
+                        formData.importItems.some((item) => !item.product.id)
+                      }
+                      type="submit"
+                      variant="contained"
+                      color="primary"
+                    >
+                      Create Import
+                    </Button>
+                  </Grid>
+                  <Grid container item xs={12} md={6}>
+                    <Button
+                      type="button"
+                      variant="contained"
+                      color="error"
+                      onClick={() => {
+                        setActiveComponent({ name: "AdminImport" });
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                  </Grid>
                 </Grid>
               </Grid>
             </Box>

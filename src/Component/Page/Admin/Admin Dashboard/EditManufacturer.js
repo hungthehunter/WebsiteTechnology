@@ -16,8 +16,10 @@ import { useDispatch, useSelector } from "react-redux";
 import { clearSelectedManufacturerId } from "../../../../services/redux/slices/manufacturerSlice";
 import { manufacturerThunk } from "../../../../services/redux/thunks/thunk";
 import "./assets/css/style.scss";
+import LoadingOverlay from "./overlay/LoadingOverlay";
 
 function AdminEditManufacturer({ id, setActiveComponent, showAlert }) {
+  const isLoading = useSelector((state) => state.manufacturer.isLoading)
   const theme = useTheme();
   const [products, setProducts] = useState([]);
   const [selectedProducts, setSelectedProducts] = useState([]);
@@ -94,6 +96,9 @@ function AdminEditManufacturer({ id, setActiveComponent, showAlert }) {
 
   return (
     <Box sx={{ padding: 4 }}>
+         {isLoading && (
+        <LoadingOverlay isLoading={isLoading} message="Please wait..." />
+      )}
       <Box className="details_table">
         <Box className="table recentOrders">
           <Typography variant="h4" sx={{ marginBottom: 2 }}>
@@ -265,6 +270,7 @@ function AdminEditManufacturer({ id, setActiveComponent, showAlert }) {
                 variant="contained"
                 sx={{ backgroundColor: theme.palette.primary.main }}
                 type="submit" // Thay đổi thành type="submit"
+                disabled = {isLoading}
               >
                 Update Manufacturer
               </Button>
@@ -273,6 +279,7 @@ function AdminEditManufacturer({ id, setActiveComponent, showAlert }) {
               color="secondary"
               onClick={() => setActiveComponent({ name: "AdminManufacturer" })}
               sx={{ marginTop: 0, marginLeft: 2 }}
+              disabled = {isLoading}
             >
               Return to Manufacturer
             </Button>

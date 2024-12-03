@@ -56,7 +56,6 @@ const userApi = {
     if (LoadingScreen) {
       await new Promise((state) => setTimeout(state, 2000));
     }
-    console.log("userRes: ",userRes);
     return userRes;
   },
 

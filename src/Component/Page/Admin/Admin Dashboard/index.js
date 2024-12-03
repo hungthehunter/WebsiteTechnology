@@ -1,9 +1,6 @@
 import { Box } from "@mui/material";
-import MuiAlert from "@mui/material/Alert";
-import Snackbar from "@mui/material/Snackbar";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import { useEffect, useState } from "react";
-import { FaExclamationCircle } from "react-icons/fa"; // Biểu tượng
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import {
@@ -22,11 +19,13 @@ import {
 } from "../../../../services/redux/thunks/thunk";
 import AdminAccess from "./Access";
 import AdminAddAccess from "./AddAccess";
+import AdminAddCategory from "./AddCategory";
 import AdminAddCustomer from "./AddCustomer";
 import AdminAddExport from "./AddExport";
 import AdminAddImport from "./AddImport";
 import AdminAddManufacturer from "./AddManufacturer";
 import AdminAddProduct from "./AddProduct";
+import AdminAddPromotion from "./AddPromotion";
 import AdminAddStaff from "./AddStaff";
 import "./assets/css/style.scss";
 import AdminCategory from "./Category";
@@ -41,6 +40,7 @@ import AdminEditImport from "./EditImport";
 import AdminEditManufacturer from "./EditManufacturer";
 import AdminEditOrder from "./EditOrder";
 import AdminEditProduct from "./EditProduct";
+import AdminEditPromotion from "./EditPromotion";
 import AdminEditStaff from "./EditStaff";
 import AdminExport from "./Export";
 import AdminHeader from "./Header";
@@ -48,6 +48,7 @@ import AdminImport from "./Import";
 import AdminManufacturer from "./Manufacturer";
 import AdminOrder from "./Order";
 import AdminProduct from "./Product";
+import AdminPromotion from "./Promotion";
 import SidebarAdmin from "./Sidebar";
 import AdminStaff from "./Staff";
 import AdminViewCategory from "./ViewCategory";
@@ -57,7 +58,9 @@ import AdminViewImport from "./ViewImport";
 import AdminViewManufacturer from "./ViewManufacturer";
 import AdminViewOrder from "./ViewOrder";
 import AdminViewProduct from "./ViewProduct";
+import AdminViewPromotion from "./ViewPromotion";
 import AdminViewStaff from "./ViewStaff";
+import NotAllowedPage from "./warning/NotAllowPage";
 // Tạo theme tùy chỉnh
 const theme = createTheme({
   palette: {
@@ -81,6 +84,7 @@ function AdminPage() {
           dispatch(addressThunk.getAllAddresses()).unwrap(),
           dispatch(userThunk.getAllUsers()).unwrap(),
           dispatch(productThunk.getAllProduct()).unwrap(),
+          dispatch(promotionThunk.getAllPromotions()).unwrap(),
           dispatch(functionThunk.getAllFunctions()).unwrap(),
           dispatch(accessThunk.getAllAccess()).unwrap(),
           dispatch(decentralizationThunk.getAllDecentralization()).unwrap(),
@@ -138,251 +142,259 @@ function AdminPage() {
   // Dashboard: Handle change main page
 
   const getActiveComponent = () => {
-    switch (activeComponent.name) {
-      case "AdminDashboard":
-        return <AdminDashboard />;
-      case "AdminCustomer":
-        return checkPermission("View Customer List") ? (
-          <AdminCustomer
-            setActiveComponent={setActiveComponent}
-            showAlert={showAlert}
-          />
-        ) : null;
-      case "AdminOrder":
-        return checkPermission("View Order List") ? (
-          <AdminOrder
-            setActiveComponent={setActiveComponent}
-            showAlert={showAlert}
-          />
-        ) : null;
+    const renderComponent = () => {
+      switch (activeComponent.name) {
+        case "AdminDashboard":
+          return <AdminDashboard />;
+        case "AdminCustomer":
+          return checkPermission("View Customer List") ? (
+            <AdminCustomer
+              setActiveComponent={setActiveComponent}
+              showAlert={showAlert}
+            />
+          ) : null;
+        case "AdminOrder":
+          return checkPermission("View Order List") ? (
+            <AdminOrder
+              setActiveComponent={setActiveComponent}
+              showAlert={showAlert}
+            />
+          ) : null;
 
-      case "AdminViewOrder":
-        return checkPermission("View Order List") ? (
-          <AdminViewOrder
-            id={activeComponent.props.id}
-            setActiveComponent={setActiveComponent}
-            showAlert={showAlert}
-          />
-        ) : null;
+        case "AdminViewOrder":
+          return checkPermission("View Order List") ? (
+            <AdminViewOrder
+              id={activeComponent.props.id}
+              setActiveComponent={setActiveComponent}
+              showAlert={showAlert}
+            />
+          ) : null;
 
-      case "AdminProduct":
-        return checkPermission("View Product List") ? (
-          <AdminProduct
-            setActiveComponent={setActiveComponent}
-            showAlert={showAlert}
-          />
-        ) : null;
-      case "AdminStaff":
-        return checkPermission("View Staff List") ? (
-          <AdminStaff
-            setActiveComponent={setActiveComponent}
-            showAlert={showAlert}
-          />
-        ) : null;
-      case "AdminAddCustomer":
-        return checkPermission("Create Customer") ? (
-          <AdminAddCustomer
-            setActiveComponent={setActiveComponent}
-            showAlert={showAlert}
-          />
-        ) : null;
-      case "AdminCategory":
-        return checkPermission("View Category List") ? (
-          <AdminCategory
-            setActiveComponent={setActiveComponent}
-            showAlert={showAlert}
-          />
-        ) : null;
-      case "AdminManufacturer":
-        return checkPermission("View Manufacturer List") ? (
-          <AdminManufacturer
-            setActiveComponent={setActiveComponent}
-            showAlert={showAlert}
-          />
-        ) : null;
-      case "AdminAddManufacturer":
-        return checkPermission("Create Manufacturer") ? (
-          <AdminAddManufacturer
-            setActiveComponent={setActiveComponent}
-            showAlert={showAlert}
-          />
-        ) : null;
-      case "AdminEditManufacturer":
-        return checkPermission("Edit Manufacturer") ? (
-          <AdminEditManufacturer
-            id={activeComponent.props.id}
-            setActiveComponent={setActiveComponent}
-            showAlert={showAlert}
-          />
-        ) : null;
-      case "AdminViewManufacturer":
-        return checkPermission("View Manufacturer List") ? (
-          <AdminViewManufacturer
-            id={activeComponent.props.id}
-            setActiveComponent={setActiveComponent}
-            showAlert={showAlert}
-          />
-        ) : null;
-      case "AdminViewCustomer":
-        return checkPermission("View Customer List") ? (
-          <AdminViewCustomer
-            id={activeComponent.props.id}
-            setActiveComponent={setActiveComponent}
-            showAlert={showAlert}
-          />
-        ) : null;
-      case "AdminEditCustomer":
-        return checkPermission("Edit Customer") ? (
-          <AdminEditCustomer
-            id={activeComponent.props.id}
-            setActiveComponent={setActiveComponent}
-            showAlert={showAlert}
-          />
-        ) : null;
-      case "AdminViewProduct":
-        return checkPermission("View Product List") ? (
-          <AdminViewProduct
-            id={activeComponent.props.id}
-            setActiveComponent={setActiveComponent}
-            showAlert={showAlert}
-          />
-        ) : null;
-      case "AdminViewCategory":
-        return checkPermission("View Category List") ? (
-          <AdminViewCategory
-            id={activeComponent.props.id}
-            setActiveComponent={setActiveComponent}
-            showAlert={showAlert}
-          />
-        ) : null;
-      case "AdminEditProduct":
-        return checkPermission("Edit Product") ? (
-          <AdminEditProduct
-            id={activeComponent.props.id}
-            setActiveComponent={setActiveComponent}
-            showAlert={showAlert}
-          />
-        ) : null;
-      case "AdminAddProduct":
-        return checkPermission("Create Product") ? (
-          <AdminAddProduct
-            setActiveComponent={setActiveComponent}
-            showAlert={showAlert}
-          />
-        ) : null;
-      case "AdminEditCategory":
-        return checkPermission("Edit Category") ? (
-          <AdminEditCategory
-            id={activeComponent.props.id}
-            setActiveComponent={setActiveComponent}
-            showAlert={showAlert}
-          />
-        ) : null;
-      case "AdminEditOrder":
-        return checkPermission("Edit Order") ? (
-          <AdminEditOrder
-            id={activeComponent.props.id}
-            setActiveComponent={setActiveComponent}
-            showAlert={showAlert}
-          />
-        ) : null;
-      case "AdminAddStaff":
-        return checkPermission("Create Staff") ? (
-          <AdminAddStaff
-            setActiveComponent={setActiveComponent}
-            showAlert={showAlert}
-          />
-        ) : null;
-      case "AdminViewStaff":
-        return checkPermission("View Staff List") ? (
-          <AdminViewStaff
-            id={activeComponent.props.id}
-            setActiveComponent={setActiveComponent}
-            showAlert={showAlert}
-          />
-        ) : null;
-      case "AdminEditStaff":
-        return checkPermission("Edit Staff") ? (
-          <AdminEditStaff
-            id={activeComponent.props.id}
-            setActiveComponent={setActiveComponent}
-            showAlert={showAlert}
-          />
-        ) : null;
-      case "AdminAccess":
-        return checkPermission("View Access List") ? (
-          <AdminAccess
-            setActiveComponent={setActiveComponent}
-            showAlert={showAlert}
-          />
-        ) : null;
-      case "AdminEditAccess":
-        return checkPermission("Edit Access") ? (
-          <AdminEditAccess
-            id={activeComponent.props.id}
-            setActiveComponent={setActiveComponent}
-            showAlert={showAlert}
-          />
-        ) : null;
-      case "AdminAddAccess":
-        return checkPermission("Create Access") ? (
-          <AdminAddAccess
-            setActiveComponent={setActiveComponent}
-            showAlert={showAlert}
-          />
-        ) : null;
-      case "AdminChart":
-        return checkPermission("View Chart") ? <AdminChart /> : null;
+        case "AdminProduct":
+          return checkPermission("View Product List") ? (
+            <AdminProduct
+              setActiveComponent={setActiveComponent}
+              showAlert={showAlert}
+            />
+          ) : null;
+        case "AdminStaff":
+          return checkPermission("View Staff List") ? (
+            <AdminStaff
+              setActiveComponent={setActiveComponent}
+              showAlert={showAlert}
+            />
+          ) : null;
+        case "AdminAddCustomer":
+          return checkPermission("Create Customer") ? (
+            <AdminAddCustomer
+              setActiveComponent={setActiveComponent}
+              showAlert={showAlert}
+            />
+          ) : null;
+        case "AdminCategory":
+          return checkPermission("View Category List") ? (
+            <AdminCategory
+              setActiveComponent={setActiveComponent}
+              showAlert={showAlert}
+            />
+          ) : null;
+        case "AdminManufacturer":
+          return checkPermission("View Manufacturer List") ? (
+            <AdminManufacturer
+              setActiveComponent={setActiveComponent}
+              showAlert={showAlert}
+            />
+          ) : null;
+        case "AdminAddManufacturer":
+          return checkPermission("Create Manufacturer") ? (
+            <AdminAddManufacturer
+              setActiveComponent={setActiveComponent}
+              showAlert={showAlert}
+            />
+          ) : null;
+        case "AdminEditManufacturer":
+          return checkPermission("Edit Manufacturer") ? (
+            <AdminEditManufacturer
+              id={activeComponent.props.id}
+              setActiveComponent={setActiveComponent}
+              showAlert={showAlert}
+            />
+          ) : null;
+        case "AdminViewManufacturer":
+          return checkPermission("View Manufacturer List") ? (
+            <AdminViewManufacturer
+              id={activeComponent.props.id}
+              setActiveComponent={setActiveComponent}
+              showAlert={showAlert}
+            />
+          ) : null;
+        case "AdminViewCustomer":
+          return checkPermission("View Customer List") ? (
+            <AdminViewCustomer
+              id={activeComponent.props.id}
+              setActiveComponent={setActiveComponent}
+              showAlert={showAlert}
+            />
+          ) : null;
+        case "AdminEditCustomer":
+          return checkPermission("Edit Customer") ? (
+            <AdminEditCustomer
+              id={activeComponent.props.id}
+              setActiveComponent={setActiveComponent}
+              showAlert={showAlert}
+            />
+          ) : null;
+        case "AdminViewProduct":
+          return checkPermission("View Product List") ? (
+            <AdminViewProduct
+              id={activeComponent.props.id}
+              setActiveComponent={setActiveComponent}
+              showAlert={showAlert}
+            />
+          ) : null;
+        case "AdminViewCategory":
+          return checkPermission("View Category List") ? (
+            <AdminViewCategory
+              id={activeComponent.props.id}
+              setActiveComponent={setActiveComponent}
+              showAlert={showAlert}
+            />
+          ) : null;
+        case "AdminAddCategory":
+          return checkPermission("Create Category") ? (
+            <AdminAddCategory
+              setActiveComponent={setActiveComponent}
+              showAlert={showAlert}
+            />
+          ) : null;
+        case "AdminEditProduct":
+          return checkPermission("Edit Product") ? (
+            <AdminEditProduct
+              id={activeComponent.props.id}
+              setActiveComponent={setActiveComponent}
+              showAlert={showAlert}
+            />
+          ) : null;
+        case "AdminAddProduct":
+          return checkPermission("Create Product") ? (
+            <AdminAddProduct
+              setActiveComponent={setActiveComponent}
+              showAlert={showAlert}
+            />
+          ) : null;
+        case "AdminEditCategory":
+          return checkPermission("Edit Category") ? (
+            <AdminEditCategory
+              id={activeComponent.props.id}
+              setActiveComponent={setActiveComponent}
+              showAlert={showAlert}
+            />
+          ) : null;
+        case "AdminEditOrder":
+          return checkPermission("Edit Order") ? (
+            <AdminEditOrder
+              id={activeComponent.props.id}
+              setActiveComponent={setActiveComponent}
+              showAlert={showAlert}
+            />
+          ) : null;
+        case "AdminAddStaff":
+          return checkPermission("Create Staff") ? (
+            <AdminAddStaff
+              setActiveComponent={setActiveComponent}
+              showAlert={showAlert}
+            />
+          ) : null;
+        case "AdminViewStaff":
+          return checkPermission("View Staff List") ? (
+            <AdminViewStaff
+              id={activeComponent.props.id}
+              setActiveComponent={setActiveComponent}
+              showAlert={showAlert}
+            />
+          ) : null;
+        case "AdminEditStaff":
+          return checkPermission("Edit Staff") ? (
+            <AdminEditStaff
+              id={activeComponent.props.id}
+              setActiveComponent={setActiveComponent}
+              showAlert={showAlert}
+            />
+          ) : null;
+        case "AdminAccess":
+          return checkPermission("View Access List") ? (
+            <AdminAccess
+              setActiveComponent={setActiveComponent}
+              showAlert={showAlert}
+            />
+          ) : null;
+        case "AdminEditAccess":
+          return checkPermission("Edit Access") ? (
+            <AdminEditAccess
+              id={activeComponent.props.id}
+              setActiveComponent={setActiveComponent}
+              showAlert={showAlert}
+            />
+          ) : null;
+        case "AdminAddAccess":
+          return checkPermission("Create Access") ? (
+            <AdminAddAccess
+              setActiveComponent={setActiveComponent}
+              showAlert={showAlert}
+            />
+          ) : null;
+        case "AdminChart":
+          return checkPermission("View Chart") ? <AdminChart /> : null;
 
-      case "AdminExport":
-        return checkPermission("View Export List") ? (
-          <AdminExport
-            setActiveComponent={setActiveComponent}
-            showAlert={showAlert}
-          />
-        ) : null;
+        case "AdminExport":
+          return checkPermission("View Export List") ? (
+            <AdminExport
+              setActiveComponent={setActiveComponent}
+              showAlert={showAlert}
+            />
+          ) : null;
 
-      case "AdminAddExport":
-        return checkPermission("Create Export") ? (
-          <AdminAddExport
-            setActiveComponent={setActiveComponent}
-            showAlert={showAlert}
-          />
-        ) : null;
+        case "AdminAddExport":
+          return checkPermission("Create Export") ? (
+            <AdminAddExport
+              setActiveComponent={setActiveComponent}
+              showAlert={showAlert}
+            />
+          ) : null;
 
-      case "AdminEditExport":
-        return checkPermission("Edit Export") ? (
-          <AdminEditExport
-            id={activeComponent.props.id}
-            setActiveComponent={setActiveComponent}
-            showAlert={showAlert}
-          />
-        ) : null;
+        case "AdminEditExport":
+          return checkPermission("Edit Export") ? (
+            <AdminEditExport
+              id={activeComponent.props.id}
+              setActiveComponent={setActiveComponent}
+              showAlert={showAlert}
+            />
+          ) : null;
 
-      case "AdminImport":
-        return checkPermission("View Import List") ? (
-          <AdminImport
-            setActiveComponent={setActiveComponent}
-            showAlert={showAlert}
-          />
-        ) : null;
+        case "AdminImport":
+          return checkPermission("View Import List") ? (
+            <AdminImport
+              setActiveComponent={setActiveComponent}
+              showAlert={showAlert}
+            />
+          ) : null;
 
-      case "AdminAddImport":
-        return checkPermission("Create Import") ? (
-          <AdminAddImport
-            setActiveComponent={setActiveComponent}
-            showAlert={showAlert}
-          />
-        ) : null;
+        case "AdminAddImport":
+          return checkPermission("Create Import") ? (
+            <AdminAddImport
+              setActiveComponent={setActiveComponent}
+              showAlert={showAlert}
+            />
+          ) : null;
 
-      case "AdminEditImport":
-        return checkPermission("Edit Import") ? (
-          <AdminEditImport
-            id={activeComponent.props.id}
-            setActiveComponent={setActiveComponent}
-            showAlert={showAlert}
-          />
-        ) : null;
+        case "AdminEditImport":
+          return checkPermission("Edit Import") ? (
+            <AdminEditImport
+              id={activeComponent.props.id}
+              setActiveComponent={setActiveComponent}
+              showAlert={showAlert}
+            />
+          ) : null;
 
         case "AdminViewImport":
           return checkPermission("View Import List") ? (
@@ -393,33 +405,60 @@ function AdminPage() {
             />
           ) : null;
 
-          case "AdminViewExport":
-            return checkPermission("View Export List") ? (
-              <AdminViewExport
-                id={activeComponent.props.id}
-                setActiveComponent={setActiveComponent}
-                showAlert={showAlert}
-              />
-            ) : null;
+        case "AdminViewExport":
+          return checkPermission("View Export List") ? (
+            <AdminViewExport
+              id={activeComponent.props.id}
+              setActiveComponent={setActiveComponent}
+              showAlert={showAlert}
+            />
+          ) : null;
 
-      default:
-        handleAccessDenied();
-        return null;
-    }
-  };
+        case "AdminPromotion":
+          return checkPermission("View Promotion List") ? (
+            <AdminPromotion
+              setActiveComponent={setActiveComponent}
+              showAlert={showAlert}
+            />
+          ) : null;
 
-  const handleAccessDenied = () => {
-    if (!open) {
-      // Chỉ mở Snackbar nếu nó chưa mở
-      setOpen(true);
-    }
-  };
+        case "AdminAddPromotion":
+          return checkPermission("Create Promotion") ? (
+            <AdminAddPromotion
+              setActiveComponent={setActiveComponent}
+              showAlert={showAlert}
+            />
+          ) : null;
 
-  const handleClose = (event, reason) => {
-    if (reason === "clickaway") {
-      return;
-    }
-    setOpen(false); // Đóng Snackbar
+          case "AdminViewPromotion":
+          return checkPermission("View Promotion List") ? (
+            <AdminViewPromotion
+              id={activeComponent.props.id}
+              setActiveComponent={setActiveComponent}
+              showAlert={showAlert}
+            />
+          ) : null;
+
+          case "AdminEditPromotion":
+          return checkPermission("Edit Promotion") ? (
+            <AdminEditPromotion
+              id={activeComponent.props.id}
+              setActiveComponent={setActiveComponent}
+              showAlert={showAlert}
+            />
+          ) : null;
+
+        default:
+          return null;
+      }
+    };
+
+    const component = renderComponent();
+    return component === null ? (
+      <NotAllowedPage setActiveComponent={setActiveComponent} />
+    ) : (
+      component
+    );
   };
 
   const checkPermission = (permissionName) => {
@@ -463,21 +502,6 @@ function AdminPage() {
           </Box>
         </Box>
       </Box>
-      {/* Snackbar thông báo */}
-      <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
-        <MuiAlert onClose={handleClose} severity="error" sx={{ width: "100%" }}>
-          <div style={{ display: "flex", alignItems: "center" }}>
-            <FaExclamationCircle style={{ marginRight: "8px" }} />{" "}
-            {/* Biểu tượng */}
-            <div>
-              <div style={{ fontWeight: "bold" }}>Access Denied</div>{" "}
-              {/* Tiêu đề */}
-              <div>You are not allowed to go there.</div>{" "}
-              {/* Dòng chữ bên dưới */}
-            </div>
-          </div>
-        </MuiAlert>
-      </Snackbar>
     </ThemeProvider>
   );
 }

@@ -9,8 +9,9 @@ import {
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { exportThunk } from "../../../../services/redux/thunks/thunk";
-
+import LoadingOverlay from "./overlay/LoadingOverlay";
 function AdminViewExport({ id }) {
+  const isLoading = useSelector((state) => state.export.isLoading);
     const dispatch = useDispatch();
     const selectedExport = useSelector((state) => state.export.selectedExport);
   const [formData, setFormData] = useState({
@@ -41,6 +42,9 @@ function AdminViewExport({ id }) {
 
   return (
     <Grid container justifyContent="center" alignItems="center">
+            {isLoading && (
+        <LoadingOverlay isLoading={isLoading} message="Please wait..." />
+      )}
       <Grid item xs={12} md={8}>
         <Card>
           <CardContent>

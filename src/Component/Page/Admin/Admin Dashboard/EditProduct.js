@@ -52,7 +52,6 @@ function AdminEditProduct({ id, setActiveComponent, showAlert }) {
   const [errors, setErrors] = useState({});
 
   useEffect(() => {
-    
     dispatch(productThunk.getProductById(id));
   }, [dispatch, id]);
 
@@ -88,8 +87,9 @@ function AdminEditProduct({ id, setActiveComponent, showAlert }) {
     if (!selectedManufacturer)
       tempErrors.selectedManufacturer = "Manufacturer is required";
     if (!selectedCategory) tempErrors.selectedCategory = "Category is required";
-     if (!mainFile) tempErrors.mainFile = "Main product image is required";
-  if (files.length === 0 && clonedImages.length === 0) tempErrors.additionalImages = "At least one additional image is required";
+    if (!mainFile) tempErrors.mainFile = "Main product image is required";
+    if (files.length === 0 && clonedImages.length === 0)
+      tempErrors.additionalImages = "At least one additional image is required";
     setErrors(tempErrors);
     return Object.keys(tempErrors).length === 0;
   };
@@ -160,7 +160,7 @@ function AdminEditProduct({ id, setActiveComponent, showAlert }) {
     files.forEach((file) => {
       formData.append("images", file);
     });
-
+console.log(formData)
     try {
       await dispatch(
         productThunk.updateProduct({ id: id, productData: formData })
@@ -187,24 +187,25 @@ function AdminEditProduct({ id, setActiveComponent, showAlert }) {
     });
   };
 
-
   if (isLoading) {
     return (
-      <Box sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
-        alignItems: 'center',
-        height: '100vh',
-        width: '100vw',
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        backgroundColor: 'black',
-        zIndex: 9999
-      }}>
-        <CircularProgress size={60} thickness={4}  sx={{ color: '#4CAF50' }}  />
-        <Typography variant="h6" sx={{ mt: 2, color: '#4CAF50' }}>
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+          width: "100vw",
+          position: "fixed",
+          top: 0,
+          left: 0,
+          backgroundColor: "black",
+          zIndex: 9999,
+        }}
+      >
+        <CircularProgress size={60} thickness={4} sx={{ color: "#4CAF50" }} />
+        <Typography variant="h6" sx={{ mt: 2, color: "#4CAF50" }}>
           PLEASE WAIT...
         </Typography>
       </Box>
@@ -379,7 +380,9 @@ function AdminEditProduct({ id, setActiveComponent, showAlert }) {
                   value={spec.specificationData}
                   onChange={(e) => {
                     const newSpecifications = [...product.specification];
-                    newSpecifications[index].specificationData = e.target.value;
+                    const updatedSpec = { ...newSpecifications[index] }; // Create a mutable copy
+                    updatedSpec.specificationData = e.target.value; // Update the field
+                    newSpecifications[index] = updatedSpec; // Replace the updated object in the array
                     setProduct({
                       ...product,
                       specification: newSpecifications,
@@ -465,6 +468,7 @@ function AdminEditProduct({ id, setActiveComponent, showAlert }) {
                 color="primary"
                 onClick={handleUpdate}
                 sx={{ marginTop: 2 }}
+                disabled={isLoading}
               >
                 Update Product
               </Button>
@@ -473,6 +477,7 @@ function AdminEditProduct({ id, setActiveComponent, showAlert }) {
                 color="secondary"
                 onClick={() => setActiveComponent({ name: "AdminProduct" })}
                 sx={{ marginTop: 2, marginLeft: 2 }}
+                disabled={isLoading}
               >
                 Return to AdminProduct
               </Button>

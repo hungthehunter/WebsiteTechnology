@@ -16,6 +16,8 @@ import promotionApi from "../../api/promotionApi.js";
 import purchaseHistoryApi from "../../api/purchasehistoryApi.js";
 import reviewApi from "../../api/reviewApi.js";
 import userApi from "../../api/userApi.js";
+
+
 export const accessThunk = {
     getAllAccess: createAsyncThunk("access/getAllAccess", async () => {
         const res = await accessApi.getAllAccess();
@@ -34,8 +36,8 @@ export const accessThunk = {
         return res;
     }),
     deleteAccess: createAsyncThunk("access/deleteAccess", async (id) => {
-        const res = await accessApi.deleteAccess(id);
-        return res;
+         await accessApi.deleteAccess(id);
+        return id;
     }),
 };
 
@@ -57,8 +59,8 @@ export const addressThunk = {
         return res;
     }),
     deleteAddress: createAsyncThunk("address/deleteAddress", async (id) => {
-        const res = await addressApi.deleteAddress(id);
-        return res;
+         await addressApi.deleteAddress(id);
+        return id;
     }),
 };
 
@@ -119,8 +121,8 @@ export const categoryThunk = {
         return res;
     }),
     deleteCategory: createAsyncThunk("category/deleteCategory", async (id) => {
-        const res = await categoryApi.deleteCategory(id);
-        return res;
+        await categoryApi.deleteCategory(id);
+        return id;
     }),
 };
 
@@ -142,8 +144,8 @@ export const decentralizationThunk = {
         return res;
     }),
     deleteDecentralization: createAsyncThunk("decentralization/deleteDecentralization", async (id) => {
-        const res = await decentralizationApi.deleteDecentralization(id);
-        return res;
+        await decentralizationApi.deleteDecentralization(id);
+        return id;
     }),
 };
 
@@ -173,7 +175,7 @@ export const invoiceThunk = {
     }),
     deleteInvoice: createAsyncThunk("invoice/deleteInvoice", async (id) => {
         const res = await invoiceApi.deleteInvoice(id);
-        return res;
+        return id;
     }),
 };
 
@@ -196,7 +198,7 @@ export const manufacturerThunk = {
     }),
     deleteManufacturer: createAsyncThunk("manufacturer/deleteManufacturer", async (id) => {
         const res = await manufacturerApi.deleteManufacturer(id);
-        return res;
+        return id;
     }),
 };
 
@@ -219,7 +221,7 @@ export const orderThunk = {
     }),
     deleteOrder: createAsyncThunk("order/deleteOrder", async (id) => {
         const res = await orderApi.deleteOrder(id);
-        return res;
+        return id;
     }),
 };
 
@@ -241,8 +243,8 @@ export const paymentThunk = {
         return res;
     }),
     deletePayment: createAsyncThunk("payment/deletePayment", async (id) => {
-        const res = await paymentApi.deletePayment(id);
-        return res;
+         await paymentApi.deletePayment(id);
+        return id;
     }),
 };
 
@@ -268,8 +270,8 @@ export const productThunk = {
         return res;
     }),
     deleteProduct: createAsyncThunk("product/deleteProduct", async (id) => {
-        const res = await productApi.deleteProduct(id);
-        return res;
+         await productApi.deleteProduct(id);
+        return id;
     }),
 };
 
@@ -291,8 +293,8 @@ export const promotionThunk = {
         return res;
     }),
     deletePromotion: createAsyncThunk("promotion/deletePromotion", async (id) => {
-        const res = await promotionApi.deletePromotion(id);
-        return res;
+         await promotionApi.deletePromotion(id);
+        return id;
     }),
 };
 
@@ -314,14 +316,18 @@ export const purchaseHistoryThunk = {
         return res;
     }),
     deletePurchaseHistory: createAsyncThunk("purchaseHistory/deletePurchaseHistory", async (id) => {
-        const res = await purchaseHistoryApi.deletePurchaseHistory(id);
-        return res;
+         await purchaseHistoryApi.deletePurchaseHistory(id);
+        return id;
     }),
 };
 
 export const reviewThunk = {
     getAllReviews: createAsyncThunk("review/getAllReviews", async () => {
         const res = await reviewApi.getAllReviews();
+        return res;
+    }),
+    getAllReviewsByProductId: createAsyncThunk("review/getAllReviewsByProductId", async (id) => {
+        const res = await reviewApi.getAllReviewByProductId(id);
         return res;
     }),
     getReviewById: createAsyncThunk("review/getReviewById", async (id) => {
@@ -375,8 +381,8 @@ export const userThunk = {
         return res;
     }),
     deleteUser: createAsyncThunk("user/deleteUser", async (id) => {
-        const res = await userApi.deleteUser(id);
-        return res;
+         await userApi.deleteUser(id);
+        return id;
     }),
 };
 

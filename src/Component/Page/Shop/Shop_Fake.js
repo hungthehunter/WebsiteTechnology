@@ -4,6 +4,7 @@ import ReactPaginate from "react-paginate";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { cartThunk, productThunk } from "../../../services/redux/thunks/thunk";
+import { productValidation } from "../../../services/yup/Shop/ShopValidation";
 import "../Shop/Shop.scss";
 
 const Shop_Fake = ({ isGridView, searchItem, categoryFilters }) => {
@@ -23,6 +24,16 @@ const Shop_Fake = ({ isGridView, searchItem, categoryFilters }) => {
       });
     }
   }, [dispatch, listProduct.length]);
+
+    // Filter and validate products
+    const validProducts = listProduct.filter((product) => {
+      try {
+        productValidation.validateSync(product);
+        return true; // Product is valid
+      } catch (err) {
+        return false; // Product fails validation
+      }
+    });
 
   const handleAddToCart = useCallback(
     (product, userCurrentLogged) => {
@@ -82,7 +93,7 @@ const Shop_Fake = ({ isGridView, searchItem, categoryFilters }) => {
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
 
-  const filteredItems = listProduct.filter((item) => {
+  const filteredItems = validProducts.filter((item) => {
     const matchesSearch = item.productName.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesFilter = Object.entries(categoryFilters).some(([key, value]) => {
       if (value) {

@@ -8,7 +8,7 @@ import {
   Select,
   TextField,
 } from "@mui/material";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { promotionThunk } from "../../../../services/redux/thunks/thunk";
 
@@ -26,6 +26,8 @@ function AdminAddPromotion({ setActiveComponent, showAlert }) {
   const [selectedProducts, setSelectedProducts] = useState([]);
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [imageFile, setImageFile] = useState(null);
+
+  const [filterProducts, setFilterProducts] = useState(listProducts.filter((item) => !item.promotion || !item.promotion.id))
 
   const handleInputChange = (setter) => (e) => setter(e.target.value);
   const handleImageChange = (e) => setImageFile(e.target.files[0]);
@@ -61,6 +63,36 @@ function AdminAddPromotion({ setActiveComponent, showAlert }) {
       showAlert("Failed to add promotion.", "error");
     }
   };
+  
+  useEffect(() => {
+    filtProduct();
+  }, [selectedCategories])
+
+  const filtProduct = () => {
+    const available = listProducts.filter((item) => !item.promotion || !item.promotion.id);
+    let products = [...available];
+    let current = [...selectedProducts];
+
+    if (selectedCategories.length == 0) {
+      setFilterProducts(available);
+      return;
+    }
+
+    for (let categoryId of selectedCategories){
+      let category = listCategories.find((item) => item.id === categoryId);
+      if (!category || !category.products) continue;
+
+      category.products?.forEach((item) => {
+        products = products.filter((product) => product.id === item.id);
+        current = current.filter((productId) => productId === item.id);
+      })
+    }
+
+    setFilterProducts(products);
+    setSelectedProducts(current);
+  }
+
+  const filterCategories = listCategories.filter((item) => !item.promotion || !item.promotion.id);
 
   return (
     <Box sx={{ padding: 4 }}>
@@ -118,8 +150,8 @@ function AdminAddPromotion({ setActiveComponent, showAlert }) {
             multiple
           >
             <MenuItem value={null}>None</MenuItem>
-            {listProducts.length > 0 ? (
-              listProducts.map((product) => (
+            {filterProducts.length > 0 ? (
+              filterProducts.map((product) => (
                 <MenuItem key={product.id} value={product.id}>
                   {product.productName}
                 </MenuItem>
@@ -139,8 +171,8 @@ function AdminAddPromotion({ setActiveComponent, showAlert }) {
             multiple
           >
             <MenuItem value={null}>None</MenuItem>
-            {listCategories.length > 0 ? (
-              listCategories.map((category) => (
+            {filterCategories.length > 0 ? (
+              filterCategories.map((category) => (
                 <MenuItem key={category.id} value={category.id}>
                   {category.name}
                 </MenuItem>

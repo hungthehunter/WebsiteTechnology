@@ -31,8 +31,11 @@ function AdminEditPromotion({ id, setActiveComponent, showAlert }) {
     (state) => state.promotion.selectedPromotion
   );
 
-  const products = useSelector((state) => state.product.listProduct);
-  const categories = useSelector((state) => state.category.listCategory);
+  const listProducts = useSelector((state) => state.product.listProduct);
+  const listCategories = useSelector((state) => state.category.listCategory);
+
+  const [filterProducts, setFilterProducts] = useState(listProducts.filter((item) => !item.promotion || !item.promotion.id))
+  const [filterCategories, setFilterCategories] = useState(null);
 
   useEffect(() => {
     dispatch(promotionThunk.getPromotionById(id));
@@ -100,6 +103,42 @@ function AdminEditPromotion({ id, setActiveComponent, showAlert }) {
       showAlert("Failed to update promotion.", "error");
     }
   };
+
+  useEffect(() => {
+    filtProduct();
+  }, [selectedCategories])
+
+  const filtProduct = () => {
+    const available = listProducts.filter((item) => !item.promotion || !item.promotion.id);
+    let products = [...available];
+    let current = [...selectedProducts];
+
+    if (selectedCategories.length == 0) {
+      setFilterProducts(available);
+      return;
+    }
+
+    for (let categoryId of selectedCategories){
+      let category = listCategories.find((item) => item.id === categoryId);
+      if (!category || !category.products) continue;
+
+      category.products?.forEach((item) => {
+        products = products.filter((product) => product.id === item.id);
+        current = current.filter((productId) => productId === item.id);
+      })
+    }
+
+    setFilterProducts(products);
+    setSelectedProducts(current);
+  }
+
+  useEffect(() => {
+    if (selectedCategories.length == 0) return;
+    if (filterCategories != null) return;
+    setFilterCategories(listCategories.filter((item) => {
+      return (!item.promotion || !item.promotion.id) || selectedCategories.find((id) => item.id === id) !== undefined;
+    }))
+  }, [selectedCategories])
 
   return (
     <Box sx={{ padding: 4 }}>
@@ -201,13 +240,13 @@ function AdminEditPromotion({ id, setActiveComponent, showAlert }) {
             value={selectedProducts}
             onChange={handleProductChange}
             renderValue={(selected) =>
-              products
+              filterProducts
                 ?.filter((product) => selected?.includes(product.id))
                 .map((product) => product?.productName)
                 .join(", ")
             }
           >
-            {products?.map((product) => (
+            {filterProducts?.map((product) => (
               <MenuItem key={product.id} value={product.id}>
                 {product.productName}
               </MenuItem>
@@ -224,13 +263,13 @@ function AdminEditPromotion({ id, setActiveComponent, showAlert }) {
             value={selectedCategories}
             onChange={handleCategoryChange}
             renderValue={(selected) =>
-              categories
+              filterCategories
                 ?.filter((category) => selected?.includes(category.id))
                 .map((category) => category?.name)
                 .join(", ")
             }
           >
-            {categories?.map((category) => (
+            {filterCategories?.map((category) => (
               <MenuItem key={category.id} value={category.id}>
                 {category.name}
               </MenuItem>

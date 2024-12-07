@@ -14,11 +14,16 @@ export const accountDetailValidation = Yup.object().shape({
     .required("Email is required"),
 
   password: Yup.string()
+    .notRequired()
     .min(5, "Password must be at least 5 characters")
     .max(30, "Password must be 30 characters or less"),
 
   confirmPassword: Yup.string()
-    .oneOf([Yup.ref("password"), null], "Passwords must match"),
+    .notRequired()
+    .test("passwords-match", "Passwords must match", function (value) {
+      const { password } = this.parent;
+      return !value || value === password;
+    }),
 
   mobile: Yup.string()
     .matches(phoneNumberRegex, "Phone number must be 10 digits")

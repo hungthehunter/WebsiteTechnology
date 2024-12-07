@@ -1,6 +1,8 @@
+import SearchIcon from "@mui/icons-material/Search";
 import {
   Box,
   Button,
+  InputAdornment,
   MenuItem,
   Paper,
   Popover,
@@ -10,7 +12,8 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Typography
+  TextField,
+  Typography,
 } from "@mui/material";
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -20,6 +23,7 @@ import "./assets/css/style.scss";
 
 function AdminCustomer({ setActiveComponent, showAlert }) {
   const [sortBy, setSortBy] = useState(""); // State for sorting
+  const [searchQuery, setSearchQuery] = useState(""); // State for search
   const [anchorEl, setAnchorEl] = useState(null); // State for Popover
   const dispatch = useDispatch();
   const listUser = useSelector((state) => state.user.listUser);
@@ -27,11 +31,11 @@ function AdminCustomer({ setActiveComponent, showAlert }) {
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
   };
-  
-  const handleView = (user) =>{
+
+  const handleView = (user) => {
     dispatch(selectedUserId(user));
     setActiveComponent({ name: "AdminViewCustomer", props: { id: user } });
-  }
+  };
 
   const handleClose = () => {
     setAnchorEl(null);
@@ -44,10 +48,16 @@ function AdminCustomer({ setActiveComponent, showAlert }) {
     setSortBy(value);
   };
 
-  const filteredUsers =
-  sortBy && sortBy !== ""
-    ? listUser.filter((user) => user.role === sortBy)
-    : listUser;
+  const handleSearchChange = (event) => {
+    setSearchQuery(event.target.value);
+  };
+
+  // Filter users based on search query and sort criteria
+  const filteredUsers = listUser.filter((user) => {
+    const matchesSearch = user.fullname.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSort = sortBy ? user.role === sortBy : true;
+    return matchesSearch && matchesSort;
+  });
 
   const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this user?")) {
@@ -83,10 +93,39 @@ function AdminCustomer({ setActiveComponent, showAlert }) {
             Recent Customers
           </Typography>
           <Box sx={{ display: "flex", alignItems: "center" }}>
+            {/* Search Field */}
+            <TextField
+              placeholder="Search by name"
+              variant="outlined"
+              value={searchQuery}
+              onChange={handleSearchChange}
+              fullWidth
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon sx={{ fontSize: "1.8rem", color: "#757575" }} />
+                  </InputAdornment>
+                ),
+              }}
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: "30px",
+                  paddingRight: "10px",
+                },
+                "& .MuiOutlinedInput-input": {
+                  padding: "12px 10px 12px 0",
+                  fontSize: "1rem",
+                },
+                "& .MuiInputBase-input::placeholder": {
+                  fontSize: "1rem",
+                },
+              }}
+            />
             <Button
               variant="contained"
               color="primary"
               onClick={() => setActiveComponent({ name: "AdminAddCustomer" })}
+              sx={{ marginLeft: 2 }}
             >
               + Add New Customer
             </Button>
@@ -120,6 +159,8 @@ function AdminCustomer({ setActiveComponent, showAlert }) {
             </Popover>
           </Box>
         </Box>
+
+        {/* Table */}
         <TableContainer component={Paper}>
           <Table>
             <TableHead>
@@ -143,24 +184,13 @@ function AdminCustomer({ setActiveComponent, showAlert }) {
                     <span className={`status ${user.role.toLowerCase()}`}>{user.role}</span>
                   </TableCell>
                   <TableCell style={{ textAlign: "end", fontSize: "1.3rem" }}>
-                    <Button
-                      variant="outlined"
-                      // onClick={() => setActiveComponent({ name: "AdminViewCustomer", props: { id: user.id }  })}
-                      onClick={()=> handleView(user.id)}
-                   > 
+                    <Button variant="outlined" onClick={() => handleView(user.id)}>
                       View
                     </Button>
-                    <Button
-                      variant="outlined"
-                      onClick={() => setActiveComponent({ name: "AdminEditCustomer", props: { id: user.id } })}
-                    >
+                    <Button variant="outlined" onClick={() => setActiveComponent({ name: "AdminEditCustomer", props: { id: user.id } })}>
                       Edit
                     </Button>
-                    <Button
-                      variant="outlined"
-                      color="error"
-                      onClick={() => handleDelete(user.id)}
-                    >
+                    <Button variant="outlined" color="error" onClick={() => handleDelete(user.id)}>
                       Delete
                     </Button>
                   </TableCell>
@@ -169,6 +199,8 @@ function AdminCustomer({ setActiveComponent, showAlert }) {
             </TableBody>
           </Table>
         </TableContainer>
+
+        {/* Styles */}
         <style jsx>{`
           .status {
             padding: 4px 8px;

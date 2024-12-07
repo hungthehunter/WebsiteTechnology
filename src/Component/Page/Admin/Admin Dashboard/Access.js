@@ -1,5 +1,7 @@
+import SearchIcon from "@mui/icons-material/Search";
 import {
   Button,
+  InputAdornment,
   Paper,
   Table,
   TableBody,
@@ -7,6 +9,7 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  TextField,
   Typography,
 } from "@mui/material";
 import Box from "@mui/material/Box";
@@ -14,55 +17,37 @@ import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { accessThunk } from "../../../../services/redux/thunks/thunk";
 import "./assets/css/style.scss";
+
 function AdminAccess({ setActiveComponent, showAlert }) {
   const isLoading = useSelector((state) => state.access.isLoading);
   const listFunction = useSelector((state) => state.function.listFunction);
   const listAccess = useSelector((state) => state.access.listAccess);
-  const listDecentralization = useSelector((state) => state.decentralization.listDecentralization);
-  const listUser = useSelector((state) => state.user.listUser);
   const dispatch = useDispatch();
   const [showAccessTable, setShowAccessTable] = useState(true);
 
-  // Hàm kiểm tra tồn tại Role
-  const checkRoleNameExists = (roleName) => {
-    return listUser?.some(
-      (user) =>
-        user?.decentralization?.access?.roleName?.toLowerCase() ===
-        roleName.toLowerCase()
-    );
-  };
+  const [searchAccess, setSearchAccess] = useState(""); // Tìm kiếm Access
+  const [searchFunction, setSearchFunction] = useState(""); // Tìm kiếm Function
 
-  // Tải lại danh sách access sau khi xóa
-  const loadAccessList = async () => {
-    try {
-      await dispatch(accessThunk.getAllAccess());
-    } catch (error) {
-      console.log("Failed to load access list:", error);
-      showAlert("Failed to load access list", "error");
-    }
-  };
+  // Lọc danh sách Access hoặc Function dựa trên tìm kiếm
+  const filteredAccess = listAccess.filter((access) =>
+    access.roleName.toLowerCase().includes(searchAccess.toLowerCase())
+  );
 
-  // Xóa access theo id và tải lại dữ liệu
-  const deleteAccess = async (roleName, id) => {
-    if (checkRoleNameExists(roleName)) {
-      alert(
-        "Please delete or update the user Role before continuing this action"
-      );
-      setActiveComponent({ name: "AdminStaff" });
-    } else {
+  const filteredFunctions = listFunction.filter((functionItem) =>
+    functionItem.functionName.toLowerCase().includes(searchFunction.toLowerCase())
+  );
+
+  useEffect(() => {
+    const loadAccessList = async () => {
       try {
-        await dispatch(accessThunk.deleteAccess(id));
-        await loadAccessList();
-        showAlert("Delete access successfully", "success");
+        await dispatch(accessThunk.getAllAccess());
       } catch (error) {
-        showAlert("Failed to delete access", "error");
+        console.log("Failed to load access list:", error);
+        showAlert("Failed to load access list", "error");
       }
-    }
-  };
-
-  useEffect(()=>{
-  loadAccessList()
-  },[dispatch])
+    };
+    loadAccessList();
+  }, [dispatch]);
 
   const toggleTable = () => {
     setShowAccessTable((prev) => !prev);
@@ -95,7 +80,39 @@ function AdminAccess({ setActiveComponent, showAlert }) {
           <Typography variant="h4" gutterBottom sx={{ fontSize: "2.5rem" }}>
             Recent Access
           </Typography>
-          <Box sx={{ display: "flex", gap: 1 }}>
+          <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+            <TextField
+              placeholder={`Search ${showAccessTable ? "Access" : "Function"} by Name`}
+              variant="outlined"
+              value={showAccessTable ? searchAccess : searchFunction}
+              onChange={(e) =>
+                showAccessTable
+                  ? setSearchAccess(e.target.value)
+                  : setSearchFunction(e.target.value)
+              }
+              size="small"
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon />
+                  </InputAdornment>
+                ),
+              }}
+              sx={{
+                width: "300px",
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: "30px",
+                  paddingRight: "10px",
+                },
+                "& .MuiOutlinedInput-input": {
+                  padding: "12px 10px 12px 0",
+                  fontSize: "1rem",
+                },
+                "& .MuiInputBase-input::placeholder": {
+                  fontSize: "1rem",
+                },
+              }}
+            />
             <Button
               variant="contained"
               color="primary"
@@ -108,39 +125,7 @@ function AdminAccess({ setActiveComponent, showAlert }) {
             </Button>
           </Box>
         </Box>
-        {/* Dữ liệu bảng */}
         {showAccessTable ? (
-          <TableContainer component={Paper}>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell style={{ textAlign: "start", fontSize: "1.5rem" }}>
-                    Id
-                  </TableCell>
-                  <TableCell style={{ textAlign: "start", fontSize: "1.5rem" }}>
-                    Name
-                  </TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {listFunction.map((functionItem, index) => (
-                  <TableRow key={index}>
-                    <TableCell
-                      style={{ textAlign: "start", fontSize: "1.3rem" }}
-                    >
-                      {functionItem.id}
-                    </TableCell>
-                    <TableCell
-                      style={{ textAlign: "start", fontSize: "1.3rem" }}
-                    >
-                      {functionItem.functionName}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        ) : (
           <TableContainer component={Paper}>
             <Table>
               <TableHead>
@@ -157,7 +142,7 @@ function AdminAccess({ setActiveComponent, showAlert }) {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {listAccess.map((access, index) => (
+                {filteredAccess.map((access, index) => (
                   <TableRow key={index}>
                     <TableCell
                       style={{ textAlign: "start", fontSize: "1.3rem" }}
@@ -169,7 +154,6 @@ function AdminAccess({ setActiveComponent, showAlert }) {
                     >
                       {access.roleName}
                     </TableCell>
-
                     <TableCell style={{ textAlign: "end", fontSize: "1.3rem" }}>
                       <Button
                         variant="outlined"
@@ -179,18 +163,49 @@ function AdminAccess({ setActiveComponent, showAlert }) {
                             props: { id: access.id },
                           })
                         }
-                        disabled = {isLoading}
+                        disabled={isLoading}
                       >
                         Edit
                       </Button>
                       <Button
                         variant="outlined"
                         color="error"
-                        onClick={() => deleteAccess(access.roleName, access.id)}
-                        disabled = {isLoading}
+                        onClick={() => console.log("Delete access logic")}
+                        disabled={isLoading}
                       >
                         Delete
                       </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        ) : (
+          <TableContainer component={Paper}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell style={{ textAlign: "start", fontSize: "1.5rem" }}>
+                    Id
+                  </TableCell>
+                  <TableCell style={{ textAlign: "start", fontSize: "1.5rem" }}>
+                    Name
+                  </TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {filteredFunctions.map((functionItem, index) => (
+                  <TableRow key={index}>
+                    <TableCell
+                      style={{ textAlign: "start", fontSize: "1.3rem" }}
+                    >
+                      {functionItem.id}
+                    </TableCell>
+                    <TableCell
+                      style={{ textAlign: "start", fontSize: "1.3rem" }}
+                    >
+                      {functionItem.functionName}
                     </TableCell>
                   </TableRow>
                 ))}

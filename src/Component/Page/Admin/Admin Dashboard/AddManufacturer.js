@@ -6,11 +6,12 @@ import {
   InputLabel,
   MenuItem,
   Select,
-  TextField
+  TextField,
 } from "@mui/material";
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { manufacturerThunk } from "../../../../services/redux/thunks/thunk";
+import { addManufacturerValidationSchema } from "../../../../services/yup/Admin/Manufacturer/addManufacturerValidation";
 import "./assets/css/style.scss";
 
 function AdminAddManufacturer({ setActiveComponent, showAlert }) {
@@ -26,7 +27,7 @@ function AdminAddManufacturer({ setActiveComponent, showAlert }) {
   const [address, setAddress] = useState("");
   const [createdAt, setCreatedAt] = useState(null);
   const [updatedAt, setUpdatedAt] = useState(null);
-
+  const [errors, setErrors] = useState({});
   const listProduct = useSelector((state) => state.product.listProduct);
   const dispatch = useDispatch();
 
@@ -35,9 +36,7 @@ function AdminAddManufacturer({ setActiveComponent, showAlert }) {
   const handleInputChange = (setter) => (e) => setter(e.target.value);
 
   const handleAdd = async () => {
-    const formData = new FormData();
-
-    const manufacturerDTO = {
+    const dataToValidate = {
       name,
       country,
       website,
@@ -45,29 +44,63 @@ function AdminAddManufacturer({ setActiveComponent, showAlert }) {
       email,
       phone,
       address,
-      createdAt: createdAt ? createdAt.toISOString() : null,
-      updatedAt: updatedAt ? updatedAt.toISOString() : null,
-      products: selectedProduct.map(id => ({ id })),
+      imageFile,
+      selectedProduct,
     };
 
-    formData.append(
-      "manufacturer",
-      new Blob([JSON.stringify(manufacturerDTO)], { type: "application/json" })
-    );
-
-    if (imageFile) {
-      formData.append("file", imageFile);
-    }
-
     try {
+      // Validate using Yup
+      await addManufacturerValidationSchema.validate(dataToValidate, {
+        abortEarly: false,
+      });
+      setErrors({}); // Clear errors if validation is successful
+
+      const formData = new FormData();
+
+      const manufacturerDTO = {
+        name,
+        country,
+        website,
+        description,
+        email,
+        phone,
+        address,
+        createdAt: createdAt ? createdAt.toISOString().substring(0, 10) : null,
+        updatedAt: updatedAt ? updatedAt.toISOString().substring(0, 10) : null,
+        products: selectedProduct.map((id) => ({ id })),
+      };
+
+      formData.append(
+        "manufacturer",
+        new Blob([JSON.stringify(manufacturerDTO)], {
+          type: "application/json",
+        })
+      );
+
+      if (imageFile) {
+        formData.append("file", imageFile);
+      }
+
       await dispatch(manufacturerThunk.createManufacturer(formData));
       showAlert("Add new manufacturer successfully", "success");
       setActiveComponent({ name: "AdminManufacturer" });
     } catch (error) {
-      console.error("Error adding manufacturer:", error);
-      showAlert("Failed to add manufacturer.", "error");
+      if (error.name === "ValidationError") {
+        const validationErrors = {};
+        error.inner.forEach((err) => {
+          validationErrors[err.path] = err.message;
+        });
+        setErrors(validationErrors); // Update errors state
+      } else {
+        console.error("Error adding manufacturer:", error);
+        showAlert("Failed to add manufacturer.", "error");
+      }
     }
   };
+
+  const filterProducts = listProduct.filter(
+    (item) => !item.manufacturer || !item.manufacturer.id
+  );
 
   return (
     <Box sx={{ padding: 4 }}>
@@ -83,8 +116,8 @@ function AdminAddManufacturer({ setActiveComponent, showAlert }) {
             multiple
           >
             <MenuItem value={null}>None</MenuItem>
-            {listProduct.length > 0 ? (
-              listProduct.map((product) => (
+            {filterProducts.length > 0 ? (
+              filterProducts.map((product) => (
                 <MenuItem key={product.id} value={product.id}>
                   {product.productName}
                 </MenuItem>
@@ -146,22 +179,24 @@ function AdminAddManufacturer({ setActiveComponent, showAlert }) {
           value={address}
           onChange={handleInputChange(setAddress)}
         />
+
         <TextField
           fullWidth
           margin="normal"
-          type="datetime-local"
+          type="date"
           label="Created At"
           InputLabelProps={{ shrink: true }}
-          value={createdAt ? createdAt.toISOString().substring(0, 16) : ""}
+          value={createdAt ? createdAt.toISOString().substring(0, 10) : ""}
           onChange={(e) => setCreatedAt(new Date(e.target.value))}
         />
+
         <TextField
           fullWidth
           margin="normal"
-          type="datetime-local"
+          type="date"
           label="Updated At"
           InputLabelProps={{ shrink: true }}
-          value={updatedAt ? updatedAt.toISOString().substring(0, 16) : ""}
+          value={updatedAt ? updatedAt.toISOString().substring(0, 10) : ""}
           onChange={(e) => setUpdatedAt(new Date(e.target.value))}
         />
 
@@ -175,9 +210,7 @@ function AdminAddManufacturer({ setActiveComponent, showAlert }) {
           InputProps={{
             endAdornment: (
               <InputAdornment position="end">
-                <Button variant="contained" component="span"
-                 disabled = {isLoading}
-                >
+                <Button variant="contained" component="span" disabled={isLoading}>
                   Upload
                 </Button>
               </InputAdornment>
@@ -190,7 +223,7 @@ function AdminAddManufacturer({ setActiveComponent, showAlert }) {
           variant="contained"
           color="primary"
           onClick={handleAdd}
-          disabled = {isLoading}
+          disabled={isLoading}
         >
           Add Manufacturer
         </Button>

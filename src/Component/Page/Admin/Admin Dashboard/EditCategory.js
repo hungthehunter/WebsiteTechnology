@@ -112,6 +112,8 @@ function AdminEditCategory({ id, setActiveComponent, showAlert }) {
     }
   };
 
+  const filterProducts = listProduct.filter((item) => (item.category && selectedCategory) && (!item.category.id || item.category.id == selectedCategory.id))
+
   if (isLoading) {
     return (
       <Box
@@ -169,8 +171,8 @@ function AdminEditCategory({ id, setActiveComponent, showAlert }) {
               multiple
             >
               <MenuItem value={null}>None</MenuItem>
-              {listProduct.length > 0 ? (
-                listProduct.map((product) => (
+              {filterProducts.length > 0 ? (
+                filterProducts.map((product) => (
                   <MenuItem key={product.id} value={product.id}>
                     {product.productName}
                   </MenuItem>

@@ -4,7 +4,7 @@ import {
   Container,
   Paper,
   TextField,
-  Typography
+  Typography,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import React, { useEffect, useState } from "react";
@@ -15,44 +15,13 @@ import { clearUserLoggedIn } from "../../../services/redux/slices/userSlice";
 import { userThunk } from "../../../services/redux/thunks/thunk";
 import { accountDetailValidation } from "../../../services/yup/AccountDetailValidation";
 
-// Styled components
-const StyledContainer = styled(Paper)({
-  borderRadius: "8px",
-  boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
-  overflow: "hidden",
-  marginTop: "24px",
-});
-
-const HeaderBox = styled(Box)({
-  padding: "16px 24px",
-  backgroundColor: "#f5f5f5",
-  borderBottom: "1px solid #e0e0e0",
-});
-
-const Title = styled(Typography)({
-  fontSize: "20px",
-  fontWeight: "bold",
-  color: "#3f51b5",
-});
-
-const ContentBox = styled(Box)({
-  padding: "24px",
-});
-
-const StyledFormBox = styled(Box)({
-  "& .MuiTextField-root": { marginBottom: "24px" },
-});
-
-const SaveButton = styled(Button)({
-  textAlign: "center",
-});
-
 const AccountDetail = () => {
-  const userCurrentLogged = useSelector((state) => state.user.userCurrentLogged);
+  const userCurrentLogged = useSelector(
+    (state) => state.user.userCurrentLogged
+  );
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  // State for form fields and errors
   const [formData, setFormData] = useState({
     fullname: "",
     email: "",
@@ -64,6 +33,7 @@ const AccountDetail = () => {
 
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
+  const [showPasswordFields, setShowPasswordFields] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -83,23 +53,29 @@ const AccountDetail = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     try {
-      // Validate the form using Yup
       await accountDetailValidation.validate(formData, { abortEarly: false });
 
-      // Proceed with submitting the form data
       const { fullname, email, password, mobile, dateofbirth } = formData;
-      const updatedData = { fullname, email, password, mobile, dateofbirth };
+      const updatedData = {
+        fullname,
+        email,
+        mobile,
+        dateofbirth,
+        ...(showPasswordFields && { password }),
+      };
 
-      await dispatch(userThunk.updateUserInfo({ id: userCurrentLogged.id, userData: updatedData }));
-
+      await dispatch(
+        userThunk.updateUserInfo({
+          id: userCurrentLogged.id,
+          userData: updatedData,
+        })
+      );
       await dispatch(clearUserLoggedIn());
       toast.success("Update successfully, please log in again");
       navigate("/websiteDoAn/Login");
     } catch (error) {
       if (error.name === "ValidationError") {
-        // Handle validation errors
         const validationErrors = error.inner.reduce((acc, curr) => {
           acc[curr.path] = curr.message;
           return acc;
@@ -167,28 +143,55 @@ const AccountDetail = () => {
                 error={touched.mobile && Boolean(errors.mobile)}
                 helperText={touched.mobile && errors.mobile}
               />
-              <TextField
-                fullWidth
-                label="Password"
-                type="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                error={touched.password && Boolean(errors.password)}
-                helperText={touched.password && errors.password}
-              />
-              <TextField
-                fullWidth
-                label="Confirm Password"
-                type="password"
-                name="confirmPassword"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                error={touched.confirmPassword && Boolean(errors.confirmPassword)}
-                helperText={touched.confirmPassword && errors.confirmPassword}
-              />
+              <Button
+                variant="outlined"
+                onClick={() => setShowPasswordFields((prev) => !prev)}
+                sx={{ marginBottom: "16px" }}
+              >
+                {showPasswordFields
+                  ? "Cancel Password Change"
+                  : "Change Password"}
+              </Button>
+              <Typography
+                variant="body2"
+                color="textSecondary"
+                sx={{ marginBottom: "16px" }}
+              >
+                Please re-enter your password to confirm when updating your
+                information.
+              </Typography>
+              {showPasswordFields && (
+                <>
+                  <TextField
+                    fullWidth
+                    label="Password"
+                    type="password"
+                    name="password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    error={touched.password && Boolean(errors.password)}
+                    helperText={
+                      errors.password ||
+                      "Enter new password if you wish to change it."
+                    }
+                  />
+                  <TextField
+                    fullWidth
+                    label="Confirm Password"
+                    type="password"
+                    name="confirmPassword"
+                    value={formData.confirmPassword}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    error={
+                      touched.confirmPassword && Boolean(errors.confirmPassword)
+                    }
+                    helperText={errors.confirmPassword}
+                  />
+                </>
+              )}
+
               <TextField
                 fullWidth
                 label="Date of Birth"
@@ -198,7 +201,7 @@ const AccountDetail = () => {
                 onChange={handleChange}
                 onBlur={handleBlur}
                 error={touched.dateofbirth && Boolean(errors.dateofbirth)}
-                helperText={touched.dateofbirth && errors.dateofbirth}
+                helperText={errors.dateofbirth}
                 InputLabelProps={{
                   shrink: true,
                 }}
@@ -206,7 +209,7 @@ const AccountDetail = () => {
             </StyledFormBox>
             <Box textAlign="center">
               <SaveButton type="submit" variant="contained" size="large">
-                Save change
+                Save Changes
               </SaveButton>
             </Box>
           </form>
@@ -217,3 +220,35 @@ const AccountDetail = () => {
 };
 
 export default AccountDetail;
+
+// Styled Components
+const StyledContainer = styled(Paper)({
+  borderRadius: "8px",
+  boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+  overflow: "hidden",
+  marginTop: "24px",
+});
+
+const HeaderBox = styled(Box)({
+  padding: "16px 24px",
+  backgroundColor: "#f5f5f5",
+  borderBottom: "1px solid #e0e0e0",
+});
+
+const Title = styled(Typography)({
+  fontSize: "20px",
+  fontWeight: "bold",
+  color: "#3f51b5",
+});
+
+const ContentBox = styled(Box)({
+  padding: "24px",
+});
+
+const StyledFormBox = styled(Box)({
+  "& .MuiTextField-root": { marginBottom: "24px" },
+});
+
+const SaveButton = styled(Button)({
+  textAlign: "center",
+});

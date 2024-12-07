@@ -23,7 +23,6 @@ import { addressThunk } from "../../../services/redux/thunks/thunk";
 import { accountAddAddressValidation, accountEditAddressValidation } from "../../../services/yup/AccountAddressValidation";
 import LoadingOverlay from "../Admin/Admin Dashboard/overlay/LoadingOverlay";
 
-
 const StyledTableContainer = styled(TableContainer)({
   margin: "20px",
   borderRadius: "8px",
@@ -63,10 +62,12 @@ const StyledActionButton = styled(Button)({
 });
 
 const AccountAddress = () => {
-  const isLoading = useSelector((state) => state.address.isLoading)
-  const [errors, setErrors] = useState({}); // State để lưu trữ lỗi validation
+  const isLoading = useSelector((state) => state.address.isLoading);
+  const [errors, setErrors] = useState({});
   const [openAdd, setOpenAdd] = useState(false);
   const [openEdit, setOpenEdit] = useState(false);
+  const [openConfirmDelete, setOpenConfirmDelete] = useState(false); // State mở hộp thoại xác nhận xóa
+  const [deleteId, setDeleteId] = useState(null); // ID địa chỉ cần xóa
   const [editAddress, setEditAddress] = useState(null);
   const [newAddress, setNewAddress] = useState({
     houseNumber: "",
@@ -80,9 +81,7 @@ const AccountAddress = () => {
   });
 
   const dispatch = useDispatch();
-  const userCurrentLogged = useSelector(
-    (state) => state.user.userCurrentLogged
-  );
+  const userCurrentLogged = useSelector((state) => state.user.userCurrentLogged);
   const listAddress = useSelector((state) =>
     state?.address?.listAddress?.filter(
       (addr) => addr.user?.id === userCurrentLogged?.id && addr?.status
@@ -106,16 +105,16 @@ const AccountAddress = () => {
   const handleAddAddress = async () => {
     try {
       setErrors({}); // Reset previous errors
-  
+
       // Check if the user already has 5 active addresses
       if (listAddress.length >= 5) {
         toast.error("You can only have a maximum of 5 active addresses.");
         return;
       }
-  
+
       // Validate the new address data
       await accountAddAddressValidation.validate(newAddress, { abortEarly: false });
-  
+
       // Check for duplicate address
       const isDuplicate = listAddress.some(
         (address) =>
@@ -125,13 +124,13 @@ const AccountAddress = () => {
           address.district === newAddress.district &&
           address.country === newAddress.country
       );
-  
+
       if (isDuplicate) {
         toast.error("This address already exists.");
         setOpenAdd(false); // Close the dialog if duplicate
         return;
       }
-  
+
       // Add the new address
       await dispatch(addressThunk.createAddress(newAddress)).unwrap();
       dispatch(addressThunk.getAllAddresses());
@@ -148,8 +147,7 @@ const AccountAddress = () => {
       }
     }
   };
-  
-  
+
   const handleEditAddress = async () => {
     console.log(editAddress.id);
     try {
@@ -193,49 +191,48 @@ const AccountAddress = () => {
         toast.error(error.message); // Display other types of error (like missing id)
       }
     }
-};
+  };
 
-  
   const handleDelete = async (id) => {
     try {
       await dispatch(addressThunk.deleteAddress(id));
-      dispatch(addressThunk.getAllAddresses());
+      // dispatch(addressThunk.getAllAddresses());
       toast.success("Address deleted successfully");
     } catch (error) {
       console.error("Failed to delete address:", error);
+      toast.error("Failed to delete address. Please try again.");
     }
+  };
+
+  const handleOpenDeleteDialog = (id) => {
+    setDeleteId(id); // Lưu lại ID của địa chỉ cần xóa
+    setOpenConfirmDelete(true); // Mở hộp thoại xác nhận xóa
+  };
+
+  const handleConfirmDelete = () => {
+    if (deleteId) {
+      handleDelete(deleteId);
+    }
+    setOpenConfirmDelete(false); // Đóng hộp thoại sau khi xác nhận
   };
 
   return (
     <StyledTableContainer component={Paper}>
-            {isLoading && (
-        <LoadingOverlay isLoading={isLoading} message="Please wait..." />
-      )}
+      {isLoading && <LoadingOverlay isLoading={isLoading} message="Please wait..." />}
       <StyledHeader>
         <StyledTitle variant="h4">Address Details</StyledTitle>
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={() => setOpenAdd(true)}
-        >
+        <Button variant="contained" color="primary" onClick={() => setOpenAdd(true)}>
           + Add New Address
         </Button>
       </StyledHeader>
       <Table>
         <TableHead>
           <TableRow>
-            {[
-              "Id",
-              "Street",
-              "House Number",
-              "Ward",
-              "District",
-              "City",
-              "Country",
-              "Action",
-            ].map((header) => (
-              <TableCell key={header}>{header}</TableCell>
-            ))}
+            {["Id", "Street", "House Number", "Ward", "District", "City", "Country", "Action"].map(
+              (header) => (
+                <TableCell key={header}>{header}</TableCell>
+              )
+            )}
           </TableRow>
         </TableHead>
         <TableBody>
@@ -254,7 +251,7 @@ const AccountAddress = () => {
                     variant="outlined"
                     color="primary"
                     onClick={() => {
-                      setEditAddress(address); 
+                      setEditAddress(address);
                       setOpenEdit(true);
                     }}
                   >
@@ -263,7 +260,7 @@ const AccountAddress = () => {
                   <StyledActionButton
                     variant="outlined"
                     color="error"
-                    onClick={() => handleDelete(address.id)}
+                    onClick={() => handleOpenDeleteDialog(address.id)}
                   >
                     Delete
                   </StyledActionButton>
@@ -280,25 +277,39 @@ const AccountAddress = () => {
         </TableBody>
       </Table>
 
+      {/* Confirm Delete Dialog */}
+      <Dialog open={openConfirmDelete} onClose={() => setOpenConfirmDelete(false)}>
+        <DialogTitle>Confirm Delete</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Are you sure you want to delete this address? This action cannot be undone.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenConfirmDelete(false)}>Cancel</Button>
+          <Button color="error" onClick={handleConfirmDelete}>
+            Confirm
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       {/* Add Address Dialog */}
       <Dialog open={openAdd} onClose={() => setOpenAdd(false)}>
         <DialogTitle>Add New Address</DialogTitle>
         <DialogContent>
-          {["houseNumber", "street", "ward", "district", "city", "country"].map(
-            (field) => (
-              <TextField
-                key={field}
-                name={field}
-                label={field.charAt(0).toUpperCase() + field.slice(1)}
-                fullWidth
-                margin="dense"
-                value={newAddress[field]}
-                onChange={(e) => handleInputChange(e, setNewAddress)}
-                error={!!errors[field]} // Kiểm tra và hiển thị lỗi nếu có
-                helperText={errors[field]} // Hiển thị thông báo lỗi nếu có
-              />
-            )
-          )}
+          {["houseNumber", "street", "ward", "district", "city", "country"].map((field) => (
+            <TextField
+              key={field}
+              name={field}
+              label={field.charAt(0).toUpperCase() + field.slice(1)}
+              fullWidth
+              margin="dense"
+              value={newAddress[field]}
+              onChange={(e) => handleInputChange(e, setNewAddress)}
+              error={!!errors[field]}
+              helperText={errors[field]}
+            />
+          ))}
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpenAdd(false)}>Cancel</Button>
@@ -311,14 +322,7 @@ const AccountAddress = () => {
         <DialogTitle>Edit Address</DialogTitle>
         <DialogContent>
           {editAddress &&
-            [
-              "houseNumber",
-              "street",
-              "ward",
-              "district",
-              "city",
-              "country",
-            ].map((field) => (
+            ["houseNumber", "street", "ward", "district", "city", "country"].map((field) => (
               <TextField
                 key={field}
                 name={field}
@@ -327,8 +331,8 @@ const AccountAddress = () => {
                 margin="dense"
                 value={editAddress[field]}
                 onChange={(e) => handleInputChange(e, setEditAddress)}
-                error={!!errors[field]} // Kiểm tra và hiển thị lỗi nếu có
-                helperText={errors[field]} // Hiển thị thông báo lỗi nếu có
+                error={!!errors[field]}
+                helperText={errors[field]}
               />
             ))}
         </DialogContent>

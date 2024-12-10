@@ -475,6 +475,16 @@ function AdminPage() {
     );
   };
 
+  // Đá người dùng ra nếu nó không là role = Admin hoặc role = Employee hoặc chưa đăng nhập
+  useEffect(() => {
+    if (
+      !userCurrentLogged ||
+      (userCurrentLogged.role !== "Employee" && userCurrentLogged.role !== "Admin")
+    ) {
+      navigate("/websiteDoAn/**");
+    }
+  }, [userCurrentLogged, navigate]);
+
   return (
     <ThemeProvider theme={theme}>
       {" "}

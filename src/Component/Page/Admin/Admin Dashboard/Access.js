@@ -15,13 +15,14 @@ import {
 import Box from "@mui/material/Box";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { accessThunk } from "../../../../services/redux/thunks/thunk";
+import { accessThunk, decentralizationThunk } from "../../../../services/redux/thunks/thunk";
 import "./assets/css/style.scss";
 
 function AdminAccess({ setActiveComponent, showAlert }) {
   const isLoading = useSelector((state) => state.access.isLoading);
   const listFunction = useSelector((state) => state.function.listFunction);
   const listAccess = useSelector((state) => state.access.listAccess);
+  const listDecentralization = useSelector((state) => state.decentralization.listDecentralization)
   const dispatch = useDispatch();
   const [showAccessTable, setShowAccessTable] = useState(true);
 
@@ -29,8 +30,8 @@ function AdminAccess({ setActiveComponent, showAlert }) {
   const [searchFunction, setSearchFunction] = useState(""); // Tìm kiếm Function
 
   // Lọc danh sách Access hoặc Function dựa trên tìm kiếm
-  const filteredAccess = listAccess.filter((access) =>
-    access.roleName.toLowerCase().includes(searchAccess.toLowerCase())
+  const filteredAccess = listDecentralization.filter((decentralization) =>
+    decentralization?.access?.roleName?.toLowerCase().includes(searchAccess.toLowerCase())
   );
 
   const filteredFunctions = listFunction.filter((functionItem) =>
@@ -52,6 +53,16 @@ function AdminAccess({ setActiveComponent, showAlert }) {
   const toggleTable = () => {
     setShowAccessTable((prev) => !prev);
   };
+
+  const handleDelete = (id) => {
+    try {
+      dispatch(decentralizationThunk.deleteDecentralization(id));
+      showAlert("Delete access successfully", "success");
+    } catch (error) {
+      showAlert("Failed to delete access", "error");
+      console.error("Error deleting access:", error);
+    }
+  }
 
   return (
     <Box sx={{ padding: 2 }}>
@@ -142,17 +153,17 @@ function AdminAccess({ setActiveComponent, showAlert }) {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {filteredAccess.map((access, index) => (
+                {filteredAccess.map((decentralization, index) => (
                   <TableRow key={index}>
                     <TableCell
                       style={{ textAlign: "start", fontSize: "1.3rem" }}
                     >
-                      {access.id}
+                      {decentralization.id}
                     </TableCell>
                     <TableCell
                       style={{ textAlign: "start", fontSize: "1.3rem" }}
                     >
-                      {access.roleName}
+                      {decentralization.access.roleName}
                     </TableCell>
                     <TableCell style={{ textAlign: "end", fontSize: "1.3rem" }}>
                       <Button
@@ -160,7 +171,7 @@ function AdminAccess({ setActiveComponent, showAlert }) {
                         onClick={() =>
                           setActiveComponent({
                             name: "AdminEditAccess",
-                            props: { id: access.id },
+                            props: { id: decentralization.id },
                           })
                         }
                         disabled={isLoading}
@@ -170,7 +181,7 @@ function AdminAccess({ setActiveComponent, showAlert }) {
                       <Button
                         variant="outlined"
                         color="error"
-                        onClick={() => console.log("Delete access logic")}
+                        onClick={() => handleDelete(decentralization.id)}
                         disabled={isLoading}
                       >
                         Delete

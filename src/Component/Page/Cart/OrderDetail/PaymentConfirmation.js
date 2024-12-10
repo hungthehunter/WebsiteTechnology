@@ -14,21 +14,24 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { useDispatch, useSelector } from "react-redux";
 import {
   addressThunk,
   cartThunk,
-  orderThunk,
+  orderThunk, userThunk
 } from "../../../../services/redux/thunks/thunk";
 import PICTURE from "../../../Assests/PICTURE";
 
 const PaymentConfirmation = ({ open, handleClose, note }) => {
+  const dispatch = useDispatch();
   // Payment Information
   const userCurrentLogged = useSelector(
     (state) => state.user.userCurrentLogged
   );
+  
+  const selectedUser = useSelector((state) => state.user.selectedUser);
   const [cardHolderName, setCardHolderName] = useState("");
   const [cardNumber, setCardNumber] = useState("");
   const [expiryMonth, setExpiryMonth] = useState("");
@@ -39,11 +42,19 @@ const PaymentConfirmation = ({ open, handleClose, note }) => {
     return sum + (item?.totalPrice || 0);
   }, 0);
   
-  const listAddress = useSelector((state) =>
-    state?.address?.listAddress?.filter(
-      (addr) => addr.user?.id === userCurrentLogged?.id && addr?.status
-    )
-  );
+  // const listAddress = useSelector((state) =>
+  //   state?.address?.listAddress?.filter(
+  //     (addr) => addr.user?.id === selectedUser?.id && addr?.status == true
+  //   )
+  // );
+
+  const listAddress = (selectedUser?.addresses || []).filter(address => address.status === true);
+  
+  useEffect(() => {
+    if (userCurrentLogged) {
+      dispatch(userThunk.getUserById(userCurrentLogged.id));
+    }
+  }, [dispatch, userCurrentLogged]);
 
   // Address
   const handleCloseAdd = () => {
@@ -56,7 +67,7 @@ const PaymentConfirmation = ({ open, handleClose, note }) => {
       city: "",
       country: "",
       status: true,
-      user: { id: userCurrentLogged?.id },
+      user: { id: selectedUser?.id },
     });
   };
   const [openAdd, setOpenAdd] = useState(false);
@@ -69,13 +80,13 @@ const PaymentConfirmation = ({ open, handleClose, note }) => {
     city: "",
     country: "",
     status: true,
-    user: { id: null },
+    user: { id: userCurrentLogged.id },
   });
 
   const handleAddAddress = async () => {
     try {
-      await dispatch(addressThunk.createAddress(newAddress)).unwrap();
-      dispatch(addressThunk.getAllAddresses());
+      await dispatch(addressThunk.createAddress(newAddress))
+      await dispatch(userThunk.getUserById(userCurrentLogged.id))
       toast.success(
         "Địa chỉ đã được thêm thành công . Vui lòng chọn Address để tiếp tục"
       );
@@ -88,9 +99,6 @@ const PaymentConfirmation = ({ open, handleClose, note }) => {
     const { name, value } = event.target;
     setNewAddress((prev) => ({ ...prev, [name]: value }));
   };
-
-  // User Information
-  const dispatch = useDispatch();
 
   // Address Information
   const [selectedAddress, setSelectedAddress] = useState("");
@@ -235,7 +243,7 @@ const PaymentConfirmation = ({ open, handleClose, note }) => {
                   >
                     {listAddress.map((address) => (
                       <MenuItem key={address.id} value={address.id}>
-                        {address.street}, {address.city}
+                       {address.houseNumber}, {address.street}, {address.city}
                       </MenuItem>
                     ))}
                   </Select>

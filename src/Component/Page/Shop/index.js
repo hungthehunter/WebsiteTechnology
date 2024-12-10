@@ -1,12 +1,22 @@
 import { ThemeProvider } from "@emotion/react";
 import "@fortawesome/fontawesome-free/css/all.min.css";
-import { Box, Button, Checkbox, FormControlLabel, Typography } from "@mui/material"; // Thêm các thành phần MUI cần thiết
-import CircularProgress from '@mui/material/CircularProgress';
+import {
+  Box,
+  Button,
+  Checkbox,
+  FormControlLabel,
+  Typography,
+} from "@mui/material"; // Thêm các thành phần MUI cần thiết
+import CircularProgress from "@mui/material/CircularProgress";
 import { createTheme } from "@mui/material/styles";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
-import { productThunk } from "../../../services/redux/thunks/thunk";
+import {
+  categoryThunk,
+  manufacturerThunk,
+  productThunk,
+} from "../../../services/redux/thunks/thunk";
 import "../Shop/Shop.scss";
 import Shop_Fake from "./Shop_Fake";
 
@@ -53,31 +63,33 @@ const theme = createTheme({
 function Shop() {
   const [inputValue, setInputValue] = useState("");
   const [isGridView, setGridView] = useState(true);
-  const [placeholder, setPlaceholder] = useState('Example: Geforce RTX');
+  const [placeholder, setPlaceholder] = useState("Example: Geforce RTX");
   const [searchItem, setSearchItem] = useState("");
-  const [categoryFilters, setCategoryFilters] = useState({
-    gpu: false,
-    laptop: false,
-    RTX4090: false,
-    RTX4080: false,
-    RTX4070: false,
-    RTX4050: false,
-    NVIDIA: false,
-    ACER: false,
-    ASUS: false,
-    $500: false,
-    $1000: false,
-    $2000: false,
-  });
 
   const dispatch = useDispatch();
   const isLoading = useSelector((state) => state.product.isLoading);
 
   useEffect(() => {
-    dispatch(productThunk.getAllProduct());
+    dispatch(productThunk.getAllProduct()).unwrap();
+    dispatch(categoryThunk.getAllCategories()).unwrap();
+    dispatch(manufacturerThunk.getAllManufacturers()).unwrap();
   }, [dispatch]);
 
-  //Handle Category checkbox
+  // Take all list of Category and Manufacturer
+  const listCategory = useSelector((state) => state.category.listCategory);
+  const listManufacturer = useSelector(
+    (state) => state.manufacturer.listManufacturer
+  );
+
+  const [categoryFilters, setCategoryFilters] = useState({
+    prices: {
+      under500: false,
+      averagePrice: false,
+      over1000: false,
+      over2000: false,
+    },
+  });
+
   const handleCategoryChange = (category) => {
     setCategoryFilters((prevFilters) => ({
       ...prevFilters,
@@ -90,12 +102,12 @@ function Shop() {
   };
 
   const handleFocus = () => {
-    setPlaceholder('');
+    setPlaceholder("");
   };
 
   const handleBlur = () => {
-    if (inputValue === '') {
-      setPlaceholder('Example: Geforce RTX');
+    if (inputValue === "") {
+      setPlaceholder("Example: Geforce RTX");
     }
   };
 
@@ -110,9 +122,10 @@ function Shop() {
       NVIDIA: false,
       ACER: false,
       ASUS: false,
-      $500: false,
-      $1000: false,
-      $2000: false,
+      under500: false,
+      averagePrice: false,
+      over1000: false,
+      over2000: false,
     });
   };
 
@@ -124,21 +137,23 @@ function Shop() {
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Shop GeForce Graphics Cards, Laptops, and Systems</title>
         {isLoading ? (
-          <Box sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-            alignItems: 'center',
-            height: '100vh',
-            width: '100vw',
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            backgroundColor: 'black',
-            zIndex: 9999
-          }}>
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              alignItems: "center",
+              height: "100vh",
+              width: "100vw",
+              position: "fixed",
+              top: 0,
+              left: 0,
+              backgroundColor: "black",
+              zIndex: 9999,
+            }}
+          >
             <CircularProgress size={60} thickness={4} color="primary" />
-            <Typography variant="h6" sx={{ mt: 2, color: '#4CAF50' }}>
+            <Typography variant="h6" sx={{ mt: 2, color: "#4CAF50" }}>
               PLEASE WAIT...
             </Typography>
           </Box>
@@ -156,97 +171,97 @@ function Shop() {
                         <Button
                           variant="outlined"
                           onClick={handleResetFilters}
-                          sx={{ color: 'gray' }}
+                          sx={{ color: "gray" }}
                         >
                           Reset Filters
                         </Button>
                       </div>
                       <ul className="Filter-list">
+                        {/* Lọc theo Category */}
                         <fieldset className="filter-item">
                           <legend className="filter-title">
                             Product Category
                           </legend>
                           <div className="filter-content">
                             <ul className="filter-values">
-                              <li className="filter-value">
-                                <FormControlLabel
-                                  control={
-                                    <Checkbox
-                                      checked={categoryFilters.laptop}
-                                      onChange={() => handleCategoryChange("laptop")}
-                                    />
-                                  }
-                                  label="Laptop"
-                                />
-                              </li>
-                              <li className="filter-value">
-                                <FormControlLabel
-                                  control={
-                                    <Checkbox
-                                      checked={categoryFilters.gpu}
-                                      onChange={() => handleCategoryChange("gpu")}
-                                    />
-                                  }
-                                  label="GPU"
-                                />
-                              </li>
-                            </ul>
-                          </div>
-                        </fieldset>
-                        <fieldset className="filter-item">
-                          <legend className="filter-title">GPU</legend>
-                          <div className="filter-content">
-                            <ul className="filter-values">
-                              {["RTX4090", "RTX4080", "RTX4070", "RTX4050"].map((gpu) => (
-                                <li className="filter-value" key={gpu}>
+                              {listCategory.map((category) => (
+                                <li className="filter-value" key={category.id}>
                                   <FormControlLabel
                                     control={
                                       <Checkbox
-                                        checked={categoryFilters[gpu]}
-                                        onChange={() => handleCategoryChange(gpu)}
+                                        checked={categoryFilters[category.name]}
+                                        onChange={() =>
+                                          handleCategoryChange(category.name)
+                                        }
                                       />
                                     }
-                                    label={gpu}
+                                    label={category.name}
                                   />
                                 </li>
                               ))}
                             </ul>
                           </div>
                         </fieldset>
+
                         <fieldset className="filter-item">
                           <legend className="filter-title">Manufacturer</legend>
                           <div className="filter-content">
                             <ul className="filter-values">
-                              {["NVIDIA", "ACER", "ASUS"].map((manufacturer) => (
-                                <li className="filter-value" key={manufacturer}>
+                              {listManufacturer.map((manufacturer) => (
+                                <li
+                                  className="filter-value"
+                                  key={manufacturer.id}
+                                >
                                   <FormControlLabel
                                     control={
                                       <Checkbox
-                                        checked={categoryFilters[manufacturer]}
-                                        onChange={() => handleCategoryChange(manufacturer)}
+                                        checked={
+                                          categoryFilters[manufacturer.name]
+                                        }
+                                        onChange={() =>
+                                          handleCategoryChange(
+                                            manufacturer.name
+                                          )
+                                        }
                                       />
                                     }
-                                    label={manufacturer}
+                                    label={manufacturer.name}
                                   />
                                 </li>
                               ))}
                             </ul>
                           </div>
                         </fieldset>
+
                         <fieldset className="filter-item">
                           <legend className="filter-title">Price</legend>
                           <div className="filter-content">
                             <ul className="filter-values">
-                              {["$500", "$1000", "$2000"].map((price) => (
+                              {[
+                                "under500",
+                                "averagePrice",
+                                "over1000",
+                                "over2000",
+                              ].map((price) => (
                                 <li className="filter-value" key={price}>
                                   <FormControlLabel
                                     control={
                                       <Checkbox
                                         checked={categoryFilters[price]}
-                                        onChange={() => handleCategoryChange(price)}
+                                        onChange={() =>
+                                          handleCategoryChange(price)
+                                        }
                                       />
                                     }
-                                    label={`Above ${price}`}
+                                    label={
+                                      price === "under500"
+                                        ? "Up to $500"
+                                        : price === "averagePrice"
+                                        ? "Between $500 and $1000"
+                                        : price === "over1000"
+                                        ? "Between $1000 and $2000"
+                                        : "Above $2000"
+                                    }
                                   />
                                 </li>
                               ))}

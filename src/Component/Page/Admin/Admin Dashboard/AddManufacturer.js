@@ -2,7 +2,6 @@ import {
   Box,
   Button,
   FormControl,
-  InputAdornment,
   InputLabel,
   MenuItem,
   Select,
@@ -46,6 +45,8 @@ function AdminAddManufacturer({ setActiveComponent, showAlert }) {
       address,
       imageFile,
       selectedProduct,
+      createdAt,
+      updatedAt,
     };
 
     try {
@@ -65,8 +66,8 @@ function AdminAddManufacturer({ setActiveComponent, showAlert }) {
         email,
         phone,
         address,
-        createdAt: createdAt ? createdAt.toISOString().substring(0, 10) : null,
-        updatedAt: updatedAt ? updatedAt.toISOString().substring(0, 10) : null,
+        createdAt,
+        updatedAt,
         products: selectedProduct.map((id) => ({ id })),
       };
 
@@ -80,7 +81,7 @@ function AdminAddManufacturer({ setActiveComponent, showAlert }) {
       if (imageFile) {
         formData.append("file", imageFile);
       }
-
+      console.log(manufacturerDTO)
       await dispatch(manufacturerThunk.createManufacturer(formData));
       showAlert("Add new manufacturer successfully", "success");
       setActiveComponent({ name: "AdminManufacturer" });
@@ -106,7 +107,12 @@ function AdminAddManufacturer({ setActiveComponent, showAlert }) {
     <Box sx={{ padding: 4 }}>
       <h2>Add Manufacturer</h2>
       <form id="editForm">
-        <FormControl fullWidth margin="normal" variant="outlined">
+        <FormControl
+          fullWidth
+          margin="normal"
+          error={!!errors.selectedProduct}
+          variant="outlined"
+        >
           <InputLabel id="product-select-label">Select Product</InputLabel>
           <Select
             labelId="product-select-label"
@@ -128,6 +134,11 @@ function AdminAddManufacturer({ setActiveComponent, showAlert }) {
               </MenuItem>
             )}
           </Select>
+          {errors.selectedProduct && (
+            <p style={{ color: "red", fontSize: "0.875rem" }}>
+              {errors.selectedProduct}
+            </p>
+          )}
         </FormControl>
 
         <TextField
@@ -136,6 +147,8 @@ function AdminAddManufacturer({ setActiveComponent, showAlert }) {
           label="Name"
           value={name}
           onChange={handleInputChange(setName)}
+          error={!!errors.name}
+          helperText={errors.name}
         />
         <TextField
           fullWidth
@@ -143,6 +156,8 @@ function AdminAddManufacturer({ setActiveComponent, showAlert }) {
           label="Country"
           value={country}
           onChange={handleInputChange(setCountry)}
+          error={!!errors.country}
+          helperText={errors.country}
         />
         <TextField
           fullWidth
@@ -150,6 +165,8 @@ function AdminAddManufacturer({ setActiveComponent, showAlert }) {
           label="Website"
           value={website}
           onChange={handleInputChange(setWebsite)}
+          error={!!errors.website}
+          helperText={errors.website}
         />
         <TextField
           fullWidth
@@ -157,6 +174,8 @@ function AdminAddManufacturer({ setActiveComponent, showAlert }) {
           label="Description"
           value={description}
           onChange={handleInputChange(setDescription)}
+          error={!!errors.description}
+          helperText={errors.description}
         />
         <TextField
           fullWidth
@@ -164,6 +183,8 @@ function AdminAddManufacturer({ setActiveComponent, showAlert }) {
           label="Email"
           value={email}
           onChange={handleInputChange(setEmail)}
+          error={!!errors.email}
+          helperText={errors.email}
         />
         <TextField
           fullWidth
@@ -171,6 +192,8 @@ function AdminAddManufacturer({ setActiveComponent, showAlert }) {
           label="Phone"
           value={phone}
           onChange={handleInputChange(setPhone)}
+          error={!!errors.phone}
+          helperText={errors.phone}
         />
         <TextField
           fullWidth
@@ -178,6 +201,8 @@ function AdminAddManufacturer({ setActiveComponent, showAlert }) {
           label="Address"
           value={address}
           onChange={handleInputChange(setAddress)}
+          error={!!errors.address}
+          helperText={errors.address}
         />
 
         <TextField
@@ -188,6 +213,8 @@ function AdminAddManufacturer({ setActiveComponent, showAlert }) {
           InputLabelProps={{ shrink: true }}
           value={createdAt ? createdAt.toISOString().substring(0, 10) : ""}
           onChange={(e) => setCreatedAt(new Date(e.target.value))}
+          error={!!errors.createdAt}
+          helperText={errors.createdAt}
         />
 
         <TextField
@@ -198,6 +225,8 @@ function AdminAddManufacturer({ setActiveComponent, showAlert }) {
           InputLabelProps={{ shrink: true }}
           value={updatedAt ? updatedAt.toISOString().substring(0, 10) : ""}
           onChange={(e) => setUpdatedAt(new Date(e.target.value))}
+          error={!!errors.updatedAt}
+          helperText={errors.updatedAt}
         />
 
         <TextField
@@ -207,15 +236,8 @@ function AdminAddManufacturer({ setActiveComponent, showAlert }) {
           InputLabelProps={{ shrink: true }}
           inputProps={{ accept: "image/*" }}
           onChange={handleImageChange}
-          InputProps={{
-            endAdornment: (
-              <InputAdornment position="end">
-                <Button variant="contained" component="span" disabled={isLoading}>
-                  Upload
-                </Button>
-              </InputAdornment>
-            ),
-          }}
+          error={!!errors.imageFile}
+          helperText={errors.imageFile}
         />
 
         <Button

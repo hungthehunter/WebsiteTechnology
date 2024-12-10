@@ -14,10 +14,11 @@ import toast from "react-hot-toast";
 import { useDispatch, useSelector } from "react-redux";
 import { clearSelectedImportId } from "../../../../services/redux/slices/importSlice";
 import { importThunk } from "../../../../services/redux/thunks/thunk";
+import { importValidationSchema } from "../../../../services/yup/Admin/Import/importValidation";
 
 function AdminEditImport({ id, setActiveComponent, showAlert }) {
   //#region logic
-
+  const [errors, setErrors] = useState({});
   const dispatch = useDispatch();
 
   const alert = useCallback(
@@ -121,7 +122,7 @@ function AdminEditImport({ id, setActiveComponent, showAlert }) {
     return sum.toString();
   };
 
-  const handleEditImport = (e) => {
+  const handleEditImport = async (e) => {
     e.preventDefault();
 
     const data = new FormData();
@@ -134,15 +135,31 @@ function AdminEditImport({ id, setActiveComponent, showAlert }) {
     console.log(JSON.stringify(formData));
 
     try {
+      await importValidationSchema.validate(formData, { abortEarly: false })
+
       dispatch(importThunk.updateImport({ id: id, importData: data }));
       showAlert("Update Import successfully.", "success");
       dispatch(clearSelectedImportId());
       setTimeout(() => setActiveComponent({ name: "AdminImport" }), 1000);
-    } catch (error) {
-      console.error("There was an error updating the import!", error);
-      showAlert("Failed to update import.", "error");
+    } 
+    catch (error) {
+      if (error.name === "ValidationError") {
+        alertValidationError(error);
+      } 
+      else {
+        showAlert("Failed to update import", "error");
+      }
     }
   };
+
+  const alertValidationError = (error) => {
+    const validationErrors = error.inner.reduce((acc, err) => {
+      acc[err.path] = err.message;
+      return acc;
+    }, {});
+    setErrors(validationErrors);
+    showAlert("Failed to update import. Check the information again", "error");
+  }
 
   const getImage = (product) => {
     if (product === undefined || product.product_image === undefined) return "";
@@ -176,6 +193,8 @@ function AdminEditImport({ id, setActiveComponent, showAlert }) {
                     InputLabelProps={{ shrink: true }}
                     value={formData.dateImport.split("T")[0]}
                     onChange={handleChange}
+                    error={errors.dateImport}
+                    helperText={errors.dateImport}
                   />
                 </Grid>
                 {/* Manufacturer */}
@@ -231,6 +250,8 @@ function AdminEditImport({ id, setActiveComponent, showAlert }) {
                         handleImportItemsChange(index, "price", e.target.value);
                       }}
                       margin="normal"
+                      error={errors[`importItems[${index}].price`]}
+                      helperText={errors[`importItems[${index}].price`]}
                     />
                   </Grid>
                   <Grid item xs={12} md={6}>

@@ -20,6 +20,8 @@ import { editUserValidationSchema } from "../../../../services/yup/Admin/editUse
 import "./assets/css/style.scss";
 
 function AdminEditCustomer({ id, setActiveComponent, showAlert }) {
+  const selectedUser = useSelector((state) => state.user.selectedUser);
+  const isLoading = useSelector((state) => state.address.isLoading);
   const [errors, setErrors] = useState({});
   const [fullname, setFullName] = useState("");
   const [mobile, setMobile] = useState("");
@@ -44,9 +46,7 @@ function AdminEditCustomer({ id, setActiveComponent, showAlert }) {
   const listAccess = useSelector((state) => state.access.listAccess);
   const dispatch = useDispatch();
 
-  const listAddress = useSelector((state) => 
-    state.address.listAddress.filter(address => address.user.id === id)
-  );
+  const listAddress = (selectedUser?.addresses || []).filter(address => address.status === true);
   
   // Lấy thông tin người dùng theo ID
   useEffect(() => {
@@ -54,8 +54,7 @@ function AdminEditCustomer({ id, setActiveComponent, showAlert }) {
   }, [dispatch, id]);
 
   // Lấy thông tin người dùng đã chọn
-  const selectedUser = useSelector((state) => state.user.selectedUser);
-  const isLoading = useSelector((state) => state.address.isLoading);
+
 
   // Cập nhật trạng thái khi selectedUser thay đổi
   useEffect(() => {
@@ -119,42 +118,46 @@ function AdminEditCustomer({ id, setActiveComponent, showAlert }) {
     const FormatDateOfBirth = new Date(dateOfBirth);
     const formatDate = FormatDateOfBirth.toISOString().split("T")[0];
   
-    // Prepare data to validate
     const userData = {
       fullname,
       mobile,
       email,
       password,
       status,
-      role: "User", // Set default role if needed
+      role: "User",
       dateofbirth: formatDate,
       decentralization: { id: decentralization },
-      addresses,
+      addresses: Array.isArray(addresses) ? addresses : [], // Ensure addresses is always an array
     };
+  
     console.log(userData);
   
     try {
-      // Validate with yup
       await editUserValidationSchema.validate(userData, { abortEarly: false });
-      
+  
       if (!validateAddresses()) {
         alert("Please fill out all address fields.");
         return;
       }
   
-      // If validation passes, proceed with updating the user
-      await dispatch(userThunk.updateUser({ id: selectedUser.id, userData: userData  }));
+      await dispatch(userThunk.updateUser({ id: selectedUser.id, userData }));
       showAlert("Edit customer successfully.", "success");
       dispatch(clearSelectedUserId());
       setTimeout(() => setActiveComponent({ name: "AdminCustomer" }), 1000);
     } catch (validationErrors) {
-      const errorMessages = validationErrors.inner.reduce((acc, error) => {
-        acc[error.path] = error.message;
-        return acc;
-      }, {});
+      console.log(validationErrors);
+  
+      const errorMessages = Array.isArray(validationErrors.inner)
+        ? validationErrors.inner.reduce((acc, error) => {
+            acc[error.path] = error.message;
+            return acc;
+          }, {})
+        : {}; // Ensure inner is an array before calling reduce
+  
       setErrors(errorMessages);
     }
   };
+  
   
 
   if (isLoading) {

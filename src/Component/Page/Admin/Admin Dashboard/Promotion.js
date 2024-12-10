@@ -98,9 +98,7 @@ const AdminPromotion = ({ setActiveComponent, showAlert }) => {
             <Button
               variant="contained"
               color="primary"
-              onClick={() =>
-                setActiveComponent({ name: "AdminAddPromotion" })
-              }
+              onClick={() => setActiveComponent({ name: "AdminAddPromotion" })}
             >
               + Add New Promotion
             </Button>
@@ -112,6 +110,9 @@ const AdminPromotion = ({ setActiveComponent, showAlert }) => {
               <TableRow>
                 <TableCell style={{ textAlign: "start", fontSize: "1.5rem" }}>
                   Id
+                </TableCell>
+                <TableCell style={{ textAlign: "start", fontSize: "1.5rem" }}>
+                  Image
                 </TableCell>
                 <TableCell style={{ textAlign: "start", fontSize: "1.5rem" }}>
                   Name
@@ -130,29 +131,31 @@ const AdminPromotion = ({ setActiveComponent, showAlert }) => {
             <TableBody>
               {filteredPromotions.map((promotion, index) => (
                 <TableRow key={index}>
-                  <TableCell
-                    style={{ textAlign: "start", fontSize: "1.3rem" }}
-                  >
+                  <TableCell style={{ textAlign: "start", fontSize: "1.3rem" }}>
                     {promotion.id}
                   </TableCell>
-                  <TableCell
-                    style={{ textAlign: "start", fontSize: "1.3rem" }}
-                  >
+                  <TableCell style={{ textAlign: "start", fontSize: "1.3rem" }}>
+                    <img
+                      src={promotion?.imageCloud?.url}
+                      alt={promotion?.name}
+                      width="100"
+                      height="30"
+                      style={{ objectFit: "cover" }}
+                    />
+                  </TableCell>
+                  <TableCell style={{ textAlign: "start", fontSize: "1.3rem" }}>
                     {promotion.name}
                   </TableCell>
-                  <TableCell
-                    style={{ textAlign: "start", fontSize: "1.3rem" }}
-                  >
+                  <TableCell style={{ textAlign: "start", fontSize: "1.3rem" }}>
                     {promotion.discountPercentage}
                   </TableCell>
-                  <TableCell
-                    style={{ textAlign: "start", fontSize: "1.3rem" }}
-                  >
-                    {promotion.isActive ? "Yes" : "No"}
+                  <TableCell style={{ textAlign: "start", fontSize: "1.3rem" }}>
+                    {new Date(promotion.endDate) < new Date()
+                      ? "Expired"
+                      : "Not Expired"}
                   </TableCell>
-                  <TableCell
-                    style={{ textAlign: "end", fontSize: "1.3rem" }}
-                  >
+
+                  <TableCell style={{ textAlign: "end", fontSize: "1.3rem" }}>
                     <Button
                       variant="outlined"
                       onClick={() =>

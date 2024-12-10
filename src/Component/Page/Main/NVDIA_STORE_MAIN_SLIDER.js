@@ -101,6 +101,7 @@ const SLIDER = ({ images, activeSlide, onChangeSlide }) => {
 
   return (
     <SliderContainer id="slider">
+       
       {images.map((image, index) => (
         <SliderItem key={index} className={index === currentIndex ? 'active' : ''}>
             <SliderImage src={image?.imageCloud?.url} alt={image.alt} />
@@ -108,11 +109,13 @@ const SLIDER = ({ images, activeSlide, onChangeSlide }) => {
             <Typography variant="h2" component="div" gutterBottom sx={{ fontWeight: 'bold' }}>
               {image?.name}
             </Typography>
+            {/* 
             {image?.name && (
               <Typography variant="h2" component="div" gutterBottom sx={{ fontWeight: 'bold' }}>
                 {image?.name}
               </Typography>
             )}
+              */}
             <Typography variant="h3" component="div" gutterBottom sx={{ fontWeight: 'bold', marginBottom: 2 }}>
               {image?.description}
             </Typography>

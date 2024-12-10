@@ -8,7 +8,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { decentralizationThunk } from "../../../../services/redux/thunks/thunk";
 
@@ -24,20 +24,31 @@ function AdminAddAccess({ setActiveComponent, showAlert }) {
 
   const checkRoleNameExists = (roleName) =>
     listUser.some(
-      (user) => user?.decentralization?.access?.roleName.toLowerCase() === roleName.toLowerCase()
+      (user) =>
+        user?.decentralization?.access?.roleName.toLowerCase() ===
+        roleName.toLowerCase()
     );
 
-  const handleCheckboxChange = (index) => {
-    const updatedCheckedState = checkedState.map((item, i) =>
-      i === index ? !item : item
-    );
-    setCheckedState(updatedCheckedState);
-  };
+    const handleCheckboxChange = (index) => {
+      const updatedCheckedState = checkedState.map((item, i) =>
+        i === index ? !item : item
+      );
+      setCheckedState(updatedCheckedState);
+    };
+    
+  // Initialize checkedState when listFunction changes
+  useEffect(() => {
+    setCheckedState(new Array(listFunction.length).fill(false));
+  }, [listFunction]);
 
   const handleRoleNameChange = (e) => {
     const newRoleName = e.target.value;
     setRoleName(newRoleName);
-    setRoleNameError(newRoleName && checkRoleNameExists(newRoleName) ? "Role name already exists" : "");
+    setRoleNameError(
+      newRoleName && checkRoleNameExists(newRoleName)
+        ? "Role name already exists"
+        : ""
+    );
   };
 
   const handleSubmit = async (e) => {
@@ -52,9 +63,12 @@ function AdminAddAccess({ setActiveComponent, showAlert }) {
       access: { roleName },
       functionIds: selectedFunctions,
     };
-
+ 
+    console.log(decentralizationData)
     try {
-      const result = await dispatch(decentralizationThunk.createDecentralization(decentralizationData));
+      await dispatch(
+        decentralizationThunk.createDecentralization(decentralizationData)
+      );
       showAlert("Add decentralization successfully.", "success");
       setRoleName("");
       setCheckedState(new Array(listFunction.length).fill(false));
@@ -103,12 +117,14 @@ function AdminAddAccess({ setActiveComponent, showAlert }) {
                 <FormControlLabel
                   control={
                     <Checkbox
-                      checked={checkedState[index]}
+                      checked={checkedState[index] || false}
                       onChange={() => handleCheckboxChange(index)}
                       sx={{
                         "& .MuiSvgIcon-root": { fontSize: 28 },
                         "&.Mui-checked": { color: "green" },
-                        "&.Mui-checked + .MuiFormControlLabel-label": { color: "green" },
+                        "&.Mui-checked + .MuiFormControlLabel-label": {
+                          color: "green",
+                        },
                       }}
                     />
                   }
@@ -118,11 +134,25 @@ function AdminAddAccess({ setActiveComponent, showAlert }) {
             ))}
           </Grid>
 
-          <Button type="submit" variant="contained" size="large" sx={{ marginTop: 3 }}
-          disabled={isLoading}
-          >
-            Submit change
-          </Button>
+          <Grid item xs={12}>
+            <Button
+              type="submit"
+              variant="contained"
+              size="large"
+              sx={{ marginTop: 3 }}
+              disabled={isLoading}
+            >
+              Submit change
+            </Button>
+            <Button
+              variant="outlined"
+              color="secondary"
+              onClick={() => setActiveComponent({ name: "AdminAccess" })}
+              sx={{ marginTop: 3, marginLeft: 2 }}
+            >
+              Return to Access
+            </Button>
+          </Grid>
         </form>
       </Box>
     </Box>

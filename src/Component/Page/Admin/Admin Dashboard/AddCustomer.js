@@ -27,7 +27,7 @@ function AdminAddCustomer({ setActiveComponent ,showAlert }) {
   const [role, setRole] = useState("User");
   const [dateOfBirth, setDateOfBirth] = useState("");
   const [decentralization, setDecentralization] = useState("");
-  const listAccess = useSelector((state) => state.access.listAccess);
+  const listDecentralization = useSelector((state) => state.decentralization.listDecentralization);
   const dispatch = useDispatch();
   const [addressList, setAddressList] = useState([{
     houseNumber: "",
@@ -74,19 +74,14 @@ function AdminAddCustomer({ setActiveComponent ,showAlert }) {
       email,
       password,
       role,
-      dateOfBirth:formatDate,
+      dateOfbirth: formatDate,
       decentralization,
       addresses: addressList,
     };
-  console.log(userData);
     try {
       // Validate data using Yup
       await userValidationSchema.validate(userData, { abortEarly: false });
-  
-      // Format date of birth
-      const formatDateOfBirth = new Date(dateOfBirth).toISOString().split("T")[0];
-      userData.dateOfBirth = formatDateOfBirth;
-  
+
       // Dispatch user data
       await dispatch(userThunk.createUser(userData));
   
@@ -178,9 +173,9 @@ function AdminAddCustomer({ setActiveComponent ,showAlert }) {
                 label="Access"
               >
                 <MenuItem value="" disabled>Select access</MenuItem>
-                {listAccess.map((accessItem) => (
-                  <MenuItem key={accessItem.id} value={accessItem}>
-                    {accessItem.roleName}
+                {listDecentralization.map((item) => (
+                  <MenuItem key={item.id} value={item}>
+                    {item.access.roleName}
                   </MenuItem>
                 ))}
               </Select>

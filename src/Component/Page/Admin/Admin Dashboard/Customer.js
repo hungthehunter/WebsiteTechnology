@@ -53,10 +53,16 @@ function AdminCustomer({ setActiveComponent, showAlert }) {
   };
 
   // Filter users based on search query and sort criteria
-  const filteredUsers = listUser.filter((user) => {
-    const matchesSearch = user.fullname.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesSort = sortBy ? user.role === sortBy : true;
-    return matchesSearch && matchesSort;
+  const filteredUsers = listUser
+  .filter((user) => user.role === "User") // Filter users with 'User' role
+  .filter((user) =>
+      user.fullname.toLowerCase().includes(searchQuery.toLowerCase())
+  ) // Apply search filtering
+  .sort((a, b) => {
+      if (sortBy === "fullname") return a.fullname.localeCompare(b.fullname);
+      if (sortBy === "email") return a.email.localeCompare(b.email);
+      if (sortBy === "mobile") return a.mobile.localeCompare(b.mobile);
+      return 0; // Default sorting
   });
 
   const handleDelete = async (id) => {
@@ -88,7 +94,14 @@ function AdminCustomer({ setActiveComponent, showAlert }) {
           margin: "0 auto",
         }}
       >
-        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 2 }}>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: 2,
+          }}
+        >
           <Typography variant="h4" gutterBottom sx={{ fontSize: "2.5rem" }}>
             Recent Customers
           </Typography>
@@ -153,9 +166,16 @@ function AdminCustomer({ setActiveComponent, showAlert }) {
                 horizontal: "left",
               }}
             >
-              <MenuItem onClick={() => handleSortChange("User")}>User</MenuItem>
-              <MenuItem onClick={() => handleSortChange("Employee")}>Employee</MenuItem>
-              <MenuItem onClick={() => handleSortChange("")}>Clear Filter</MenuItem>
+              <MenuItem onClick={() => handleSortChange("fullname")}>
+                Full Name
+              </MenuItem>
+              <MenuItem onClick={() => handleSortChange("email")}>
+                Email
+              </MenuItem>
+              <MenuItem onClick={() => handleSortChange("mobile")}>Mobile</MenuItem>
+              <MenuItem onClick={() => handleSortChange("")}>
+                Clear Filter
+              </MenuItem>
             </Popover>
           </Box>
         </Box>
@@ -165,32 +185,69 @@ function AdminCustomer({ setActiveComponent, showAlert }) {
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell style={{ textAlign: "start", fontSize: "1.5rem" }}>Id</TableCell>
-                <TableCell style={{ textAlign: "start", fontSize: "1.5rem" }}>Name</TableCell>
-                <TableCell style={{ textAlign: "end", fontSize: "1.5rem" }}>Mobile</TableCell>
-                <TableCell style={{ textAlign: "end", fontSize: "1.5rem" }}>Email</TableCell>
-                <TableCell style={{ textAlign: "end", fontSize: "1.5rem" }}>Role</TableCell>
-                <TableCell style={{ textAlign: "end", fontSize: "1.5rem" }}>Action</TableCell>
+                <TableCell style={{ textAlign: "start", fontSize: "1.5rem" }}>
+                  Id
+                </TableCell>
+                <TableCell style={{ textAlign: "start", fontSize: "1.5rem" }}>
+                  Name
+                </TableCell>
+                <TableCell style={{ textAlign: "end", fontSize: "1.5rem" }}>
+                  Mobile
+                </TableCell>
+                <TableCell style={{ textAlign: "end", fontSize: "1.5rem" }}>
+                  Email
+                </TableCell>
+                <TableCell style={{ textAlign: "end", fontSize: "1.5rem" }}>
+                  Role
+                </TableCell>
+                <TableCell style={{ textAlign: "end", fontSize: "1.5rem" }}>
+                  Action
+                </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {filteredUsers.map((user) => (
                 <TableRow key={user.id}>
-                  <TableCell style={{ textAlign: "start", fontSize: "1.3rem" }}>{user.id}</TableCell>
-                  <TableCell style={{ textAlign: "start", fontSize: "1.3rem" }}>{user.fullname}</TableCell>
-                  <TableCell style={{ textAlign: "end", fontSize: "1.3rem" }}>{user.mobile}</TableCell>
-                  <TableCell style={{ textAlign: "end", fontSize: "1.3rem" }}>{user.email}</TableCell>
-                  <TableCell style={{ textAlign: "end", fontSize: "1.3rem" }}>
-                    <span className={`status ${user.role.toLowerCase()}`}>{user.role}</span>
+                  <TableCell style={{ textAlign: "start", fontSize: "1.3rem" }}>
+                    {user.id}
+                  </TableCell>
+                  <TableCell style={{ textAlign: "start", fontSize: "1.3rem" }}>
+                    {user.fullname}
                   </TableCell>
                   <TableCell style={{ textAlign: "end", fontSize: "1.3rem" }}>
-                    <Button variant="outlined" onClick={() => handleView(user.id)}>
+                    {user.mobile}
+                  </TableCell>
+                  <TableCell style={{ textAlign: "end", fontSize: "1.3rem" }}>
+                    {user.email}
+                  </TableCell>
+                  <TableCell style={{ textAlign: "end", fontSize: "1.3rem" }}>
+                    <span className={`status ${user.role.toLowerCase()}`}>
+                      {user.role}
+                    </span>
+                  </TableCell>
+                  <TableCell style={{ textAlign: "end", fontSize: "1.3rem" }}>
+                    <Button
+                      variant="outlined"
+                      onClick={() => handleView(user.id)}
+                    >
                       View
                     </Button>
-                    <Button variant="outlined" onClick={() => setActiveComponent({ name: "AdminEditCustomer", props: { id: user.id } })}>
+                    <Button
+                      variant="outlined"
+                      onClick={() =>
+                        setActiveComponent({
+                          name: "AdminEditCustomer",
+                          props: { id: user.id },
+                        })
+                      }
+                    >
                       Edit
                     </Button>
-                    <Button variant="outlined" color="error" onClick={() => handleDelete(user.id)}>
+                    <Button
+                      variant="outlined"
+                      color="error"
+                      onClick={() => handleDelete(user.id)}
+                    >
                       Delete
                     </Button>
                   </TableCell>

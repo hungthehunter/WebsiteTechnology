@@ -24,11 +24,11 @@ const userSlice = createSlice({
     },
     setUserLoggedIn: (state, action) => {
       state.userCurrentLogged = action.payload;
-      state.isLoggingOut = false; 
+      state.isLoggingOut = false;
     },
     clearUserLoggedIn: (state) => {
       state.userCurrentLogged = null;
-      state.isLoggingOut = true; 
+      state.isLoggingOut = true;
     },
     setLoginError: (state, action) => {
       state.loginError = action.payload; // Thiết lập lỗi đăng nhập
@@ -87,20 +87,20 @@ const userSlice = createSlice({
 
     // loginUser
     builder
-    .addCase(userThunk.loginUser.pending, (state) => {
-      state.isLoading = true;
-      state.loginError = null; // Xóa lỗi trước khi bắt đầu đăng nhập
-    })
-    .addCase(userThunk.loginUser.fulfilled, (state, action) => {
-      state.isLoading = false;
-      state.isError = false;
-      state.userCurrentLogged = action.payload; // Cập nhật người dùng hiện tại
-    })
-    .addCase(userThunk.loginUser.rejected, (state, action) => {
-      state.isLoading = false;
-      state.isError = true;
-      state.loginError = action.error.message; // Lưu lỗi đăng nhập
-    });
+      .addCase(userThunk.loginUser.pending, (state) => {
+        state.isLoading = true;
+        state.loginError = null; // Xóa lỗi trước khi bắt đầu đăng nhập
+      })
+      .addCase(userThunk.loginUser.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.isError = false;
+        state.userCurrentLogged = action.payload; // Cập nhật người dùng hiện tại
+      })
+      .addCase(userThunk.loginUser.rejected, (state, action) => {
+        state.isLoading = false;
+        state.isError = true;
+        state.loginError = action.error.message; // Lưu lỗi đăng nhập
+      });
 
     // signupUser
     builder
@@ -111,7 +111,7 @@ const userSlice = createSlice({
       .addCase(userThunk.signUpUser.fulfilled, (state, action) => {
         state.isLoading = false;
         state.isError = false;
-        state.listUser.push(action.payload); 
+        state.listUser.push(action.payload);
       })
       .addCase(userThunk.signUpUser.rejected, (state, action) => {
         state.isLoading = false;
@@ -127,6 +127,8 @@ const userSlice = createSlice({
       .addCase(userThunk.updateUser.fulfilled, (state, action) => {
         state.isLoading = false;
         state.isError = false;
+
+        // Update User
         const index = state.listUser.findIndex(
           (user) => user.id === action.payload.id
         );
@@ -186,6 +188,6 @@ export const {
   selectedUserId,
   setUserLoggedIn,
   clearUserLoggedIn,
-  setLoginError
+  setLoginError,
 } = userSlice.actions;
 export default userSlice.reducer;

@@ -6,6 +6,7 @@ import {
   CardContent,
   Divider,
   FormControl,
+  FormHelperText,
   Grid,
   IconButton,
   InputLabel,
@@ -22,13 +23,15 @@ import {
   importThunk,
   productThunk,
 } from "../../../../services/redux/thunks/thunk";
-// import { getAllProductByManufacturerId } from "../../../Serivce/ApiService";
+import { importValidationSchema } from "../../../../services/yup/Admin/Import/importValidation";
 
 function AdminAddImport({ setActiveComponent, showAlert }) {
   //#region logic
+  const [errors, setErrors] = useState({});
   const alert = useCallback(
-    debounce((value) => toast.error(value), 500)
-  , [])
+    debounce((value) => toast.error(value), 500),
+    []
+  );
 
   const manufacturers = useSelector(
     (state) => state.manufacturer.listManufacturer
@@ -224,26 +227,39 @@ function AdminAddImport({ setActiveComponent, showAlert }) {
     return sum.toString();
   };
 
-  const handleCreateImport = (e) => {
+  const handleCreateImport = async (e) => {
     e.preventDefault();
 
     const data = new FormData();
-
     data.append(
       "import",
       new Blob([JSON.stringify(formData)], { type: "application/json" })
     );
 
-    console.log(JSON.stringify(formData));
-
     try {
+      await importValidationSchema.validate(formData, { abortEarly: false });
+
       dispatch(importThunk.createImport(data));
       showAlert("Create Import successfully.", "success");
       setTimeout(() => setActiveComponent({ name: "AdminImport" }), 1000);
+
+      setErrors({});
     } catch (error) {
-      console.error("There was an error creating the import!", error);
-      showAlert("Failed to create import.", "error");
+      if (error.name === "ValidationError") {
+        alertValidationError(error);
+      } else {
+        showAlert("Failed to add import", "error");
+      }
     }
+  };
+
+  const alertValidationError = (error) => {
+    const validationErrors = error.inner.reduce((acc, err) => {
+      acc[err.path] = err.message;
+      return acc;
+    }, {});
+    setErrors(validationErrors);
+    showAlert("Failed to add import. Check the information again", "error");
   };
 
   const getImage = (product) => {
@@ -253,7 +269,7 @@ function AdminAddImport({ setActiveComponent, showAlert }) {
     }
 
     return "";
-  }
+  };
 
   //#endregion
 
@@ -278,6 +294,8 @@ function AdminAddImport({ setActiveComponent, showAlert }) {
                     InputLabelProps={{ shrink: true }}
                     value={formData.dateImport}
                     onChange={handleChange}
+                    error={errors.dateImport}
+                    helperText={errors.dateImport}
                   />
                 </Grid>
                 {/* Manufacturer */}
@@ -288,6 +306,7 @@ function AdminAddImport({ setActiveComponent, showAlert }) {
                       name="manufacturer"
                       value={formData.manufacturer.id || ""}
                       onChange={handleChange}
+                      error={errors["manufacturer.id"]}
                     >
                       {manufacturers.map((manufacturer) => (
                         <MenuItem key={manufacturer.id} value={manufacturer.id}>
@@ -295,6 +314,9 @@ function AdminAddImport({ setActiveComponent, showAlert }) {
                         </MenuItem>
                       ))}
                     </Select>
+                    <FormHelperText error={errors["manufacturer.id"]}>
+                      {errors["manufacturer.id"]}
+                    </FormHelperText>
                   </FormControl>
                 </Grid>
                 <Grid item xs={12} md={12}>
@@ -305,7 +327,10 @@ function AdminAddImport({ setActiveComponent, showAlert }) {
               {formData.importItems.map((importItem, index) => (
                 <Grid container spacing={2} key={index}>
                   <Grid container item xs={12} md={12}>
-                    <Box component={"img"} src={getImage(importItem.product)}></Box>
+                    <Box
+                      component={"img"}
+                      src={getImage(importItem.product)}
+                    ></Box>
                   </Grid>
                   <Grid item xs={12} md={12}>
                     <Grid item xs={12} md={6}>
@@ -321,6 +346,7 @@ function AdminAddImport({ setActiveComponent, showAlert }) {
                               e.target.value
                             );
                           }}
+                          error={errors[`importItems[${index}].product.id`]}
                         >
                           {products.map((item) => (
                             <MenuItem key={item.id} value={item.id}>
@@ -328,6 +354,11 @@ function AdminAddImport({ setActiveComponent, showAlert }) {
                             </MenuItem>
                           ))}
                         </Select>
+                        <FormHelperText
+                          error={errors[`importItems[${index}].product.id`]}
+                        >
+                          {errors[`importItems[${index}].product.id`]}
+                        </FormHelperText>
                       </FormControl>
                     </Grid>
                   </Grid>
@@ -350,6 +381,8 @@ function AdminAddImport({ setActiveComponent, showAlert }) {
                         handlePriceCondition(e, importItem.product.unitPrice);
                         handleImportItemsChange(index, "price", e.target.value);
                       }}
+                      error={errors[`importItems[${index}].price`]}
+                      helperText={errors[`importItems[${index}].price`]}
                       margin="normal"
                     />
                   </Grid>
@@ -380,6 +413,8 @@ function AdminAddImport({ setActiveComponent, showAlert }) {
                           e.target.value
                         )
                       }
+                      error={errors[`importItems[${index}].quantity`]}
+                      helperText={errors[`importItems[${index}].quantity`]}
                       margin="normal"
                     />
                   </Grid>
@@ -436,7 +471,7 @@ function AdminAddImport({ setActiveComponent, showAlert }) {
                   sx={{
                     display: "flex",
                     alignItems: "center",
-                    gap: '20px'
+                    gap: "20px",
                   }}
                 >
                   <Button
@@ -451,8 +486,9 @@ function AdminAddImport({ setActiveComponent, showAlert }) {
                     fontSize={"13px"}
                     height={"10px"}
                     sx={{
-                      display: blockAdd ? "block" : "none"
-                    }}>
+                      display: blockAdd ? "block" : "none",
+                    }}
+                  >
                     Loading products...
                   </Typography>
                 </Box>
@@ -486,12 +522,12 @@ function AdminAddImport({ setActiveComponent, showAlert }) {
                     justifyContent={"flex-end"}
                   >
                     <Button
-                      disabled={
-                        !formData.manufacturer.id ||
-                        formData.importItems.length == 0 ||
-                        // formData.importItems.some(item => !item.id)
-                        formData.importItems.some((item) => !item.product.id)
-                      }
+                      // disabled={
+                      //   !formData.manufacturer.id ||
+                      //   formData.importItems.length == 0 ||
+                      //   // formData.importItems.some(item => !item.id)
+                      //   formData.importItems.some((item) => !item.product.id)
+                      // }
                       type="submit"
                       variant="contained"
                       color="primary"

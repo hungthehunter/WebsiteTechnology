@@ -5,12 +5,13 @@ import {
   CardContent,
   Divider,
   FormControl,
+  FormHelperText,
   Grid,
   InputLabel,
   MenuItem,
   Select,
   TextField,
-  Typography
+  Typography,
 } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
@@ -19,9 +20,12 @@ import {
   exportThunk,
   orderThunk,
 } from "../../../../services/redux/thunks/thunk";
+import { exportValidationSchema } from "../../../../services/yup/Admin/Export/exportValidation";
 
 function AdminAddExport({ setActiveComponent, showAlert }) {
   //#region logic
+  const [errors, setErrors] = useState({});
+
   const [formData, setFormData] = useState({
     dateExport: "",
     order: {
@@ -41,6 +45,7 @@ function AdminAddExport({ setActiveComponent, showAlert }) {
 
   useEffect(() => {
     dispatch(orderThunk.getOrderById(formData.order.id));
+    dispatch(orderThunk.getAllOrders())
   }, [formData.order.id]);
 
   const selectedOrder = useSelector((state) => state.order.selectedOrder);
@@ -71,28 +76,31 @@ function AdminAddExport({ setActiveComponent, showAlert }) {
   };
 
   const isEnoughStock = () => {
+    if (!selectedOrder) return { result: false };
+
     let orderItems = selectedOrder.orderItem;
-    for (var item of orderItems){
+
+    for (var item of orderItems) {
       let stock = stocks[item.product.id];
-      if (item.quanitty > stock){
+      if (item.quanitty > stock) {
         return {
-          product: item.product.productName,
-          result: false
+          errorProduct: item.product.productName,
+          result: false,
         };
       }
     }
 
     return {
-      result: true
+      result: true,
     };
-  }
+  };
 
-  const handleCreateExport = (e) => {
+  const handleCreateExport = async (e) => {
     e.preventDefault();
 
     var check = isEnoughStock();
-    if (!check.result){
-      toast.error(`${check.product} is out of stock`);
+    if (!check.result && check.errorProduct) {
+      toast.error(`${check.errorProduct} is out of stock`);
       return;
     }
 
@@ -103,16 +111,30 @@ function AdminAddExport({ setActiveComponent, showAlert }) {
       new Blob([JSON.stringify(formData)], { type: "application/json" })
     );
 
-    console.log(JSON.stringify(formData));
-
     try {
+      await exportValidationSchema.validate(formData, { abortEarly: false });
+
       dispatch(exportThunk.createExport(data));
       showAlert("Create Export successfully.", "success");
       setTimeout(() => setActiveComponent({ name: "AdminExport" }), 1000);
-    } catch (error) {
-      console.error("There was an error creating the export!", error);
-      showAlert("Failed to create export.", "error");
+    } 
+    catch (error) {
+      if (error.name === "ValidationError") {
+        alertValidationError(error);
+      } else {
+        showAlert("Failed to add export", "error");
+      }
     }
+  };
+
+  const alertValidationError = (error) => {
+    const validationErrors = error.inner.reduce((acc, err) => {
+      acc[err.path] = err.message;
+      return acc;
+    }, {});
+    setErrors(validationErrors);
+    console.log(validationErrors);
+    showAlert("Failed to add export. Check the information again", "error");
   };
 
   const getAddressText = (address) => {
@@ -130,6 +152,8 @@ function AdminAddExport({ setActiveComponent, showAlert }) {
   };
 
   //#endregion
+
+  const filterOrders = orders.filter((item) => item.status);
 
   return (
     <Grid container justifyContent="center" alignItems="center">
@@ -152,6 +176,8 @@ function AdminAddExport({ setActiveComponent, showAlert }) {
                     InputLabelProps={{ shrink: true }}
                     value={formData.dateExport}
                     onChange={handleChange}
+                    error={errors.dateExport}
+                    helperText={errors.dateExport}
                   />
                 </Grid>
                 {/* Order */}
@@ -162,14 +188,16 @@ function AdminAddExport({ setActiveComponent, showAlert }) {
                       name="order"
                       value={formData.order.id || ""}
                       onChange={handleChange}
+                      error={errors["order.id"]}
                     >
-                      {orders.map((order) => (
+                      {filterOrders.map((order) => (
                         <MenuItem key={order.id} value={order.id}>
                           {order.id}
                         </MenuItem>
                       ))}
                     </Select>
                   </FormControl>
+                  <FormHelperText error={errors["order.id"]}>{errors["order.id"]}</FormHelperText>
                 </Grid>
                 <Grid
                   display={selectedOrder?.user ? "block" : "none"}
@@ -246,12 +274,7 @@ function AdminAddExport({ setActiveComponent, showAlert }) {
                   key={index}
                   sx={{ marginTop: "10px !important" }}
                 >
-                  <Grid
-                    container
-                    item
-                    xs={12}
-                    md={12}
-                  >
+                  <Grid container item xs={12} md={12}>
                     <Box component={"img"} src={getImage(item.product)}></Box>
                   </Grid>
                   <Grid item xs={12} md={6}>
@@ -317,7 +340,7 @@ function AdminAddExport({ setActiveComponent, showAlert }) {
                           "-webkit-text-fill-color": "black !important",
                         },
                       }}
-                      value={item.quanitty}
+                      value={item.quantity}
                       disabled={true}
                       margin="normal"
                     />

@@ -4,6 +4,7 @@ import {
   Card,
   CardContent,
   FormControl,
+  FormHelperText,
   Grid,
   InputLabel,
   MenuItem,
@@ -14,9 +15,15 @@ import {
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { productThunk } from "../../../../services/redux/thunks/thunk";
+import {
+  productImageValidationSchema,
+  productValidationSchema,
+} from "../../../../services/yup/Admin/Product/productValidation";
 import LoadingOverlay from "./overlay/LoadingOverlay";
 
 const AdminAddProduct = ({ setActiveComponent, showAlert }) => {
+  const [errors, setErrors] = useState({});
+
   const isLoading = useSelector((state) => state.product.isLoading);
   const defaultSpecifications = [
     { specificationName: "CPU", specificationData: "" },
@@ -63,18 +70,23 @@ const AdminAddProduct = ({ setActiveComponent, showAlert }) => {
     },
     specification: defaultSpecifications, // Khởi tạo với các specification mặc định
   });
-  
+
   const dispatch = useDispatch();
   const [files, setFiles] = useState([]);
   const [mainFile, setMainFile] = useState();
   const listCategory = useSelector((state) => state.category.listCategory);
-  const listManufacturer = useSelector((state) => state.manufacturer.listManufacturer);
+  const listManufacturer = useSelector(
+    (state) => state.manufacturer.listManufacturer
+  );
   const listPromotion = useSelector((state) => state.promotion.listPromotion);
 
   const handleAddSpecification = () => {
     setFormData((prevFormData) => ({
       ...prevFormData,
-      specification: [...prevFormData.specification, { specificationName: "", specificationData: "" }],
+      specification: [
+        ...prevFormData.specification,
+        { specificationName: "", specificationData: "" },
+      ],
     }));
   };
 
@@ -124,7 +136,7 @@ const AdminAddProduct = ({ setActiveComponent, showAlert }) => {
     setMainFile(e.target.files[0]);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     const productData = new FormData();
@@ -141,21 +153,45 @@ const AdminAddProduct = ({ setActiveComponent, showAlert }) => {
     files.forEach((file) => {
       productData.append("images", file);
     });
-      
-      try {
-        dispatch(productThunk.createProduct(productData));
-        dispatch(productThunk.getAllProduct());
-        showAlert("Add product successfully.", "success");
-        setTimeout(() => setActiveComponent({ name: "AdminProduct" }), 1000);
-      } catch (error) {
+
+    try {
+      await productValidationSchema.validate(formData, { abortEarly: false });
+      setErrors({});
+
+      await productImageValidationSchema.validate(
+        { mainImage: mainFile, additionalImage: files },
+        { abortEarly: false }
+      );
+
+      dispatch(productThunk.createProduct(productData));
+      dispatch(productThunk.getAllProduct());
+      showAlert("Add product successfully.", "success");
+      setErrors({});
+
+      setTimeout(() => setActiveComponent({ name: "AdminProduct" }), 1000);
+    } catch (error) {
+      if (error.name === "ValidationError") {
+        alertValidationError(error);
+      } else {
         console.error("There was an error creating the product!", error);
         showAlert("Failed to add product.", "error");
       }
+    }
+  };
+
+  const alertValidationError = (error) => {
+    const validationErrors = error.inner.reduce((acc, err) => {
+      acc[err.path] = err.message;
+      return acc;
+    }, {});
+    setErrors(validationErrors);
+    console.log(validationErrors);
+    showAlert("Failed to add product. Check the information again", "error");
   };
 
   return (
     <Grid container justifyContent="center" alignItems="center">
-        {isLoading && (
+      {isLoading && (
         <LoadingOverlay isLoading={isLoading} message="Loading..." />
       )}
       <Grid item xs={12} md={8}>
@@ -174,6 +210,8 @@ const AdminAddProduct = ({ setActiveComponent, showAlert }) => {
                     value={formData.productName}
                     onChange={handleChange}
                     margin="normal"
+                    error={!!errors.productName}
+                    helperText={errors.productName}
                   />
                 </Grid>
                 {/* <Grid item xs={12} md={6}>
@@ -204,6 +242,8 @@ const AdminAddProduct = ({ setActiveComponent, showAlert }) => {
                     type="number"
                     value={formData.unitPrice}
                     onChange={handleChange}
+                    error={errors.unitPrice}
+                    helperText={errors.unitPrice}
                     margin="normal"
                   />
                 </Grid>
@@ -214,6 +254,8 @@ const AdminAddProduct = ({ setActiveComponent, showAlert }) => {
                     name="unitInStock"
                     type="number"
                     value={formData.unitInStock}
+                    error={errors.unitInStock}
+                    helperText={errors.unitInStock}
                     onChange={handleChange}
                     margin="normal"
                   />
@@ -225,6 +267,8 @@ const AdminAddProduct = ({ setActiveComponent, showAlert }) => {
                     name="unitInOrder"
                     type="number"
                     value={formData.unitInOrder}
+                    error={errors.unitInOrder}
+                    helperText={errors.unitInOrder}
                     onChange={handleChange}
                     margin="normal"
                   />
@@ -308,6 +352,7 @@ const AdminAddProduct = ({ setActiveComponent, showAlert }) => {
                       name="category"
                       value={formData.category.id || ""}
                       onChange={handleChange}
+                      error={errors["category.id"]}
                     >
                       <MenuItem value="">None</MenuItem>
                       {listCategory.map((category) => (
@@ -316,6 +361,7 @@ const AdminAddProduct = ({ setActiveComponent, showAlert }) => {
                         </MenuItem>
                       ))}
                     </Select>
+                    <FormHelperText error={errors["category.id"]}>{errors["category.id"]}</FormHelperText>
                   </FormControl>
                 </Grid>
 
@@ -327,6 +373,7 @@ const AdminAddProduct = ({ setActiveComponent, showAlert }) => {
                       name="manufacturer"
                       value={formData.manufacturer.id || ""}
                       onChange={handleChange}
+                      error={errors["manufacturer.id"]}
                     >
                       {listManufacturer.map((manufacturer) => (
                         <MenuItem key={manufacturer.id} value={manufacturer.id}>
@@ -334,6 +381,7 @@ const AdminAddProduct = ({ setActiveComponent, showAlert }) => {
                         </MenuItem>
                       ))}
                     </Select>
+                    <FormHelperText error={errors["manufacturer.id"]}>{errors["manufacturer.id"]}</FormHelperText>
                   </FormControl>
                 </Grid>
 
@@ -363,15 +411,39 @@ const AdminAddProduct = ({ setActiveComponent, showAlert }) => {
                       fullWidth
                       label="Specification Name"
                       value={spec.specificationName}
-                      onChange={(e) => handleSpecificationChange(index, 'specificationName', e.target.value)}
+                      onChange={(e) =>
+                        handleSpecificationChange(
+                          index,
+                          "specificationName",
+                          e.target.value
+                        )
+                      }
                       margin="normal"
+                      error={
+                        errors[`specification[${index}].specificationName`]
+                      }
+                      helperText={
+                        errors[`specification[${index}].specificationName`]
+                      }
                     />
                     <TextField
                       fullWidth
                       label="Specification Data"
                       value={spec.specificationData}
-                      onChange={(e) => handleSpecificationChange(index, 'specificationData', e.target.value)}
+                      onChange={(e) =>
+                        handleSpecificationChange(
+                          index,
+                          "specificationData",
+                          e.target.value
+                        )
+                      }
                       margin="normal"
+                      error={
+                        errors[`specification[${index}].specificationData`]
+                      }
+                      helperText={
+                        errors[`specification[${index}].specificationData`]
+                      }
                     />
                   </Grid>
                 ))}
@@ -392,7 +464,7 @@ const AdminAddProduct = ({ setActiveComponent, showAlert }) => {
                     component="label"
                     fullWidth
                     sx={{ marginBottom: 2 }}
-                    disabled = {isLoading}
+                    disabled={isLoading}
                   >
                     Choose Main Image
                     <input
@@ -401,6 +473,7 @@ const AdminAddProduct = ({ setActiveComponent, showAlert }) => {
                       onChange={handleMainImagesChange}
                     />
                   </Button>
+                  <FormHelperText error={errors.mainImage}>{errors.mainImage}</FormHelperText>
                 </Grid>
 
                 <Grid item xs={12} md={6}>
@@ -412,7 +485,7 @@ const AdminAddProduct = ({ setActiveComponent, showAlert }) => {
                     component="label"
                     fullWidth
                     sx={{ marginBottom: 2 }}
-                    disabled = {isLoading}
+                    disabled={isLoading}
                   >
                     Choose Files
                     <input
@@ -422,11 +495,15 @@ const AdminAddProduct = ({ setActiveComponent, showAlert }) => {
                       onChange={handleFileChange}
                     />
                   </Button>
+                  <FormHelperText error={errors.additionalImage}>{errors.additionalImage}</FormHelperText>
                 </Grid>
 
                 <Grid item xs={12}>
-                  <Button type="submit" variant="contained" color="primary"
-                  disabled = {isLoading}
+                  <Button
+                    type="submit"
+                    variant="contained"
+                    color="primary"
+                    disabled={isLoading}
                   >
                     Add Product
                   </Button>

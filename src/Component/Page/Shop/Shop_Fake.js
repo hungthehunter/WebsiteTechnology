@@ -7,10 +7,15 @@ import { cartThunk, productThunk } from "../../../services/redux/thunks/thunk";
 import { productValidation } from "../../../services/yup/Shop/ShopValidation";
 import "../Shop/Shop.scss";
 
-const Shop_Fake = ({ isGridView, searchItem, categoryFilters }) => {
+const Shop_Fake = ({ isGridView, searchItem, categoryFilters, isLoading }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const listProduct = useSelector((state) => state.product.listProduct);
+    // Take all list of Category and Manufacturer
+    const listCategory = useSelector((state) => state.category.listCategory);
+    const listManufacturer = useSelector(
+      (state) => state.manufacturer.listManufacturer
+    );
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 3;
   const cartItems = useSelector((state) => state.cart.listCartItems);
@@ -40,6 +45,11 @@ const Shop_Fake = ({ isGridView, searchItem, categoryFilters }) => {
       if (!userCurrentLogged) {
         toast.error("Bạn cần đăng nhập để thêm sản phẩm vào giỏ hàng.");
         return navigate(`/websiteDoAn/Login`);
+      }
+
+      if (cartItems?.length >= 3) {
+        toast.error("Please proceed with checkout before adding more products.");
+        return;
       }
 
       const existingCartItem = cartItems?.find((item) => item.product?.id === product.id);
@@ -93,42 +103,51 @@ const Shop_Fake = ({ isGridView, searchItem, categoryFilters }) => {
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
 
-  const filteredItems = validProducts.filter((item) => {
-    const matchesSearch = item.productName.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesFilter = Object.entries(categoryFilters).some(([key, value]) => {
-      if (value) {
-        switch (key) {
-          case "laptop":
-            return item.productName.toLowerCase().includes("laptop");
-          case "gpu":
-            return item.productName.toLowerCase().includes("gpu");
-          case "$500":
-            return item.unitPrice >= 500 && item.unitPrice < 1000;
-          case "$1000":
-            return item.unitPrice >= 1000 && item.unitPrice <= 2000;
-          case "$2000":
-            return item.unitPrice >= 2000;
-          case "RTX4090":
-          case "RTX4080":
-          case "RTX4070":
-          case "RTX4060":
-          case "RTX4050":
-            return item.specification.some(
-              (spec) => spec.specificationName === "Graphics Card" && spec.specificationData.includes(key)
-            );
-          case "NVIDIA":
-          case "ACER":
-          case "ASUS":
-            return item.manufacturer.name.toLowerCase().includes(key.toLowerCase());
-          default:
-            return false;
-        }
-      }
-      return false;
-    });
+  const filteredItems = listProduct.filter((item) => {
+    const matchesSearch = item.productName.toLowerCase().includes(searchItem.toLowerCase());
 
-    return matchesSearch && (Object.values(categoryFilters).every((filter) => !filter) || matchesFilter);
+    // Kiểm tra nếu sản phẩm thuộc một trong các category được chọn
+    const matchesCategory = listCategory.some(
+      (category) =>
+        categoryFilters[category.name] && item.category?.name.toLowerCase() === category.name.toLowerCase()
+    );
+
+    // Kiểm tra nếu sản phẩm thuộc một trong các manufacturer được chọn
+    const matchesManufacturer = listManufacturer.some(
+      (manufacturer) =>
+        categoryFilters[manufacturer.name] &&
+        item.manufacturer?.name.toLowerCase() === manufacturer.name.toLowerCase()
+    );
+
+      // Kiểm tra mức giá theo priceFilter
+  const matchesPrice = (priceFilter) => {
+    switch (priceFilter) {
+      case "under500":
+        return item.unitPrice <= 500;
+      case "averagePrice":
+        return item.unitPrice > 500 && item.unitPrice <= 1000;
+      case "over1000":
+        return item.unitPrice > 1000 && item.unitPrice <= 2000;
+      case "over2000":
+        return item.unitPrice >= 2000;
+      default:
+        return true;
+    }
+  };
+
+  const matchesPriceFilter = Object.entries(categoryFilters).some(([key, value]) => {
+    if (value) {
+      if (key === "under500" || key === "averagePrice" || key === "over1000" || key === "over2000") {
+        return matchesPrice(key);
+      }
+    }
+    return false;
   });
+
+    // Chỉ trả về những sản phẩm khớp với tìm kiếm và ít nhất một bộ lọc
+    return matchesSearch && (matchesCategory || matchesManufacturer || matchesPriceFilter || !Object.values(categoryFilters).includes(true));
+  });
+  
 
   const currentItems = filteredItems.slice(startIndex, endIndex);
 

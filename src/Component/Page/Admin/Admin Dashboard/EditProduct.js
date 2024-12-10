@@ -160,7 +160,7 @@ function AdminEditProduct({ id, setActiveComponent, showAlert }) {
     files.forEach((file) => {
       formData.append("images", file);
     });
-console.log(formData)
+    console.log(formData);
     try {
       await dispatch(
         productThunk.updateProduct({ id: id, productData: formData })

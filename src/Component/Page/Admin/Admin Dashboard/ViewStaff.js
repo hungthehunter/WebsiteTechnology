@@ -32,22 +32,26 @@ function AdminViewStaff({ id, setActiveComponent }) {
   const [dateOfBirth, setDateOfBirth] = useState("");
   const [fullname, setFullname] = useState("");
   const dispatch = useDispatch();
-  const listAddress = useSelector((state) => 
-    state.address.listAddress.filter(address => address.user.id === id)
-  );
+  const selectedUser = useSelector((state) => state.user.selectedUser);
+  // const listAddress = useSelector((state) => 
+  //   state.address.listAddress.filter(address => address.user.id === id)
+  // );
+
+  const listAddress = (selectedUser?.addresses || []).filter(address => address.status === true);
+
   useEffect(()=>{
    dispatch(userThunk.getUserById(id));
   },[dispatch])
 
-  const selectedUser = useSelector((state) => state.user.selectedUser);
 
   useEffect(() => {
     if (selectedUser) {
-      setFullname(selectedUser.fullname || "");
-      setMobile(selectedUser.mobile || "");
-      setEmail(selectedUser.email || "");
-      setDateOfBirth(selectedUser.dateofbirth || "");
+      setFullname(selectedUser?.fullname || "");
+      setMobile(selectedUser?.mobile || "");
+      setEmail(selectedUser?.email || "");
+      setDateOfBirth(selectedUser?.dateofbirth || "");
       setAddresses(listAddress || []);
+      // setAddresses(selectedUser?.addresses || [])
     }
   }, [selectedUser]);
 

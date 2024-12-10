@@ -31,9 +31,11 @@ function AdminViewCustomer({ id, setActiveComponent }) {
   const [email, setEmail] = useState("");
   const [dateOfBirth, setDateOfBirth] = useState("");
   const [addresses, setAddresses] = useState([]);
-  const listAddress = useSelector((state) => 
-    state.address.listAddress.filter(address => address.user.id === id)
-  );
+  // const listAddress = useSelector((state) => 
+  //   state.address.listAddress.filter(address => address.user.id === id)
+  // );
+  const selectedUser = useSelector((state) => state.user.selectedUser);
+  const listAddress = (selectedUser?.addresses || []).filter(address => address.status === true);
   
   const dispatch = useDispatch();
   useEffect(() => {
@@ -42,7 +44,7 @@ function AdminViewCustomer({ id, setActiveComponent }) {
     }
   }, [dispatch, id]);
 
-  const selectedUser = useSelector((state) => state.user.selectedUser);
+
   
   // Update local state when selectedUser changes
   useEffect(() => {
@@ -55,6 +57,7 @@ function AdminViewCustomer({ id, setActiveComponent }) {
          
       )
       setAddresses(listAddress || []);
+        //  setAddresses(selectedUser?.addresses || [])
     }
   }, [selectedUser]);
 

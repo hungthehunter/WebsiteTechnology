@@ -6,14 +6,16 @@ import {
   Divider,
   Grid,
   TextField,
-  Typography
+  Typography,
 } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { exportThunk } from "../../../../services/redux/thunks/thunk";
+import { exportValidationSchema } from "../../../../services/yup/Admin/Export/exportValidation";
 
 function AdminEditExport({ id, setActiveComponent, showAlert }) {
   //#region logic
+  const [errors, setErrors] = useState({});
   const dispatch = useDispatch();
 
   const [formData, setFormData] = useState({
@@ -53,26 +55,7 @@ function AdminEditExport({ id, setActiveComponent, showAlert }) {
     }
   };
 
-  const handleExportItemsPropertyChange = (index, field, value) => {
-    const newExportItems = [...formData.exportItems];
-    newExportItems[index] = {
-      ...newExportItems[index],
-      [field]: value,
-    };
-
-    return newExportItems;
-  };
-
-  const handleExportItemsChange = (index, field, value) => {
-    const newExportItems = handleExportItemsPropertyChange(index, field, value);
-
-    setFormData((prevFormData) => ({
-      ...prevFormData,
-      exportItems: newExportItems,
-    }));
-  };
-
-  const handleEditExport = (e) => {
+  const handleEditExport = async (e) => {
     e.preventDefault();
 
     const data = new FormData();
@@ -82,16 +65,30 @@ function AdminEditExport({ id, setActiveComponent, showAlert }) {
       new Blob([JSON.stringify(formData)], { type: "application/json" })
     );
 
-    console.log(JSON.stringify(formData));
-
     try {
+      await exportValidationSchema.validate(formData, { abortEarly: false });
+
       dispatch(exportThunk.updateExport({ id: id, exportData: data }));
       showAlert("Update Export successfully.", "success");
       setTimeout(() => setActiveComponent({ name: "AdminExport" }), 1000);
-    } catch (error) {
-      console.error("There was an error updating the export!", error);
-      showAlert("Failed to update export.", "error");
+    } 
+    catch (error) {
+      if (error.name === "ValidationError") {
+        alertValidationError(error);
+      } else {
+        showAlert("Failed to update export", "error");
+      }
     }
+  };
+
+  const alertValidationError = (error) => {
+    const validationErrors = error.inner.reduce((acc, err) => {
+      acc[err.path] = err.message;
+      return acc;
+    }, {});
+    setErrors(validationErrors);
+    console.log(validationErrors);
+    showAlert("Failed to update export. Check the information again", "error");
   };
 
   const getAddressText = (address) => {
@@ -107,8 +104,6 @@ function AdminEditExport({ id, setActiveComponent, showAlert }) {
 
     return "";
   };
-
-  console.log(formData);
 
   //#endregion
 
@@ -133,6 +128,8 @@ function AdminEditExport({ id, setActiveComponent, showAlert }) {
                     InputLabelProps={{ shrink: true }}
                     value={formData.dateExport.split("T")[0]}
                     onChange={handleChange}
+                    error={errors.dateExport}
+                    helperText={errors.dateExport}
                   />
                 </Grid>
                 {/* Order */}
@@ -227,16 +224,8 @@ function AdminEditExport({ id, setActiveComponent, showAlert }) {
                   key={index}
                   sx={{ marginTop: "10px !important" }}
                 >
-                  <Grid
-                    container
-                    item
-                    xs={12}
-                    md={12}
-                  >
-                    <Box
-                      component={"img"}
-                      src={getImage(item.product)}
-                    ></Box>
+                  <Grid container item xs={12} md={12}>
+                    <Box component={"img"} src={getImage(item.product)}></Box>
                   </Grid>
                   <Grid item xs={12} md={6}>
                     <TextField
@@ -285,7 +274,7 @@ function AdminEditExport({ id, setActiveComponent, showAlert }) {
                           "-webkit-text-fill-color": "black !important",
                         },
                       }}
-                      value={item.quanitty}
+                      value={item.quantity}
                       disabled={true}
                       margin="normal"
                     />

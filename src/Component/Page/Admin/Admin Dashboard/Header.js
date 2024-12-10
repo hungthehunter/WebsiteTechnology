@@ -1,6 +1,6 @@
 import { IonIcon } from "@ionic/react";
-import { Alert, Box, Snackbar, TextField } from "@mui/material";
-import { menuOutline, searchOutline } from "ionicons/icons";
+import { Alert, Box, Snackbar } from "@mui/material";
+import { menuOutline } from "ionicons/icons";
 import React from "react";
 import "./assets/css/style.scss";
 
@@ -17,7 +17,7 @@ const AdminHeader = ({
       <Box className="toggle" onClick={toggleMenu} sx={{ cursor: 'pointer', fontSize: '3rem' }}>
         <IonIcon icon={menuOutline} size={30}/>
       </Box>
-      <Box className="search" sx={{ flexGrow: 1, display: 'flex', justifyContent: 'center', marginLeft: 2 }}>
+      {/* <Box className="search" sx={{ flexGrow: 1, display: 'flex', justifyContent: 'center', marginLeft: 2 }}>
         <TextField
           variant="outlined"
           placeholder="Search here..."
@@ -48,7 +48,7 @@ const AdminHeader = ({
             },
           }}
         />
-      </Box>
+      </Box> */}
       <Box className="user">
         {/* User-related logic */}
       </Box>

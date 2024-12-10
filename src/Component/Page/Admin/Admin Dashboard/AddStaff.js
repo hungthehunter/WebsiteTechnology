@@ -12,20 +12,22 @@ import {
   Typography,
 } from "@mui/material";
 import React, { useState } from "react";
-import { useSelector } from "react-redux";
-import { createUser } from "../../../Serivce/ApiService";
+import { useDispatch, useSelector } from "react-redux";
+import { userThunk } from "../../../../services/redux/thunks/thunk";
 import "./assets/css/style.scss";
 
 function AdminAddStaff({ setActiveComponent, showAlert }) {
-  const isLoading = useSelector((state) => state.user.isLoading)
+  const isLoading = useSelector((state) => state.user.isLoading);
+  const dispatch = useDispatch();
   // Form state
   const [fullname, setFullname] = useState("");
   const [mobile, setMobile] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [salary, setSalary] = useState();
   const [role, setRole] = useState("User");
   const [dateOfBirth, setDateOfBirth] = useState("");
-  const [decentralization,setDecentralization] = useState("");
+  const [decentralization, setDecentralization] = useState("");
   const [addressList, setAddressList] = useState([
     {
       houseNumber: "",
@@ -36,8 +38,13 @@ function AdminAddStaff({ setActiveComponent, showAlert }) {
       country: "",
     },
   ]);
-  const listAccess =useSelector((state) => state.access.listAccess);
+  // const listAccess = useSelector((state) => state.access.listAccess);
+  const listDecentralization = useSelector((state) => state.decentralization.listDecentralization);
 
+  // Role
+  const handleRoleChange = (event) => {
+    setRole(event.target.value);
+  };
 
   // Address handlers
   const handleAddressChange = (index, event) => {
@@ -76,13 +83,13 @@ function AdminAddStaff({ setActiveComponent, showAlert }) {
       email,
       password,
       role,
+      salary,
       dateofbirth: formatDate,
       decentralization: { id: decentralization },
       addresses: addressList,
     };
-    console.log("Submitting:", userData);
     try {
-      const response = await createUser(userData);
+      const response = dispatch(userThunk.createUser(userData))
       //Clear form
       setFullname("");
       setMobile("");
@@ -146,6 +153,17 @@ function AdminAddStaff({ setActiveComponent, showAlert }) {
           <Grid item xs={12} md={6}>
             <TextField
               fullWidth
+              label="Salary"
+              variant="outlined"
+              type="number"
+              value={salary}
+              onChange={(e) => setSalary(e.target.value)}
+            />
+          </Grid>
+
+          <Grid item xs={12} md={6}>
+            <TextField
+              fullWidth
               label="Password"
               variant="outlined"
               type="password"
@@ -153,6 +171,21 @@ function AdminAddStaff({ setActiveComponent, showAlert }) {
               onChange={(e) => setPassword(e.target.value)}
             />
           </Grid>
+
+          <Grid item xs={12} md={6}>
+            <FormControl fullWidth margin="normal">
+              <InputLabel id="role-select-label">Role</InputLabel>
+              <Select
+                labelId="role-select-label"
+                value={role}
+                onChange={handleRoleChange}
+              >
+                <MenuItem value="User">User</MenuItem>
+                <MenuItem value="Employee">Employee</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+
           <Grid item xs={12} md={6}>
             <FormControl fullWidth variant="outlined">
               <InputLabel>Access</InputLabel>
@@ -161,10 +194,12 @@ function AdminAddStaff({ setActiveComponent, showAlert }) {
                 onChange={(e) => setDecentralization(e.target.value)}
                 label="Access"
               >
-                <MenuItem value="" disabled>Select access</MenuItem>
-                {listAccess.map((accessItem) => (
-                  <MenuItem key={accessItem.id} value={accessItem.id}>
-                    {accessItem.roleName}
+                <MenuItem value="" disabled>
+                  Select access
+                </MenuItem>
+                {listDecentralization.map((item) => (
+                  <MenuItem key={item.id} value={item.id}>
+                    {item.access.roleName}
                   </MenuItem>
                 ))}
               </Select>
@@ -258,17 +293,16 @@ function AdminAddStaff({ setActiveComponent, showAlert }) {
           </div>
         ))}
         <Grid item xs={12}>
-          <Button
-            variant="contained"
-            startIcon={<Add />}
-            onClick={addAddress}
-          >
+          <Button variant="contained" startIcon={<Add />} onClick={addAddress}>
             Add Address
           </Button>
         </Grid>
         <Grid item xs={12}>
-          <Button type="submit" variant="contained" color="primary"
-          disabled = {isLoading}
+          <Button
+            type="submit"
+            variant="contained"
+            color="primary"
+            disabled={isLoading}
           >
             Confirm
           </Button>
@@ -277,7 +311,7 @@ function AdminAddStaff({ setActiveComponent, showAlert }) {
             variant="outlined"
             color="secondary"
             onClick={() => setActiveComponent({ name: "AdminCustomer" })}
-            disabled = {isLoading}
+            disabled={isLoading}
           >
             Return to Customer List
           </Button>

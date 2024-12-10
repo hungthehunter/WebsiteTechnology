@@ -22,7 +22,9 @@ function AdminEditStaff({ id, setActiveComponent, showAlert }) {
   const [fullname, setFullName] = useState("");
   const [mobile, setMobile] = useState("");
   const [email, setEmail] = useState("");
-  const [role, setRole] = useState("");
+  const [password, setPassword] = useState("");
+  const [salary, setSalary] = useState();
+  const [role, setRole] = useState("User");
   const [status, setStatus] = useState("true");
   const [dateOfBirth, setDateOfBirth] = useState("");
   const [decentralization, setDecentralization] = useState("");
@@ -50,9 +52,13 @@ function AdminEditStaff({ id, setActiveComponent, showAlert }) {
   // Lấy thông tin nhân viên đã chọn
   const selectedUser = useSelector((state) => state.user.selectedUser);
   const isLoading = useSelector((state) => state.user.isLoading);
-  const listAddress = useSelector((state) => 
-    state.address.listAddress.filter(address => address.user.id === id)
+  const listAddress = useSelector((state) =>
+    state.address.listAddress.filter((address) => address.user?.id === id)
   );
+  const listDecentralization = useSelector(
+    (state) => state.decentralization.listDecentralization
+  );
+
   // Cập nhật trạng thái khi selectedUser thay đổi
   useEffect(() => {
     if (selectedUser) {
@@ -65,10 +71,10 @@ function AdminEditStaff({ id, setActiveComponent, showAlert }) {
           ? selectedUser?.dateofbirth?.split("T")[0]
           : ""
       );
-      
-      setRole(selectedUser.role || ""); 
-      setDecentralization(selectedUser?.decentralization?.access.id );
-      setAddresses(listAddress || []); 
+
+      setRole(selectedUser.role || "");
+      setDecentralization(selectedUser?.decentralization?.access.id);
+      setAddresses(listAddress || []);
     }
   }, [selectedUser]);
 
@@ -79,6 +85,11 @@ function AdminEditStaff({ id, setActiveComponent, showAlert }) {
         addrIndex === index ? { ...address, [name]: value } : address
       )
     );
+  };
+
+  // Role
+  const handleRoleChange = (event) => {
+    setRole(event.target.value);
   };
 
   const addAddress = () => {
@@ -130,15 +141,19 @@ function AdminEditStaff({ id, setActiveComponent, showAlert }) {
       fullname: fullname,
       mobile: mobile,
       email: email,
+      password,
+      role,
+      salary,
       status: status,
-      role: "Employee",
       dateofbirth: formatDate,
       decentralization: { id: decentralization },
       addresses: addresses || [],
     };
 
     try {
-      await dispatch(userThunk.updateUser({ id: selectedUser.id, userData: requestBody }));
+      await dispatch(
+        userThunk.updateUser({ id: selectedUser.id, userData: requestBody })
+      );
       showAlert("Edit staff successfully.", "success");
       dispatch(clearSelectedUserId());
       setTimeout(() => setActiveComponent({ name: "AdminStaff" }), 1000);
@@ -150,21 +165,23 @@ function AdminEditStaff({ id, setActiveComponent, showAlert }) {
 
   if (isLoading) {
     return (
-      <Box sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
-        alignItems: 'center',
-        height: '100vh',
-        width: '100vw',
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        backgroundColor: 'black',
-        zIndex: 9999
-      }}>
-        <CircularProgress size={60} thickness={4} sx={{ color: '#4CAF50' }} />
-        <Typography variant="h6" sx={{ mt: 2, color: '#4CAF50' }}>
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+          width: "100vw",
+          position: "fixed",
+          top: 0,
+          left: 0,
+          backgroundColor: "black",
+          zIndex: 9999,
+        }}
+      >
+        <CircularProgress size={60} thickness={4} sx={{ color: "#4CAF50" }} />
+        <Typography variant="h6" sx={{ mt: 2, color: "#4CAF50" }}>
           PLEASE WAIT...
         </Typography>
       </Box>
@@ -196,6 +213,42 @@ function AdminEditStaff({ id, setActiveComponent, showAlert }) {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                 />
+              </Grid>
+
+              <Grid item xs={12} md={6}>
+                <TextField
+                  fullWidth
+                  label="Salary"
+                  variant="outlined"
+                  type="number"
+                  value={salary}
+                  onChange={(e) => setSalary(e.target.value)}
+                />
+              </Grid>
+
+              <Grid item xs={12} md={6}>
+                <TextField
+                  fullWidth
+                  label="Password"
+                  variant="outlined"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+              </Grid>
+
+              <Grid item xs={12} md={6}>
+                <FormControl fullWidth margin="normal">
+                  <InputLabel id="role-select-label">Role</InputLabel>
+                  <Select
+                    labelId="role-select-label"
+                    value={role}
+                    onChange={handleRoleChange}
+                  >
+                    <MenuItem value="User">User</MenuItem>
+                    <MenuItem value="Employee">Employee</MenuItem>
+                  </Select>
+                </FormControl>
               </Grid>
 
               <Grid item xs={12}>
@@ -231,11 +284,14 @@ function AdminEditStaff({ id, setActiveComponent, showAlert }) {
                     label="Access"
                   >
                     <MenuItem value="" disabled>
-                      Select Access
+                      Select access
                     </MenuItem>
-                    {listAccess.map((accessItem) => (
-                      <MenuItem key={accessItem.id} value={accessItem.id}>
-                        {accessItem.roleName}
+                    {listDecentralization.map((decentralization) => (
+                      <MenuItem
+                        key={decentralization.id}
+                        value={decentralization}
+                      >
+                        {decentralization.access.roleName}
                       </MenuItem>
                     ))}
                   </Select>
@@ -334,27 +390,30 @@ function AdminEditStaff({ id, setActiveComponent, showAlert }) {
                   startIcon={<Add />}
                   onClick={addAddress}
                   variant="outlined"
-                  disabled = {isLoading}
+                  disabled={isLoading}
                 >
                   Add Address
                 </Button>
               </Grid>
 
               <Grid item xs={12}>
-                <Button type="submit" variant="contained" color="primary"
-                disabled = {isLoading}
+                <Button
+                  type="submit"
+                  variant="contained"
+                  color="primary"
+                  disabled={isLoading}
                 >
                   Save Changes
                 </Button>
                 <Button
-                variant="outlined"
-                color="secondary"
-                onClick={() => setActiveComponent({ name: "AdminStaff" })}
-                sx={{ marginTop: 0, marginLeft: 2 }}
-                disabled = {isLoading}
-              >
-                Return to Staff
-              </Button>
+                  variant="outlined"
+                  color="secondary"
+                  onClick={() => setActiveComponent({ name: "AdminStaff" })}
+                  sx={{ marginTop: 0, marginLeft: 2 }}
+                  disabled={isLoading}
+                >
+                  Return to Staff
+                </Button>
               </Grid>
             </Grid>
           </form>

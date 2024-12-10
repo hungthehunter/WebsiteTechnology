@@ -203,6 +203,11 @@ function ProductDetail() {
       toast.error("Bạn cần đăng nhập để thêm sản phẩm vào giỏ hàng.");
       return navigate(`/websiteDoAn/Login`);
     }
+
+    if (cartItems?.length >= 3) {
+      toast.error("Please proceed with checkout before adding more products.");
+      return;
+    }
   
     const existingCartItem = cartItems?.find((item) => item.product?.id === product.id);
     const totalPrice = product.unitPrice;

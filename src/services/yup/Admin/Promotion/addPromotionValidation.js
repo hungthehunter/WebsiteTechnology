@@ -1,7 +1,7 @@
 
 import * as Yup from "yup";
 // Validation Schema với Yup
-export const promotionValidationSchema = Yup.object({
+export const addPromotionValidationSchema = Yup.object({
     promotionName: Yup.string().required("Promotion name is required."),
     description: Yup.string(),
     discountPercentage: Yup.number()

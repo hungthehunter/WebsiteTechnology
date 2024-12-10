@@ -15,6 +15,7 @@ import {
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { promotionThunk } from "../../../../services/redux/thunks/thunk";
+import { editValidationschema } from "../../../../services/yup/Admin/Promotion/editPromotionValidation";
 import "./assets/css/style.scss";
 import LoadingOverlay from "./overlay/LoadingOverlay";
 
@@ -24,6 +25,7 @@ function AdminEditPromotion({ id, setActiveComponent, showAlert }) {
   const [promotion, setPromotion] = useState({});
   const [selectedProducts, setSelectedProducts] = useState([]);
   const [selectedCategories, setSelectedCategories] = useState([]);
+  const [errors, setErrors] = useState({});
   const [imageFile, setImageFile] = useState(null); // Ảnh mới
   const dispatch = useDispatch();
 
@@ -72,7 +74,25 @@ function AdminEditPromotion({ id, setActiveComponent, showAlert }) {
     setImageFile(file);
   };
 
+  const validateForm = async () => {
+    try {
+      await editValidationschema.validate(promotion, { abortEarly: false });
+      setErrors({});
+      return true;
+    } catch (err) {
+      const validationErrors = {};
+      err.inner.forEach((error) => {
+        validationErrors[error.path] = error.message;
+      });
+      setErrors(validationErrors);
+      return false;
+    }
+  };
+
   const handleSubmit = async () => {
+    const isValid = await validateForm();
+    if (!isValid) return;
+
     const formData = new FormData();
     const updatedPromotion = {
       ...promotion,
@@ -161,6 +181,8 @@ function AdminEditPromotion({ id, setActiveComponent, showAlert }) {
           label="Name"
           value={promotion.name || ""}
           onChange={handleInputChange("name")}
+          error={!!errors.name}
+          helperText={errors.name}
         />
         <TextField
           fullWidth
@@ -168,6 +190,8 @@ function AdminEditPromotion({ id, setActiveComponent, showAlert }) {
           label="Description"
           value={promotion.description || ""}
           onChange={handleInputChange("description")}
+          error={!!errors.description}
+          helperText={errors.description}
         />
         <TextField
           fullWidth
@@ -176,6 +200,8 @@ function AdminEditPromotion({ id, setActiveComponent, showAlert }) {
           label="Discount Percentage"
           value={promotion.discountPercentage || ""}
           onChange={handleInputChange("discountPercentage")}
+          error={!!errors.discountPercentage}
+          helperText={errors.discountPercentage}
         />
         <TextField
           fullWidth
@@ -185,6 +211,8 @@ function AdminEditPromotion({ id, setActiveComponent, showAlert }) {
           InputLabelProps={{ shrink: true }}
           value={promotion.startDate || ""}
           onChange={handleInputChange("startDate")}
+          error={!!errors.startDate}
+          helperText={errors.startDate}
         />
         <TextField
           fullWidth
@@ -194,7 +222,9 @@ function AdminEditPromotion({ id, setActiveComponent, showAlert }) {
           InputLabelProps={{ shrink: true }}
           value={promotion.endDate || ""}
           onChange={handleInputChange("endDate")}
-        />
+          error={!!errors.endDate}
+          helperText={errors.endDate}
+        />  
 
         {/* Hình ảnh */}
         <Grid container spacing={3}>

@@ -24,6 +24,7 @@ import {
   productThunk,
 } from "../../../../services/redux/thunks/thunk";
 import { importValidationSchema } from "../../../../services/yup/Admin/Import/importValidation";
+// import { getAllProductByManufacturerId } from "../../../Serivce/ApiService";
 
 function AdminAddImport({ setActiveComponent, showAlert }) {
   //#region logic
@@ -239,16 +240,17 @@ function AdminAddImport({ setActiveComponent, showAlert }) {
     try {
       await importValidationSchema.validate(formData, { abortEarly: false });
 
-      dispatch(importThunk.createImport(data));
-      showAlert("Create Import successfully.", "success");
-      setTimeout(() => setActiveComponent({ name: "AdminImport" }), 1000);
-
       setErrors({});
-    } catch (error) {
+      dispatch(importThunk.createImport(data)).then(() => {
+        dispatch(productThunk.getAllProduct());
+      });
+
+      showAlert("Create Import successfully", "success");
+      setTimeout(() => setActiveComponent({ name: "AdminImport" }), 1000);
+    } 
+    catch (error) {
       if (error.name === "ValidationError") {
         alertValidationError(error);
-      } else {
-        showAlert("Failed to add import", "error");
       }
     }
   };

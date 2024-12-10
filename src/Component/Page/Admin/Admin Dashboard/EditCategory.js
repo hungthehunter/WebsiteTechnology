@@ -3,31 +3,28 @@ import {
   Button,
   FormControl,
   Grid,
-  InputAdornment,
   InputLabel,
   MenuItem,
   Select,
   TextField,
-  Typography,
+  Typography
 } from "@mui/material";
 import CircularProgress from "@mui/material/CircularProgress";
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { clearSelectedCategoryId } from "../../../../services/redux/slices/categorySlice";
 import { categoryThunk } from "../../../../services/redux/thunks/thunk";
+import { editCategoryValidationSchema } from "../../../../services/yup/Admin/Category/editCategoryValidation";
 import "./assets/css/style.scss";
-
 function AdminEditCategory({ id, setActiveComponent, showAlert }) {
   const dispatch = useDispatch();
-
-  // State để giữ các giá trị nhập liệu
+  const [errors, setErrors] = useState({});
   const [categoryName, setCategoryName] = useState("");
   const [description, setDescription] = useState("");
   const [selectedProduct, setSelectedProduct] = useState([]);
   const [selectedPromotions, setSelectedPromotions] = useState(null);
   const [imageFile, setImageFile] = useState(null);
 
-  // Dữ liệu lấy từ Redux
   const listProduct = useSelector((state) => state.product.listProduct);
   const listPromotion = useSelector((state) => state.promotion.listPromotion);
   const selectedCategory = useSelector(
@@ -35,12 +32,10 @@ function AdminEditCategory({ id, setActiveComponent, showAlert }) {
   );
   const isLoading = useSelector((state) => state.category.isLoading);
 
-  // Fetch dữ liệu khi component load và khi `id` thay đổi
   useEffect(() => {
     dispatch(categoryThunk.getCategoryById(id));
   }, [dispatch, id]);
 
-  // Đặt giá trị mặc định từ selectedCategory khi có dữ liệu
   useEffect(() => {
     if (selectedCategory) {
       setCategoryName(selectedCategory.name || "");
@@ -52,35 +47,35 @@ function AdminEditCategory({ id, setActiveComponent, showAlert }) {
     }
   }, [selectedCategory]);
 
-  const handleCategoryChange = (e) => {
-    setCategoryName(e.target.value);
-  };
-
-  const handleDescriptionChange = (e) => {
-    setDescription(e.target.value);
-  };
-
-  const handleProductChange = (e) => {
-    setSelectedProduct(e.target.value); // Đảm bảo giá trị giữ nguyên dạng mảng
-  };
-
-  const handlePromotionChange = (e) => {
-    setSelectedPromotions(e.target.value);
-  };
-
-  const handleImageChange = (e) => {
-    setImageFile(e.target.files[0]);
-  };
-
-  const clearForm = () => {
-    setCategoryName("");
-    setDescription("");
-    setSelectedProduct([]); // Reset lại mảng selectedProduct
-    setSelectedPromotions(null); // Reset selectedPromotions
-    setImageFile(null); // Xóa file ảnh
+  const validateFields = async () => {
+    try {
+      const data = {
+        categoryName,
+        description,
+        imageFile,
+        selectedPromotions,
+        selectedProduct,
+      };
+      await editCategoryValidationSchema.validate(data, { abortEarly: false });
+      setErrors({});
+      return true;
+    } catch (validationErrors) {
+      const tempErrors = {};
+      validationErrors.inner.forEach((err) => {
+        tempErrors[err.path] = err.message;
+      });
+      setErrors(tempErrors);
+      return false;
+    }
   };
 
   const handleSave = async (id) => {
+    const isValid = await validateFields();
+    if (!isValid) {
+      showAlert("Please correct the errors before proceeding.", "error");
+      return;
+    }
+
     const formData = new FormData();
     const categoryDTO = {
       name: categoryName,
@@ -104,15 +99,12 @@ function AdminEditCategory({ id, setActiveComponent, showAlert }) {
       );
       showAlert("Category updated successfully.", "success");
       dispatch(clearSelectedCategoryId());
-      clearForm();
       setActiveComponent({ name: "AdminCategory" });
     } catch (error) {
       console.error("Error updating category:", error);
       showAlert("Failed to update category.", "error");
     }
   };
-
-  const filterProducts = listProduct.filter((item) => (item.category && selectedCategory) && (!item.category.id || item.category.id == selectedCategory.id))
 
   if (isLoading) {
     return (
@@ -138,119 +130,92 @@ function AdminEditCategory({ id, setActiveComponent, showAlert }) {
       </Box>
     );
   }
+
   return (
     <Box sx={{ padding: 4 }}>
       <Typography variant="h4" sx={{ marginBottom: 2 }}>
         Update Category
       </Typography>
-      <form id="editForm">
-        <Grid container spacing={2}>
-          <TextField
-            fullWidth
-            margin="normal"
-            label="Category Name"
-            value={categoryName}
-            onChange={handleCategoryChange}
-          />
-          <TextField
-            fullWidth
-            margin="normal"
-            label="Description"
-            value={description}
-            onChange={handleDescriptionChange}
-          />
-
-          {/* Product Selection */}
-          <FormControl fullWidth margin="normal" variant="outlined">
-            <InputLabel id="product-select-label">Select Product</InputLabel>
-            <Select
-              labelId="product-select-label"
-              value={selectedProduct}
-              onChange={handleProductChange}
-              label="Select Product"
-              multiple
-            >
-              <MenuItem value={null}>None</MenuItem>
-              {filterProducts.length > 0 ? (
-                filterProducts.map((product) => (
-                  <MenuItem key={product.id} value={product.id}>
-                    {product.productName}
-                  </MenuItem>
-                ))
-              ) : (
-                <MenuItem disabled value="">
-                  No products available
-                </MenuItem>
-              )}
-            </Select>
-          </FormControl>
-
-          {/* Promotion Selection */}
-          <FormControl fullWidth margin="normal">
-            <InputLabel id="promotion-select-label">
-              Select Promotion
-            </InputLabel>
-            <Select
-              labelId="promotion-select-label"
-              value={selectedPromotions}
-              onChange={handlePromotionChange}
-              label="Select Promotion"
-            >
-              <MenuItem value={null}>None</MenuItem>
-              {listPromotion.length > 0 ? (
-                listPromotion.map((promotion) => (
-                  <MenuItem key={promotion.id} value={promotion.id}>
-                    {promotion.name}
-                  </MenuItem>
-                ))
-              ) : (
-                <MenuItem disabled value="">
-                  No promotion available
-                </MenuItem>
-              )}
-            </Select>
-          </FormControl>
-
-          {/* Image Upload */}
-          <TextField
-            type="file"
-            fullWidth
-            margin="normal"
-            label="Category Image"
-            InputLabelProps={{ shrink: true }}
-            inputProps={{ accept: "image/*" }}
-            onChange={handleImageChange}
-            InputProps={{
-              endAdornment: (
-                <InputAdornment position="end">
-                  <Button variant="contained" component="span">
-                    Upload
-                  </Button>
-                </InputAdornment>
-              ),
-            }}
-          />
-
-          {/* Submit Button */}
-          <Grid item xs={12}>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={() => handleSave(selectedCategory.id)}
-            >
-              Update Category
-            </Button>
-            <Button
-              variant="outlined"
-              color="secondary"
-              onClick={() => setActiveComponent({ name: "AdminCategory" })}
-              sx={{ marginTop: 0, marginLeft: 2 }}
-            >
-              Return to Category
-            </Button>
-          </Grid>
+      <Grid container spacing={2}>
+        <TextField
+          fullWidth
+          margin="normal"
+          label="Category Name"
+          value={categoryName}
+          onChange={(e) => setCategoryName(e.target.value)}
+          error={!!errors.categoryName}
+          helperText={errors.categoryName}
+        />
+        <TextField
+          fullWidth
+          margin="normal"
+          label="Description"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          error={!!errors.description}
+          helperText={errors.description}
+        />
+        <FormControl fullWidth margin="normal">
+          <InputLabel id="product-select-label">Select Product</InputLabel>
+          <Select
+            labelId="product-select-label"
+            value={selectedProduct}
+            onChange={(e) => setSelectedProduct(e.target.value)}
+            label="Select Product"
+            multiple
+          >
+            {listProduct.map((product) => (
+              <MenuItem key={product.id} value={product.id}>
+                {product.productName}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+        <FormControl fullWidth margin="normal">
+          <InputLabel id="promotion-select-label">Select Promotion</InputLabel>
+          <Select
+            labelId="promotion-select-label"
+            value={selectedPromotions}
+            onChange={(e) => setSelectedPromotions(e.target.value)}
+            label="Select Promotion"
+          >
+            <MenuItem value={null}>None</MenuItem>
+            {listPromotion.map((promotion) => (
+              <MenuItem key={promotion.id} value={promotion.id}>
+                {promotion.name}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+        <TextField
+          type="file"
+          fullWidth
+          margin="normal"
+          label="Category Image"
+          InputLabelProps={{ shrink: true }}
+          inputProps={{ accept: "image/*" }}
+          onChange={(e) => setImageFile(e.target.files[0])}
+          error={!!errors.imageFile}
+          helperText={errors.imageFile}
+        />
+        <Grid item xs={12}>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => handleSave(selectedCategory.id)}
+          >
+            Update Category
+          </Button>
+          <Button
+            variant="outlined"
+            color="secondary"
+            onClick={() => setActiveComponent({ name: "AdminCategory" })}
+            sx={{ marginLeft: 2 }}
+          >
+            Return to Category
+          </Button>
         </Grid>
-      </form>
+      </Grid>
     </Box>
   );
 }

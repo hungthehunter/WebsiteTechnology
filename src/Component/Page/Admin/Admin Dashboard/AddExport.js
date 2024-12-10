@@ -19,6 +19,7 @@ import { useDispatch, useSelector } from "react-redux";
 import {
   exportThunk,
   orderThunk,
+  productThunk,
 } from "../../../../services/redux/thunks/thunk";
 import { exportValidationSchema } from "../../../../services/yup/Admin/Export/exportValidation";
 
@@ -114,7 +115,10 @@ function AdminAddExport({ setActiveComponent, showAlert }) {
     try {
       await exportValidationSchema.validate(formData, { abortEarly: false });
 
-      dispatch(exportThunk.createExport(data));
+      dispatch(exportThunk.createExport(data)).then(() => {
+        dispatch(productThunk.getAllProduct());
+      });
+      
       showAlert("Create Export successfully.", "success");
       setTimeout(() => setActiveComponent({ name: "AdminExport" }), 1000);
     } 

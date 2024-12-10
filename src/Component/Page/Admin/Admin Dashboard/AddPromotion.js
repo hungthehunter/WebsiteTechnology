@@ -12,8 +12,7 @@ import {
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { promotionThunk } from "../../../../services/redux/thunks/thunk";
-import { promotionValidationSchema } from "../../../../services/yup/Admin/Promotion/promotionValidation";
-
+import { addPromotionValidationSchema } from "../../../../services/yup/Admin/Promotion/addPromotionValidation";
 
 function AdminAddPromotion({ setActiveComponent, showAlert }) {
   const dispatch = useDispatch();
@@ -48,7 +47,7 @@ function AdminAddPromotion({ setActiveComponent, showAlert }) {
         applicableProducts: selectedProducts,
         applicableCategories: selectedCategories,
       };
-      promotionValidationSchema.validateSync(formData, { abortEarly: false });
+      addPromotionValidationSchema.validateSync(formData, { abortEarly: false });
       return true;  // Valid form
     } catch (error) {
       // If validation fails, set errors

@@ -1,6 +1,12 @@
 import SearchIcon from "@mui/icons-material/Search";
 import {
+  Box,
   Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   InputAdornment,
   Paper,
   Table,
@@ -10,9 +16,8 @@ import {
   TableHead,
   TableRow,
   TextField,
-  Typography,
+  Typography
 } from "@mui/material";
-import Box from "@mui/material/Box";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { accessThunk, decentralizationThunk } from "../../../../services/redux/thunks/thunk";
@@ -22,6 +27,8 @@ function AdminAccess({ setActiveComponent, showAlert }) {
   const isLoading = useSelector((state) => state.access.isLoading);
   const listFunction = useSelector((state) => state.function.listFunction);
   const listAccess = useSelector((state) => state.access.listAccess);
+  const [openDialog, setOpenDialog] = useState(false);
+  const [selectedId, setSelectedId] = useState(null);
   const listDecentralization = useSelector((state) => state.decentralization.listDecentralization)
   const dispatch = useDispatch();
   const [showAccessTable, setShowAccessTable] = useState(true);
@@ -37,6 +44,16 @@ function AdminAccess({ setActiveComponent, showAlert }) {
   const filteredFunctions = listFunction.filter((functionItem) =>
     functionItem.functionName.toLowerCase().includes(searchFunction.toLowerCase())
   );
+
+  const handleOpenDialog = (id) => {
+    setSelectedId(id);
+    setOpenDialog(true);
+  };
+
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+    setSelectedId(null);
+  };
 
   useEffect(() => {
     const loadAccessList = async () => {
@@ -54,14 +71,16 @@ function AdminAccess({ setActiveComponent, showAlert }) {
     setShowAccessTable((prev) => !prev);
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = () => {
     try {
-      dispatch(decentralizationThunk.deleteDecentralization(id));
+      dispatch(decentralizationThunk.deleteDecentralization(selectedId));
       showAlert("Delete access successfully", "success");
     } catch (error) {
       showAlert("Failed to delete access", "error");
       console.error("Error deleting access:", error);
     }
+    setOpenDialog(false);
+    setSelectedId(null);
   }
 
   return (
@@ -181,7 +200,7 @@ function AdminAccess({ setActiveComponent, showAlert }) {
                       <Button
                         variant="outlined"
                         color="error"
-                        onClick={() => handleDelete(decentralization.id)}
+                        onClick={() => handleOpenDialog(decentralization.id)}
                         disabled={isLoading}
                       >
                         Delete
@@ -225,6 +244,23 @@ function AdminAccess({ setActiveComponent, showAlert }) {
           </TableContainer>
         )}
       </Box>
+              {/* Dialog for confirming delete */}
+              <Dialog open={openDialog} onClose={handleCloseDialog}>
+        <DialogTitle>Confirm Delete</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to delete this product? This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDialog} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={handleDelete} color="error">
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

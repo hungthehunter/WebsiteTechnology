@@ -1,37 +1,95 @@
 import SearchIcon from '@mui/icons-material/Search';
-import { Box, Button, InputAdornment, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Typography } from '@mui/material';
+import {
+  Box,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  InputAdornment,
+  MenuItem,
+  Paper,
+  Popover,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  TextField,
+  Typography,
+} from '@mui/material';
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { productThunk } from '../../../../services/redux/thunks/thunk';
 import './assets/css/style.scss';
 
 function AdminProduct({ setActiveComponent, showAlert }) {
-  const [searchQuery, setSearchQuery] = useState(""); // State for search query
+  const [searchQuery, setSearchQuery] = useState("");
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [sortBy, setSortBy] = useState("");
+  const [openDialog, setOpenDialog] = useState(false);
+  const [selectedProductId, setSelectedProductId] = useState(null);
   const listProduct = useSelector((state) => state.product.listProduct);
   const dispatch = useDispatch();
 
-  const handleDelete = async (id) => {
-    if (window.confirm("Are you sure you want to delete this product?")) {
-      try {
-        await dispatch(productThunk.deleteProduct(id));
-        await dispatch(productThunk.getAllProduct());
-        showAlert("Delete product successfully.", "success");
-      } catch (error) {
-        console.error("Error deleting product:", error);
-        showAlert("Failed to delete product.", "error");
-      }
+  const handleDelete = async () => {
+    try {
+      await dispatch(productThunk.deleteProduct(selectedProductId));
+      await dispatch(productThunk.getAllProduct());
+      showAlert("Product deleted successfully.", "success");
+    } catch (error) {
+      console.error("Error deleting product:", error);
+      showAlert("Failed to delete product.", "error");
     }
+    setOpenDialog(false);
+    setSelectedProductId(null);
   };
 
-  // Handle Search Change
   const handleSearchChange = (event) => {
     setSearchQuery(event.target.value);
   };
 
-  // Filter products based on search query
-  const filteredProducts = listProduct.filter((product) =>
+  const handleClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClosePopover = () => {
+    setAnchorEl(null);
+  };
+
+  const handleSortChange = (criteria) => {
+    setSortBy(criteria);
+    setAnchorEl(null);
+  };
+
+  const handleOpenDialog = (id) => {
+    setSelectedProductId(id);
+    setOpenDialog(true);
+  };
+
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+    setSelectedProductId(null);
+  };
+
+  const sortedProducts = [...listProduct].sort((a, b) => {
+    if (!sortBy) return 0;
+    if (sortBy === 'category') {
+      return (a.category?.name || "").localeCompare(b.category?.name || "");
+    } else if (sortBy === 'manufacturer') {
+      return (a.manufacturer?.name || "").localeCompare(b.manufacturer?.name || "");
+    }
+    return 0;
+  });
+
+  const filteredProducts = sortedProducts.filter((product) =>
     product.productName.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const openPopover = Boolean(anchorEl);
+  const idPopover = openPopover ? 'sort-popover' : undefined;
 
   return (
     <Box sx={{ padding: 2 }}>
@@ -47,12 +105,17 @@ function AdminProduct({ setActiveComponent, showAlert }) {
           margin: '0 auto',
         }}
       >
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: 2,
+          }}
+        >
           <Typography variant="h4" gutterBottom sx={{ fontSize: '2.5rem' }}>
-            Recent Product
+            Recent Products
           </Typography>
-
-          {/* Search Field and Add New Product Button in a Row */}
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <TextField
               placeholder="Search by name"
@@ -79,52 +142,107 @@ function AdminProduct({ setActiveComponent, showAlert }) {
                 '& .MuiInputBase-input::placeholder': {
                   fontSize: '1rem',
                 },
-                marginRight: 2, // Space between search and button
+                marginRight: 2,
               }}
             />
             <Button
               variant="contained"
               color="primary"
-              onClick={() => setActiveComponent({ name: "AdminAddProduct" })}
+              onClick={() => setActiveComponent({ name: 'AdminAddProduct' })}
+              sx={{ marginRight: 2 }}
             >
               + Add New Product
             </Button>
+            <Button
+              variant="outlined"
+              aria-controls={openPopover ? 'sort-popover' : undefined}
+              aria-haspopup="true"
+              aria-expanded={openPopover ? 'true' : undefined}
+              onClick={handleClick}
+            >
+              Sort By
+            </Button>
+            <Popover
+              id={idPopover}
+              open={openPopover}
+              anchorEl={anchorEl}
+              onClose={handleClosePopover}
+              anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+              transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+            >
+              <MenuItem onClick={() => handleSortChange('category')}>Category</MenuItem>
+              <MenuItem onClick={() => handleSortChange('manufacturer')}>Manufacturer</MenuItem>
+              <MenuItem onClick={() => handleSortChange('')}>Clear Filters</MenuItem>
+            </Popover>
           </Box>
         </Box>
 
-        {/* Product Table */}
         <TableContainer component={Paper}>
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell style={{ textAlign: "start", fontSize: '1.5rem' }}>Id</TableCell>
-                <TableCell style={{ textAlign: "start", fontSize: '1.5rem' }}>Name</TableCell>
-                <TableCell style={{ textAlign: "end", fontSize: '1.5rem' }}>Price</TableCell>
-                <TableCell style={{ textAlign: "end", fontSize: '1.5rem' }}>Quantity</TableCell>
-                <TableCell style={{ textAlign: "end", fontSize: '1.5rem' }}>Status</TableCell>
-                <TableCell style={{ textAlign: "end", fontSize: '1.5rem' }}>Action</TableCell>
+                <TableCell style={{ textAlign: 'start', fontSize: '1.5rem' }}>Id</TableCell>
+                <TableCell style={{ textAlign: 'start', fontSize: '1.5rem' }}>Name</TableCell>
+                <TableCell style={{ textAlign: 'end', fontSize: '1.5rem' }}>Price</TableCell>
+                <TableCell style={{ textAlign: 'end', fontSize: '1.5rem' }}>Quantity</TableCell>
+                <TableCell style={{ textAlign: 'end', fontSize: '1.5rem' }}>Category</TableCell>
+                <TableCell style={{ textAlign: 'end', fontSize: '1.5rem' }}>Manufacturer</TableCell>
+                <TableCell style={{ textAlign: 'end', fontSize: '1.5rem' }}>Status</TableCell>
+                <TableCell style={{ textAlign: 'end', fontSize: '1.5rem' }}>Actions</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {filteredProducts.map((product) => (
                 <TableRow key={product.id}>
-                  <TableCell style={{ textAlign: "start", fontSize: '1.3rem' }}>{product.id}</TableCell>
-                  <TableCell style={{ textAlign: "start", fontSize: '1.3rem' }}>{product.productName}</TableCell>
-                  <TableCell style={{ textAlign: "end", fontSize: '1.3rem' }}>${product.unitPrice}</TableCell>
-                  <TableCell style={{ textAlign: "end", fontSize: '1.3rem' }}>{product.unitInStock}</TableCell>
-                  <TableCell style={{ textAlign: "end", fontSize: '1.3rem' }}>
-                    <span className={`status ${product.unitInStock > 0 ? 'inprogress' : 'deleting'}`}>
-                      {product.unitInStock > 0 ? 'In stock' : 'Out of stock'}
+                  <TableCell style={{ textAlign: 'start', fontSize: '1.3rem' }}>{product?.id}</TableCell>
+                  <TableCell style={{ textAlign: 'start', fontSize: '1.3rem' }}>{product?.productName}</TableCell>
+                  <TableCell style={{ textAlign: 'end', fontSize: '1.3rem' }}>${product?.unitPrice}</TableCell>
+                  <TableCell style={{ textAlign: 'end', fontSize: '1.3rem' }}>{product?.unitInStock}</TableCell>
+                  <TableCell style={{ textAlign: 'end', fontSize: '1.3rem' }}>
+                    <span className="status shipped">
+                      {product?.category == null ? 'None' : product?.category?.name}
                     </span>
                   </TableCell>
-                  <TableCell style={{ textAlign: "end", fontSize: '1.3rem' }}>
-                    <Button variant="outlined" onClick={() => setActiveComponent({ name: "AdminViewProduct", props: { id: product.id } })}>
+                  <TableCell style={{ textAlign: 'end', fontSize: '1.3rem' }}>
+                    <span className="status viewing">
+                      {product?.manufacturer == null ? 'None' : product?.manufacturer?.name}
+                    </span>
+                  </TableCell>
+                  <TableCell style={{ textAlign: 'end', fontSize: '1.3rem' }}>
+                    <span
+                      className={`status ${product.unitInStock > 0 ? 'inprogress' : 'deleting'}`}
+                    >
+                      {product.unitInStock > 0 ? 'In Stock' : 'Out of Stock'}
+                    </span>
+                  </TableCell>
+                  <TableCell style={{ textAlign: 'end', fontSize: '1.3rem' }}>
+                    <Button
+                      variant="outlined"
+                      onClick={() =>
+                        setActiveComponent({
+                          name: 'AdminViewProduct',
+                          props: { id: product.id },
+                        })
+                      }
+                    >
                       View
                     </Button>
-                    <Button variant="outlined" onClick={() => setActiveComponent({ name: "AdminEditProduct", props: { id: product.id } })}>
+                    <Button
+                      variant="outlined"
+                      onClick={() =>
+                        setActiveComponent({
+                          name: 'AdminEditProduct',
+                          props: { id: product.id },
+                        })
+                      }
+                    >
                       Edit
                     </Button>
-                    <Button variant="outlined" color="error" onClick={() => handleDelete(product.id)}>
+                    <Button
+                      variant="outlined"
+                      color="error"
+                      onClick={() => handleOpenDialog(product.id)}
+                    >
                       Delete
                     </Button>
                   </TableCell>
@@ -132,7 +250,11 @@ function AdminProduct({ setActiveComponent, showAlert }) {
               ))}
               {filteredProducts.length === 0 && (
                 <TableRow className="nouser">
-                  <TableCell colSpan={6} className="inform" style={{ textAlign: "center", paddingTop: 100 }}>
+                  <TableCell
+                    colSpan={8}
+                    className="inform"
+                    style={{ textAlign: 'center', paddingTop: 100 }}
+                  >
                     No products found
                   </TableCell>
                 </TableRow>
@@ -141,6 +263,24 @@ function AdminProduct({ setActiveComponent, showAlert }) {
           </Table>
         </TableContainer>
       </Box>
+
+      {/* Dialog for confirming delete */}
+      <Dialog open={openDialog} onClose={handleCloseDialog}>
+        <DialogTitle>Confirm Delete</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to delete this product? This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDialog} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={handleDelete} color="error">
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

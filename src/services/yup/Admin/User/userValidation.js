@@ -24,7 +24,7 @@ export const userValidationSchema = yup.object().shape({
     .required("Password is required."),
   role: yup
     .string()
-    .oneOf(["User", "Admin"], "Invalid role selected.")
+    .oneOf(["User", "Employee"], "Invalid role selected.")
     .required("Role is required."),
   dateOfBirth: yup
     .date()
@@ -41,7 +41,6 @@ export const userValidationSchema = yup.object().shape({
       }
       return age >= minAge;
     }),
-  decentralization: yup.object().required("Access is required."),
   addresses: yup
     .array()
     .of(

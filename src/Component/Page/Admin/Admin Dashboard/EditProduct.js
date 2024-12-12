@@ -162,9 +162,11 @@ function AdminEditProduct({ id, setActiveComponent, showAlert }) {
     });
     console.log(formData);
     try {
-      await dispatch(
+      dispatch(
         productThunk.updateProduct({ id: id, productData: formData })
-      );
+      ).then(() => {
+        dispatch(productThunk.getAllProduct());
+      });
       showAlert("Edit product successfully.", "success");
       dispatch(clearSelectedProductId());
       setTimeout(() => setActiveComponent({ name: "AdminProduct" }), 1000);

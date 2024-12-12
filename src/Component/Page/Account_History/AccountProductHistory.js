@@ -73,7 +73,6 @@ const AccountProductHistory = ({ setActiveComponent }) => {
         unitPrice: item.product.unitPrice,
         quantity: item.quantity,
         productImage: `${item.product.product_image.find((img) => img.mainImage)?.url || ""}` ,
-        status: item.product.unitInStock > 0 ? "In stock" : "Out of stock"
       }))
     );
 
@@ -91,7 +90,6 @@ const AccountProductHistory = ({ setActiveComponent }) => {
             <TableCell>Name</TableCell>
             <TableCell align="right">Price</TableCell>
             <TableCell align="right">Quantity</TableCell>
-            <TableCell align="right">Status</TableCell>
             <TableCell align="right">Action</TableCell>
           </TableRow>
         </TableHead>
@@ -110,17 +108,7 @@ const AccountProductHistory = ({ setActiveComponent }) => {
                 <TableCell>{product?.productName}</TableCell>
                 <TableCell align="right">${product?.unitPrice?.toFixed(2)}</TableCell>
                 <TableCell align="right">{product?.quantity}</TableCell>
-                <TableCell align="right">
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      color: product.unitInStock > 0 ? 'success.main' : 'error.main',
-                      fontWeight: 500
-                    }}
-                  >
-                    {product.unitInStock > 0 ? "In stock" : "Out of stock"}
-                  </Typography>
-                </TableCell>
+               
                 <TableCell align="right">
                   <StyledDeleteButton variant="contained" size="small"
                   onClick={()=>navigate(`/websiteDoAn/ProductDetail/${product.id}`)}
@@ -147,3 +135,6 @@ const AccountProductHistory = ({ setActiveComponent }) => {
 };
 
 export default AccountProductHistory;
+
+
+

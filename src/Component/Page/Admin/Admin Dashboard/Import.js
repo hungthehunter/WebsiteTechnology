@@ -19,7 +19,6 @@ import "./assets/css/style.scss";
 
 function AdminImport({ setActiveComponent, showAlert }) {
   const importList = useSelector((state) => state.import.listImport);
-
   // State cho tìm kiếm
   const [searchManufacturer, setSearchManufacturer] = useState("");
 
@@ -29,6 +28,8 @@ function AdminImport({ setActiveComponent, showAlert }) {
       .toLowerCase()
       .includes(searchManufacturer.toLowerCase())
   );
+
+
 
   return (
     <Box sx={{ padding: 2 }}>

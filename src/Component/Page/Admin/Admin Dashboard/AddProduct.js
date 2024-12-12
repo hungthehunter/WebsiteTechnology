@@ -14,7 +14,7 @@ import {
 } from "@mui/material";
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { productThunk } from "../../../../services/redux/thunks/thunk";
+import { categoryThunk, manufacturerThunk, productThunk, promotionThunk } from "../../../../services/redux/thunks/thunk";
 import {
   productImageValidationSchema,
   productValidationSchema,
@@ -165,6 +165,9 @@ const AdminAddProduct = ({ setActiveComponent, showAlert }) => {
 
       dispatch(productThunk.createProduct(productData));
       dispatch(productThunk.getAllProduct());
+      dispatch(promotionThunk.getAllPromotions());
+      dispatch(manufacturerThunk.getAllManufacturers());
+      dispatch(categoryThunk.getAllCategories());
       showAlert("Add product successfully.", "success");
       setErrors({});
 

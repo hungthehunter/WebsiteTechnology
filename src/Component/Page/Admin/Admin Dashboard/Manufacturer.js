@@ -2,6 +2,11 @@ import SearchIcon from "@mui/icons-material/Search";
 import {
   Box,
   Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   InputAdornment,
   Paper,
   Table,
@@ -11,7 +16,7 @@ import {
   TableHead,
   TableRow,
   TextField,
-  Typography,
+  Typography
 } from "@mui/material";
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -21,7 +26,9 @@ import "./assets/css/style.scss";
 function AdminManufacturer({ setActiveComponent, showAlert }) {
   /*------- State -------*/
   const [searchQuery, setSearchQuery] = useState("");
-
+  const [openDialog, setOpenDialog] = useState(false);
+  const [selectedId, setSelectedId] = useState(null);
+  const [selectedName, setSelectedName] = useState(null);
   /*------- Redux State & Hooks -------*/
   const listManufacturer = useSelector((state) => state.manufacturer.listManufacturer);
   const listProduct = useSelector((state) => state.product.listProduct);
@@ -33,6 +40,18 @@ function AdminManufacturer({ setActiveComponent, showAlert }) {
     setSearchQuery(event.target.value);
   };
 
+  const handleOpenDialog = (id,name) => {
+    setSelectedId(id);
+    setSelectedName(name)
+    setOpenDialog(true);
+  };
+
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+    setSelectedName(null);
+    setSelectedId(null);
+  };
+
   // Check if manufacturer exists in products
   const checkManufacturerNameExists = (name) => {
     return listProduct.some(
@@ -41,9 +60,8 @@ function AdminManufacturer({ setActiveComponent, showAlert }) {
   };
 
   // DELETE: Delete manufacturer by id
-  const handleDelete = async (id, name) => {
-    if (window.confirm("Are you sure you want to delete this manufacturer?")) {
-      if (checkManufacturerNameExists(name)) {
+  const handleDelete = async () => {
+      if (checkManufacturerNameExists(selectedName)) {
         showAlert(
           "This manufacturer is associated with existing products. Cannot delete.",
           "warn"
@@ -51,7 +69,7 @@ function AdminManufacturer({ setActiveComponent, showAlert }) {
         setTimeout(() => setActiveComponent({ name: "AdminProduct" }), 1000);
       } else {
         try {
-          await dispatch(manufacturerThunk.deleteManufacturer(id));
+          await dispatch(manufacturerThunk.deleteManufacturer(selectedId));
           showAlert("Delete manufacturer successfully", "success");
           dispatch(manufacturerThunk.getAllManufacturers());
           setActiveComponent({ name: "AdminManufacturer" });
@@ -60,7 +78,8 @@ function AdminManufacturer({ setActiveComponent, showAlert }) {
           console.error("Error deleting manufacturer:", error);
         }
       }
-    }
+      setOpenDialog(false);
+      setSelectedId(null);
   };
 
   /*------- Filtered List -------*/
@@ -199,7 +218,7 @@ function AdminManufacturer({ setActiveComponent, showAlert }) {
                     <Button
                       variant="outlined"
                       color="error"
-                      onClick={() => handleDelete(manufacturer.id, manufacturer.name)}
+                      onClick={() => handleOpenDialog(manufacturer.id,manufacturer.name)}
                     >
                       Delete
                     </Button>
@@ -217,6 +236,23 @@ function AdminManufacturer({ setActiveComponent, showAlert }) {
           </Table>
         </TableContainer>
       </Box>
+            {/* Dialog for confirming delete */}
+            <Dialog open={openDialog} onClose={handleCloseDialog}>
+        <DialogTitle>Confirm Delete</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to delete this product? This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDialog} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={handleDelete} color="error">
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

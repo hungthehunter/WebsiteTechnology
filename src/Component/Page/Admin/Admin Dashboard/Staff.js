@@ -2,6 +2,11 @@ import SearchIcon from "@mui/icons-material/Search";
 import {
   Box,
   Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   InputAdornment,
   MenuItem,
   Paper,
@@ -28,6 +33,8 @@ function AdminStaff({ setActiveComponent, showAlert }) {
   const [anchorEl, setAnchorEl] = useState(null);
   const [roleFilter, setRoleFilter] = useState(""); // Role filter (User or Employee)
   const [sortOption, setSortOption] = useState("fullname");
+  const [openDialog, setOpenDialog] = useState(false); // Dialog state
+  const [selectedId, setSelectedId] = useState(null);
 
   const handleSearchChange = (event) => {
     setSearchQuery(event.target.value);
@@ -51,10 +58,20 @@ function AdminStaff({ setActiveComponent, showAlert }) {
     handleClose();
   };
 
+  const handleOpenDialog = (id) => {
+    setSelectedId(id);
+    setOpenDialog(true);
+  };
+
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+    setSelectedId(null);
+  };
+
   // Filter users based on role and search query
   const filteredUsers = listUser
-    .filter((user) =>
-      roleFilter ? user.role === roleFilter : true // Apply role filter if selected
+    .filter(
+      (user) => (roleFilter ? user.role === roleFilter : true) // Apply role filter if selected
     )
     .filter((user) =>
       user.fullname.toLowerCase().includes(searchQuery.toLowerCase())
@@ -70,7 +87,6 @@ function AdminStaff({ setActiveComponent, showAlert }) {
   const id = open ? "simple-popover" : undefined;
 
   const handleDelete = async (id) => {
-    if (window.confirm("Are you sure you want to delete this user?")) {
       try {
         await dispatch(userThunk.deleteUser(id));
         await dispatch(userThunk.getAllUsers());
@@ -79,7 +95,8 @@ function AdminStaff({ setActiveComponent, showAlert }) {
         showAlert("Failed to delete staff successfully.", "error");
         console.error("Error deleting user:", error);
       }
-    }
+      setOpenDialog(false);
+      setSelectedId(null);
   };
 
   return (
@@ -260,7 +277,7 @@ function AdminStaff({ setActiveComponent, showAlert }) {
                     <Button
                       variant="outlined"
                       color="error"
-                      onClick={() => handleDelete(user.id)}
+                      onClick={() => handleOpenDialog(user.id)}
                     >
                       Delete
                     </Button>
@@ -287,6 +304,37 @@ function AdminStaff({ setActiveComponent, showAlert }) {
             background-color: #ff9800;
           }
         `}</style>
+
+        {/* Dialog for Deletion Confirmation */}
+        <Dialog
+          open={openDialog}
+          onClose={handleCloseDialog}
+          aria-labelledby="alert-dialog-title"
+          aria-describedby="alert-dialog-description"
+        >
+          <DialogTitle id="alert-dialog-title">
+            {"Confirm Deletion"}
+          </DialogTitle>
+          <DialogContent>
+            <DialogContentText id="alert-dialog-description">
+              Are you sure you want to delete this user? This action cannot be
+              undone.
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleCloseDialog} color="primary">
+              Cancel
+            </Button>
+            <Button
+              onClick={handleDelete}
+              color="error"
+              variant="contained"
+              autoFocus
+            >
+              Confirm
+            </Button>
+          </DialogActions>
+        </Dialog>
       </Box>
     </Box>
   );

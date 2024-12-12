@@ -117,6 +117,7 @@ function AdminAddExport({ setActiveComponent, showAlert }) {
 
       dispatch(exportThunk.createExport(data)).then(() => {
         dispatch(productThunk.getAllProduct());
+        dispatch(orderThunk.getAllOrders());
       });
       
       showAlert("Create Export successfully.", "success");
@@ -157,7 +158,8 @@ function AdminAddExport({ setActiveComponent, showAlert }) {
 
   //#endregion
 
-  const filterOrders = orders.filter((item) => item.status);
+  const filterOrders = orders.filter((item) => item.order_status === "Pending" && item.status);
+  console.log(orders);
 
   return (
     <Grid container justifyContent="center" alignItems="center">

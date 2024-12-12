@@ -2,6 +2,11 @@ import SearchIcon from "@mui/icons-material/Search";
 import {
   Box,
   Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   InputAdornment,
   Paper,
   Table,
@@ -11,7 +16,7 @@ import {
   TableHead,
   TableRow,
   TextField,
-  Typography,
+  Typography
 } from "@mui/material";
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -19,6 +24,8 @@ import { promotionThunk } from "../../../../services/redux/thunks/thunk";
 
 const AdminPromotion = ({ setActiveComponent, showAlert }) => {
   const dispatch = useDispatch();
+  const [openDialog, setOpenDialog] = useState(false);
+  const [selectedId, setSelectedId] = useState(null);
   const listPromotion = useSelector((state) => state.promotion.listPromotion);
 
   // State cho tìm kiếm
@@ -29,16 +36,28 @@ const AdminPromotion = ({ setActiveComponent, showAlert }) => {
     promotion.name.toLowerCase().includes(searchKeyword.toLowerCase())
   );
 
+  const handleOpenDialog = (id) => {
+    setSelectedId(id);
+    setOpenDialog(true);
+  };
+
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+    setSelectedId(null);
+  };
+
   // DELETE: Delete promotion by id from Database
-  const handleDelete = async (id) => {
+  const handleDelete = async () => {
     try {
-      dispatch(promotionThunk.deletePromotion(id));
+      dispatch(promotionThunk.deletePromotion(selectedId));
       dispatch(promotionThunk.getAllPromotions());
       showAlert("Delete promotion successfully", "success");
     } catch (error) {
       showAlert("Failed to delete promotion", "error");
       console.error("Error deleting promotion:", error);
     }
+    setOpenDialog(false);
+    setSelectedId(null);
   };
 
   return (
@@ -181,7 +200,7 @@ const AdminPromotion = ({ setActiveComponent, showAlert }) => {
                     <Button
                       variant="outlined"
                       color="error"
-                      onClick={() => handleDelete(promotion.id)}
+                      onClick={() => handleOpenDialog(promotion.id)}
                     >
                       Delete
                     </Button>
@@ -202,6 +221,23 @@ const AdminPromotion = ({ setActiveComponent, showAlert }) => {
           </Table>
         </TableContainer>
       </Box>
+        {/* Dialog for confirming delete */}
+        <Dialog open={openDialog} onClose={handleCloseDialog}>
+        <DialogTitle>Confirm Delete</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to delete this product? This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDialog} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={handleDelete} color="error">
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

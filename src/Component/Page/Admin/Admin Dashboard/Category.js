@@ -2,6 +2,11 @@ import SearchIcon from "@mui/icons-material/Search";
 import {
   Box,
   Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   InputAdornment,
   Paper,
   Table,
@@ -23,6 +28,8 @@ function AdminCategory({ setActiveComponent, showAlert }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [anchorEl, setAnchorEl] = useState(null);
   const [sortOption, setSortOption] = useState("");
+  const [openDialog, setOpenDialog] = useState(false);
+  const [selectedId, setSelectedId] = useState(null);
   const dispatch = useDispatch();
   const listCategory = useSelector((state) => state.category.listCategory);
 
@@ -44,6 +51,16 @@ function AdminCategory({ setActiveComponent, showAlert }) {
     setAnchorEl(null);
   };
 
+  const handleOpenDialog = (id) => {
+    setSelectedId(id);
+    setOpenDialog(true);
+  };
+
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+    setSelectedId(null);
+  };
+
   const open = Boolean(anchorEl);
   const id = open ? "category-sort-menu" : undefined;
 
@@ -57,14 +74,16 @@ function AdminCategory({ setActiveComponent, showAlert }) {
       return 0;
     });
 
-  const handleDelete = async (id) => {
+  const handleDelete = async () => {
     try {
-      dispatch(categoryThunk.deleteCategory(id));
+      dispatch(categoryThunk.deleteCategory(selectedId));
       showAlert("Delete category successfully", "success");
     } catch (error) {
       showAlert("Failed to delete category", "error");
       console.error("Error deleting category:", error);
     }
+    setOpenDialog(false);
+    setSelectedId(null);
   };
 
   /*------- UI -------*/
@@ -190,7 +209,7 @@ function AdminCategory({ setActiveComponent, showAlert }) {
                       <Button
                         variant="outlined"
                         color="error"
-                        onClick={() => handleDelete(category.id)}
+                        onClick={() => handleOpenDialog(category.id)}
                       >
                         Delete
                       </Button>
@@ -215,6 +234,24 @@ function AdminCategory({ setActiveComponent, showAlert }) {
           </Table>
         </TableContainer>
       </Box>
+
+      {/* Dialog for confirming delete */}
+      <Dialog open={openDialog} onClose={handleCloseDialog}>
+        <DialogTitle>Confirm Delete</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to delete this product? This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDialog} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={handleDelete} color="error">
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

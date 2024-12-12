@@ -16,7 +16,7 @@ import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { clearSelectedUserId } from "../../../../services/redux/slices/userSlice";
 import { userThunk } from "../../../../services/redux/thunks/thunk";
-import { editUserValidationSchema } from "../../../../services/yup/Admin/editUserValidation";
+import { editUserValidationSchema } from "../../../../services/yup/Admin/User/editUserValidation";
 import "./assets/css/style.scss";
 
 function AdminEditCustomer({ id, setActiveComponent, showAlert }) {

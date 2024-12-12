@@ -2,6 +2,11 @@ import SearchIcon from "@mui/icons-material/Search";
 import {
   Box,
   Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   InputAdornment,
   MenuItem,
   Paper,
@@ -13,7 +18,7 @@ import {
   TableHead,
   TableRow,
   TextField,
-  Typography,
+  Typography
 } from "@mui/material";
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -25,7 +30,9 @@ function AdminOrder({ setActiveComponent, showAlert }) {
   const dispatch = useDispatch();
   const [activeIndex, setActiveIndex] = useState(null);
   const [anchorEl, setAnchorEl] = useState(null);
+  const [openDialog, setOpenDialog] = useState(false);
   const [sortOption, setSortOption] = useState("productName"); // Default sorting option
+  const [selectedId, setSelectedId] = useState(null);
   const [searchQuery, setSearchQuery] = useState(""); // New state for search query
 
   const formatOrderStatus = (status) => {
@@ -48,21 +55,31 @@ function AdminOrder({ setActiveComponent, showAlert }) {
   const open = Boolean(anchorEl);
   const id = open ? "simple-popover" : undefined;
 
-  const handleDelete = async (id) => {
-    if (window.confirm("Are you sure you want to delete this order?")) {
+  const handleDelete = async () => {
       try {
-        await dispatch(orderThunk.deleteOrder(id));
+        await dispatch(orderThunk.deleteOrder(selectedId));
         await dispatch(orderThunk.getAllOrders());
         showAlert("Delete order successfully", "success");
       } catch (error) {
         showAlert("Delete order successfully", "error");
         console.error("Error deleting order:", error);
       }
-    }
+      setOpenDialog(false);
+      setSelectedId(null);
   };
 
   const handleSearchChange = (event) => {
     setSearchQuery(event.target.value);
+  };
+
+  const handleOpenDialog = (id) => {
+    setSelectedId(id);
+    setOpenDialog(true);
+  };
+
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+    setSelectedId(null);
   };
 
   // Filter orders based on user fullname and sort option
@@ -245,7 +262,7 @@ function AdminOrder({ setActiveComponent, showAlert }) {
                     <Button
                       variant="outlined"
                       color="error"
-                      onClick={() => handleDelete(order.id)}
+                      onClick={() => handleOpenDialog(order.id)}
                     >
                       Delete
                     </Button>
@@ -256,6 +273,24 @@ function AdminOrder({ setActiveComponent, showAlert }) {
           </Table>
         </TableContainer>
       </Box>
+
+        {/* Dialog for confirming delete */}
+        <Dialog open={openDialog} onClose={handleCloseDialog}>
+        <DialogTitle>Confirm Delete</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to delete this product? This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDialog} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={handleDelete} color="error">
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

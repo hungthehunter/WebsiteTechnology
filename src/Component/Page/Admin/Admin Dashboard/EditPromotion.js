@@ -3,14 +3,10 @@ import {
   Button,
   Card,
   CardMedia,
-  FormControl,
   Grid,
-  InputLabel,
-  MenuItem,
-  Select,
   TextField,
   Typography,
-  useTheme,
+  useTheme
 } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -33,11 +29,11 @@ function AdminEditPromotion({ id, setActiveComponent, showAlert }) {
     (state) => state.promotion.selectedPromotion
   );
 
-  const listProducts = useSelector((state) => state.product.listProduct);
-  const listCategories = useSelector((state) => state.category.listCategory);
+  // const listProducts = useSelector((state) => state.product.listProduct);
+  // const listCategories = useSelector((state) => state.category.listCategory);
 
-  const [filterProducts, setFilterProducts] = useState(listProducts.filter((item) => !item.promotion || !item.promotion.id))
-  const [filterCategories, setFilterCategories] = useState(null);
+  // const [filterProducts, setFilterProducts] = useState(listProducts.filter((item) => !item.promotion || !item.promotion.id))
+  // const [filterCategories, setFilterCategories] = useState(null);
 
   useEffect(() => {
     dispatch(promotionThunk.getPromotionById(id));
@@ -96,8 +92,8 @@ function AdminEditPromotion({ id, setActiveComponent, showAlert }) {
     const formData = new FormData();
     const updatedPromotion = {
       ...promotion,
-      applicableProducts: selectedProducts?.map((id) => ({ id })),
-      applicableCategories: selectedCategories?.map((id) => ({ id })),
+      // applicableProducts: selectedProducts?.map((id) => ({ id })),
+      // applicableCategories: selectedCategories?.map((id) => ({ id })),
     };
 
     formData.append(
@@ -124,41 +120,41 @@ function AdminEditPromotion({ id, setActiveComponent, showAlert }) {
     }
   };
 
-  useEffect(() => {
-    filtProduct();
-  }, [selectedCategories])
+  // useEffect(() => {
+  //   filtProduct();
+  // }, [selectedCategories])
 
-  const filtProduct = () => {
-    const available = listProducts.filter((item) => !item.promotion || !item.promotion.id);
-    let products = [...available];
-    let current = [...selectedProducts];
+  // const filtProduct = () => {
+  //   const available = listProducts.filter((item) => !item.promotion || !item.promotion.id);
+  //   let products = [...available];
+  //   let current = [...selectedProducts];
 
-    if (selectedCategories.length == 0) {
-      setFilterProducts(available);
-      return;
-    }
+  //   if (selectedCategories.length == 0) {
+  //     setFilterProducts(available);
+  //     return;
+  //   }
 
-    for (let categoryId of selectedCategories){
-      let category = listCategories.find((item) => item.id === categoryId);
-      if (!category || !category.products) continue;
+  //   for (let categoryId of selectedCategories){
+  //     let category = listCategories.find((item) => item.id === categoryId);
+  //     if (!category || !category.products) continue;
 
-      category.products?.forEach((item) => {
-        products = products.filter((product) => product.id === item.id);
-        current = current.filter((productId) => productId === item.id);
-      })
-    }
+  //     category.products?.forEach((item) => {
+  //       products = products.filter((product) => product.id !== item.id);
+  //       current = current.filter((productId) => productId === item.id);
+  //     })
+  //   }
 
-    setFilterProducts(products);
-    setSelectedProducts(current);
-  }
+  //   setFilterProducts(products);
+  //   setSelectedProducts(current);
+  // }
 
-  useEffect(() => {
-    if (selectedCategories.length == 0) return;
-    if (filterCategories != null) return;
-    setFilterCategories(listCategories.filter((item) => {
-      return (!item.promotion || !item.promotion.id) || selectedCategories.find((id) => item.id === id) !== undefined;
-    }))
-  }, [selectedCategories])
+  // useEffect(() => {
+  //   if (selectedCategories.length == 0) return;
+  //   if (filterCategories != null) return;
+  //   setFilterCategories(listCategories.filter((item) => {
+  //     return (!item.promotion || !item.promotion.id) || selectedCategories.find((id) => item.id === id) !== undefined;
+  //   }))
+  // }, [selectedCategories])
 
   return (
     <Box sx={{ padding: 4 }}>
@@ -262,7 +258,7 @@ function AdminEditPromotion({ id, setActiveComponent, showAlert }) {
         </Grid>
 
         {/* Các sản phẩm và danh mục áp dụng */}
-        <FormControl fullWidth margin="normal">
+        {/* <FormControl fullWidth margin="normal">
           <InputLabel id="product-select-label">Applicable Products</InputLabel>
           <Select
             labelId="product-select-label"
@@ -305,7 +301,7 @@ function AdminEditPromotion({ id, setActiveComponent, showAlert }) {
               </MenuItem>
             ))}
           </Select>
-        </FormControl>
+        </FormControl> */}
 
         {/* Nút lưu và quay lại */}
         <Box sx={{ marginTop: 4 }}>

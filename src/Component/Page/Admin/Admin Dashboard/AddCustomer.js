@@ -14,12 +14,14 @@ import {
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { userThunk } from "../../../../services/redux/thunks/thunk";
+import { customerValidationSchema } from "../../../../services/yup/Admin/User/addUserValidation"; // Import your validation schema
 import "./assets/css/style.scss";
 
 function AdminAddCustomer({ setActiveComponent, showAlert }) {
   const isLoading = useSelector((state) => state.user.isLoading);
   const dispatch = useDispatch();
-  // Form state
+
+  // State của form
   const [fullname, setFullname] = useState("");
   const [mobile, setMobile] = useState("");
   const [email, setEmail] = useState("");
@@ -38,15 +40,20 @@ function AdminAddCustomer({ setActiveComponent, showAlert }) {
       country: "",
     },
   ]);
-  // const listAccess = useSelector((state) => state.access.listAccess);
-  const listDecentralization = useSelector((state) => state.decentralization.listDecentralization);
 
-  // Role
+  // State lỗi
+  const [errors, setErrors] = useState({});
+
+  const listDecentralization = useSelector(
+    (state) => state.decentralization.listDecentralization
+  );
+
+  // Thay đổi role
   const handleRoleChange = (event) => {
     setRole(event.target.value);
   };
 
-  // Address handlers
+  // Xử lý thay đổi địa chỉ
   const handleAddressChange = (index, event) => {
     const newAddressList = [...addressList];
     newAddressList[index][event.target.name] = event.target.value;
@@ -72,9 +79,42 @@ function AdminAddCustomer({ setActiveComponent, showAlert }) {
     setAddressList(newAddressList);
   };
 
-  // Handle form submission
+  // Hàm xác thực
+  const validate = () => {
+    try {
+      customerValidationSchema.validateSync(
+        {
+          fullname,
+          mobile,
+          email,
+          password,
+          salary,
+          dateOfBirth,
+          decentralization,
+          addresses: addressList,
+        },
+        { abortEarly: false }
+      );
+      return {}; // Nếu không có lỗi
+    } catch (err) {
+      const validationErrors = {};
+      err.inner.forEach((e) => {
+        validationErrors[e.path] = e.message;
+      });
+      return validationErrors;
+    }
+  };
+
+  // Xử lý submit
   const handleSubmit = async (event) => {
     event.preventDefault();
+
+    const validationErrors = validate(); // Lấy lỗi xác thực
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors); // Đặt lỗi vào state
+      return; // Dừng lại nếu có lỗi
+    }
+
     const FormatDateOfBirth = new Date(dateOfBirth);
     const formatDate = FormatDateOfBirth.toISOString().split("T")[0];
     const userData = {
@@ -85,12 +125,13 @@ function AdminAddCustomer({ setActiveComponent, showAlert }) {
       role,
       salary,
       dateofbirth: formatDate,
-      decentralization: { id: decentralization },
+      decentralization: decentralization,
       addresses: addressList,
     };
+
     try {
-      const response = dispatch(userThunk.createUser(userData))
-      //Clear form
+      const response = await dispatch(userThunk.createUser(userData));
+      // Xóa form sau khi thêm thành công
       setFullname("");
       setMobile("");
       setEmail("");
@@ -107,7 +148,6 @@ function AdminAddCustomer({ setActiveComponent, showAlert }) {
           country: "",
         },
       ]);
-      console.log(response);
       showAlert("Add staff successfully.", "success");
       setTimeout(() => setActiveComponent({ name: "AdminStaff" }), 1000);
     } catch (error) {
@@ -118,7 +158,7 @@ function AdminAddCustomer({ setActiveComponent, showAlert }) {
   return (
     <Box sx={{ padding: 4 }}>
       <Typography variant="h4" gutterBottom>
-        Information for New Staff
+        Information for New Customer
       </Typography>
       <form onSubmit={handleSubmit}>
         <Grid container spacing={2}>
@@ -129,6 +169,8 @@ function AdminAddCustomer({ setActiveComponent, showAlert }) {
               variant="outlined"
               value={fullname}
               onChange={(e) => setFullname(e.target.value)}
+              error={Boolean(errors.fullname)}
+              helperText={errors.fullname}
             />
           </Grid>
           <Grid item xs={12} md={6}>
@@ -139,6 +181,8 @@ function AdminAddCustomer({ setActiveComponent, showAlert }) {
               variant="outlined"
               value={mobile}
               onChange={(e) => setMobile(e.target.value)}
+              error={Boolean(errors.mobile)}
+              helperText={errors.mobile}
             />
           </Grid>
           <Grid item xs={12} md={6}>
@@ -148,6 +192,8 @@ function AdminAddCustomer({ setActiveComponent, showAlert }) {
               variant="outlined"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              error={Boolean(errors.email)}
+              helperText={errors.email}
             />
           </Grid>
           <Grid item xs={12} md={6}>
@@ -158,6 +204,8 @@ function AdminAddCustomer({ setActiveComponent, showAlert }) {
               type="number"
               value={salary}
               onChange={(e) => setSalary(e.target.value)}
+              error={Boolean(errors.salary)}
+              helperText={errors.salary}
             />
           </Grid>
 
@@ -169,6 +217,8 @@ function AdminAddCustomer({ setActiveComponent, showAlert }) {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              error={Boolean(errors.password)}
+              helperText={errors.password}
             />
           </Grid>
 
@@ -193,16 +243,22 @@ function AdminAddCustomer({ setActiveComponent, showAlert }) {
                 value={decentralization}
                 onChange={(e) => setDecentralization(e.target.value)}
                 label="Access"
+                error={Boolean(errors.decentralization)}
               >
                 <MenuItem value="" disabled>
                   Select access
                 </MenuItem>
                 {listDecentralization.map((item) => (
-                  <MenuItem key={item.id} value={item.id}>
+                  <MenuItem key={item.id} value={item}>
                     {item.access.roleName}
                   </MenuItem>
                 ))}
               </Select>
+              {errors.decentralization && (
+                <Typography color="error" variant="caption">
+                  {errors.decentralization}
+                </Typography>
+              )}
             </FormControl>
           </Grid>
           <Grid item xs={12} md={6}>
@@ -214,9 +270,12 @@ function AdminAddCustomer({ setActiveComponent, showAlert }) {
               InputLabelProps={{ shrink: true }}
               value={dateOfBirth}
               onChange={(e) => setDateOfBirth(e.target.value)}
+              error={Boolean(errors.dateOfBirth)}
+              helperText={errors.dateOfBirth}
             />
           </Grid>
         </Grid>
+
         {/* Address Section */}
         {addressList.map((address, index) => (
           <div key={index} style={{ marginTop: 20 }}>
@@ -230,6 +289,8 @@ function AdminAddCustomer({ setActiveComponent, showAlert }) {
                   variant="outlined"
                   value={address.houseNumber}
                   onChange={(e) => handleAddressChange(index, e)}
+                  error={Boolean(errors?.addresses?.[index]?.houseNumber)}
+                  helperText={errors?.addresses?.[index]?.houseNumber}
                 />
               </Grid>
               <Grid item xs={12} md={4}>
@@ -240,6 +301,8 @@ function AdminAddCustomer({ setActiveComponent, showAlert }) {
                   variant="outlined"
                   value={address.street}
                   onChange={(e) => handleAddressChange(index, e)}
+                  error={Boolean(errors?.addresses?.[index]?.street)}
+                  helperText={errors?.addresses?.[index]?.street}
                 />
               </Grid>
               <Grid item xs={12} md={4}>
@@ -250,6 +313,8 @@ function AdminAddCustomer({ setActiveComponent, showAlert }) {
                   variant="outlined"
                   value={address.ward}
                   onChange={(e) => handleAddressChange(index, e)}
+                  error={Boolean(errors?.addresses?.[index]?.ward)}
+                  helperText={errors?.addresses?.[index]?.ward}
                 />
               </Grid>
               <Grid item xs={12} md={4}>
@@ -260,6 +325,8 @@ function AdminAddCustomer({ setActiveComponent, showAlert }) {
                   variant="outlined"
                   value={address.district}
                   onChange={(e) => handleAddressChange(index, e)}
+                  error={Boolean(errors?.addresses?.[index]?.district)}
+                  helperText={errors?.addresses?.[index]?.district}
                 />
               </Grid>
               <Grid item xs={12} md={4}>
@@ -270,6 +337,8 @@ function AdminAddCustomer({ setActiveComponent, showAlert }) {
                   variant="outlined"
                   value={address.city}
                   onChange={(e) => handleAddressChange(index, e)}
+                  error={Boolean(errors?.addresses?.[index]?.city)}
+                  helperText={errors?.addresses?.[index]?.city}
                 />
               </Grid>
               <Grid item xs={12} md={4}>
@@ -280,6 +349,8 @@ function AdminAddCustomer({ setActiveComponent, showAlert }) {
                   variant="outlined"
                   value={address.country}
                   onChange={(e) => handleAddressChange(index, e)}
+                  error={Boolean(errors?.addresses?.[index]?.country)}
+                  helperText={errors?.addresses?.[index]?.country}
                 />
               </Grid>
             </Grid>
@@ -292,6 +363,7 @@ function AdminAddCustomer({ setActiveComponent, showAlert }) {
             </IconButton>
           </div>
         ))}
+
         <Grid item xs={12}>
           <Button variant="contained" startIcon={<Add />} onClick={addAddress}>
             Add Address

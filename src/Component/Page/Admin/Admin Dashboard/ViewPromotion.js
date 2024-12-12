@@ -127,7 +127,7 @@ function AdminViewPromotion({ id, setActiveComponent }) {
                   />
                 </ListItem>
                 <Divider />
-                <ListItem>
+                {/* <ListItem>
                   <CategoryIcon sx={{ mr: 2 }} />
                   <ListItemText
                     primary="Applicable Categories"
@@ -155,7 +155,7 @@ function AdminViewPromotion({ id, setActiveComponent }) {
                     }
                     primaryTypographyProps={{ variant: "h6" }}
                   />
-                </ListItem>
+                </ListItem> */}
               </List>
             </Grid>
           </Grid>

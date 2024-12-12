@@ -14,11 +14,13 @@ import {
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { userThunk } from "../../../../services/redux/thunks/thunk";
+import { customerValidationSchema } from "../../../../services/yup/Admin/User/addUserValidation";
 import "./assets/css/style.scss";
 
 function AdminAddStaff({ setActiveComponent, showAlert }) {
   const isLoading = useSelector((state) => state.user.isLoading);
   const dispatch = useDispatch();
+
   // Form state
   const [fullname, setFullname] = useState("");
   const [mobile, setMobile] = useState("");
@@ -38,8 +40,12 @@ function AdminAddStaff({ setActiveComponent, showAlert }) {
       country: "",
     },
   ]);
-  // const listAccess = useSelector((state) => state.access.listAccess);
-  const listDecentralization = useSelector((state) => state.decentralization.listDecentralization);
+
+  const [errors, setErrors] = useState({}); // State to store validation errors
+
+  const listDecentralization = useSelector(
+    (state) => state.decentralization.listDecentralization
+  );
 
   // Role
   const handleRoleChange = (event) => {
@@ -75,22 +81,44 @@ function AdminAddStaff({ setActiveComponent, showAlert }) {
   // Handle form submission
   const handleSubmit = async (event) => {
     event.preventDefault();
-    const FormatDateOfBirth = new Date(dateOfBirth);
-    const formatDate = FormatDateOfBirth.toISOString().split("T")[0];
-    const userData = {
-      fullname,
-      mobile,
-      email,
-      password,
-      role,
-      salary,
-      dateofbirth: formatDate,
-      decentralization: { id: decentralization },
-      addresses: addressList,
-    };
+
     try {
-      const response = dispatch(userThunk.createUser(userData))
-      //Clear form
+      // Validate the form
+      const values = {
+        fullname,
+        mobile,
+        email,
+        password,
+        role,
+        salary,
+        dateOfBirth,
+        decentralization,
+        addresses: addressList,
+      };
+
+      // Validate using Yup
+      await customerValidationSchema.validate(values, { abortEarly: false });
+
+      // If validation passes, clear errors and proceed with the form submission
+      setErrors({});
+
+      const FormatDateOfBirth = new Date(dateOfBirth);
+      const formatDate = FormatDateOfBirth.toISOString().split("T")[0];
+      const userData = {
+        fullname,
+        mobile,
+        email,
+        password,
+        role,
+        salary,
+        dateofbirth: formatDate,
+        decentralization,
+        addresses: addressList,
+      };
+
+      const response = dispatch(userThunk.createUser(userData));
+
+      // Clear form
       setFullname("");
       setMobile("");
       setEmail("");
@@ -107,11 +135,20 @@ function AdminAddStaff({ setActiveComponent, showAlert }) {
           country: "",
         },
       ]);
-      console.log(response);
+
       showAlert("Add staff successfully.", "success");
       setTimeout(() => setActiveComponent({ name: "AdminStaff" }), 1000);
     } catch (error) {
-      showAlert("Failed to add staff.", "error");
+      // If validation fails, update the errors state
+      if (error.name === "ValidationError") {
+        const newErrors = {};
+        error.inner.forEach((err) => {
+          newErrors[err.path] = err.message;
+        });
+        setErrors(newErrors);
+      } else {
+        showAlert("Failed to add staff.", "error");
+      }
     }
   };
 
@@ -129,6 +166,8 @@ function AdminAddStaff({ setActiveComponent, showAlert }) {
               variant="outlined"
               value={fullname}
               onChange={(e) => setFullname(e.target.value)}
+              error={!!errors.fullname}
+              helperText={errors.fullname}
             />
           </Grid>
           <Grid item xs={12} md={6}>
@@ -139,6 +178,8 @@ function AdminAddStaff({ setActiveComponent, showAlert }) {
               variant="outlined"
               value={mobile}
               onChange={(e) => setMobile(e.target.value)}
+              error={!!errors.mobile}
+              helperText={errors.mobile}
             />
           </Grid>
           <Grid item xs={12} md={6}>
@@ -148,6 +189,8 @@ function AdminAddStaff({ setActiveComponent, showAlert }) {
               variant="outlined"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              error={!!errors.email}
+              helperText={errors.email}
             />
           </Grid>
           <Grid item xs={12} md={6}>
@@ -158,6 +201,8 @@ function AdminAddStaff({ setActiveComponent, showAlert }) {
               type="number"
               value={salary}
               onChange={(e) => setSalary(e.target.value)}
+              error={!!errors.salary}
+              helperText={errors.salary}
             />
           </Grid>
 
@@ -169,6 +214,8 @@ function AdminAddStaff({ setActiveComponent, showAlert }) {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              error={!!errors.password}
+              helperText={errors.password}
             />
           </Grid>
 
@@ -193,18 +240,23 @@ function AdminAddStaff({ setActiveComponent, showAlert }) {
                 value={decentralization}
                 onChange={(e) => setDecentralization(e.target.value)}
                 label="Access"
+                error={!!errors.decentralization}
               >
                 <MenuItem value="" disabled>
                   Select access
                 </MenuItem>
                 {listDecentralization.map((item) => (
-                  <MenuItem key={item.id} value={item.id}>
+                  <MenuItem key={item.id} value={item}>
                     {item.access.roleName}
                   </MenuItem>
                 ))}
               </Select>
+              {errors.decentralization && (
+                <Typography color="error">{errors.decentralization}</Typography>
+              )}
             </FormControl>
           </Grid>
+
           <Grid item xs={12} md={6}>
             <TextField
               fullWidth
@@ -214,9 +266,12 @@ function AdminAddStaff({ setActiveComponent, showAlert }) {
               InputLabelProps={{ shrink: true }}
               value={dateOfBirth}
               onChange={(e) => setDateOfBirth(e.target.value)}
+              error={!!errors.dateOfBirth}
+              helperText={errors.dateOfBirth}
             />
           </Grid>
         </Grid>
+
         {/* Address Section */}
         {addressList.map((address, index) => (
           <div key={index} style={{ marginTop: 20 }}>
@@ -230,6 +285,8 @@ function AdminAddStaff({ setActiveComponent, showAlert }) {
                   variant="outlined"
                   value={address.houseNumber}
                   onChange={(e) => handleAddressChange(index, e)}
+                  error={!!errors.addresses?.[index]?.houseNumber}
+                  helperText={errors.addresses?.[index]?.houseNumber}
                 />
               </Grid>
               <Grid item xs={12} md={4}>
@@ -240,6 +297,8 @@ function AdminAddStaff({ setActiveComponent, showAlert }) {
                   variant="outlined"
                   value={address.street}
                   onChange={(e) => handleAddressChange(index, e)}
+                  error={!!errors.addresses?.[index]?.street}
+                  helperText={errors.addresses?.[index]?.street}
                 />
               </Grid>
               <Grid item xs={12} md={4}>
@@ -250,6 +309,8 @@ function AdminAddStaff({ setActiveComponent, showAlert }) {
                   variant="outlined"
                   value={address.ward}
                   onChange={(e) => handleAddressChange(index, e)}
+                  error={!!errors.addresses?.[index]?.ward}
+                  helperText={errors.addresses?.[index]?.ward}
                 />
               </Grid>
               <Grid item xs={12} md={4}>
@@ -260,6 +321,8 @@ function AdminAddStaff({ setActiveComponent, showAlert }) {
                   variant="outlined"
                   value={address.district}
                   onChange={(e) => handleAddressChange(index, e)}
+                  error={!!errors.addresses?.[index]?.district}
+                  helperText={errors.addresses?.[index]?.district}
                 />
               </Grid>
               <Grid item xs={12} md={4}>
@@ -270,6 +333,8 @@ function AdminAddStaff({ setActiveComponent, showAlert }) {
                   variant="outlined"
                   value={address.city}
                   onChange={(e) => handleAddressChange(index, e)}
+                  error={!!errors.addresses?.[index]?.city}
+                  helperText={errors.addresses?.[index]?.city}
                 />
               </Grid>
               <Grid item xs={12} md={4}>
@@ -280,6 +345,8 @@ function AdminAddStaff({ setActiveComponent, showAlert }) {
                   variant="outlined"
                   value={address.country}
                   onChange={(e) => handleAddressChange(index, e)}
+                  error={!!errors.addresses?.[index]?.country}
+                  helperText={errors.addresses?.[index]?.country}
                 />
               </Grid>
             </Grid>
@@ -292,6 +359,7 @@ function AdminAddStaff({ setActiveComponent, showAlert }) {
             </IconButton>
           </div>
         ))}
+
         <Grid item xs={12}>
           <Button variant="contained" startIcon={<Add />} onClick={addAddress}>
             Add Address

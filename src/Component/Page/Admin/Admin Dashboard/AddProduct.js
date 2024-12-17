@@ -1,11 +1,13 @@
+import { Delete } from "@mui/icons-material";
 import {
   Box,
   Button,
   Card,
   CardContent,
+  CircularProgress,
   FormControl,
-  FormHelperText,
   Grid,
+  IconButton,
   InputLabel,
   MenuItem,
   Select,
@@ -14,510 +16,404 @@ import {
 } from "@mui/material";
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { categoryThunk, manufacturerThunk, productThunk, promotionThunk } from "../../../../services/redux/thunks/thunk";
-import {
-  productImageValidationSchema,
-  productValidationSchema,
-} from "../../../../services/yup/Admin/Product/productValidation";
-import LoadingOverlay from "./overlay/LoadingOverlay";
+import { addedProduct } from "../../../../services/redux/slices/productSlice";
+import { productThunk } from "../../../../services/redux/thunks/thunk";
+import "./assets/css/style.scss";
 
-const AdminAddProduct = ({ setActiveComponent, showAlert }) => {
-  const [errors, setErrors] = useState({});
-
+function AdminAddProduct({ setActiveComponent, showAlert }) {
   const isLoading = useSelector((state) => state.product.isLoading);
-  const defaultSpecifications = [
-    { specificationName: "CPU", specificationData: "" },
-    { specificationName: "RAM", specificationData: "" },
-    { specificationName: "Hard Drive", specificationData: "" },
-    { specificationName: "Graphics Card", specificationData: "" },
-    { specificationName: "Screen", specificationData: "" },
-    { specificationName: "Port", specificationData: "" },
-    { specificationName: "Keyboard", specificationData: "" },
-    { specificationName: "LAN", specificationData: "" },
-    { specificationName: "Wireless", specificationData: "" },
-    { specificationName: "Bluetooth", specificationData: "" },
-    { specificationName: "Operating System", specificationData: "" },
-    { specificationName: "Battery", specificationData: "" },
-    { specificationName: "Weight", specificationData: "" },
-    { specificationName: "Color", specificationData: "" },
-    { specificationName: "Size", specificationData: "" },
-    { specificationName: "Relationship", specificationData: "" },
-  ];
-
-  const [formData, setFormData] = useState({
-    productName: "",
-    cpu: "",
-    gpu: "",
-    unitPrice: "",
-    unitInStock: "",
-    unitInOrder: "",
-    batteryCapacity: "",
-    operatingSystem: "",
-    screen: "",
-    ram: "",
-    design: "",
-    warrantyInformation: "",
-    generalInformation: "",
-    status: true,
-    category: {
-      id: null,
-    },
-    manufacturer: {
-      id: "",
-    },
-    promotion: {
-      id: null,
-    },
-    specification: defaultSpecifications, // Khởi tạo với các specification mặc định
-  });
-
   const dispatch = useDispatch();
-  const [files, setFiles] = useState([]);
-  const [mainFile, setMainFile] = useState();
   const listCategory = useSelector((state) => state.category.listCategory);
   const listManufacturer = useSelector(
     (state) => state.manufacturer.listManufacturer
   );
   const listPromotion = useSelector((state) => state.promotion.listPromotion);
 
-  const handleAddSpecification = () => {
-    setFormData((prevFormData) => ({
-      ...prevFormData,
-      specification: [
-        ...prevFormData.specification,
-        { specificationName: "", specificationData: "" },
-      ],
-    }));
-  };
+  const [mainFile, setMainFile] = useState();
+  const [product, setProduct] = useState({
+    unitPrice: "",
+    unitInStock: "",
+    unitInOrder: "",
+    productName: "",
+    status: true,
+    manufacturer: { id: "" },
+    specification: [],
+    product_image: [],
+  });
 
-  const handleSpecificationChange = (index, field, value) => {
-    const newSpecifications = [...formData.specification];
-    newSpecifications[index] = {
-      ...newSpecifications[index],
-      [field]: value,
-    };
-    setFormData((prevFormData) => ({
-      ...prevFormData,
-      specification: newSpecifications,
-    }));
-  };
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedManufacturer, setSelectedManufacturer] = useState("");
+  const [selectedPromotion, setSelectedPromotion] = useState("");
+  const [files, setFiles] = useState([]);
+  const [clonedImages, setClonedImages] = useState([]);
+  const [errors, setErrors] = useState({});
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-
-    if (name === "category") {
-      setFormData((prevFormData) => ({
-        ...prevFormData,
-        category: { id: value || null },
-      }));
-    } else if (name === "manufacturer") {
-      setFormData((prevFormData) => ({
-        ...prevFormData,
-        manufacturer: { id: value },
-      }));
-    } else if (name === "promotion") {
-      setFormData((prevFormData) => ({
-        ...prevFormData,
-        promotion: { id: value || null },
-      }));
-    } else {
-      setFormData((prevFormData) => ({
-        ...prevFormData,
-        [name]: value,
-      }));
-    }
-  };
-
-  const handleFileChange = (e) => {
-    setFiles(Array.from(e.target.files));
+  const handleFilesChange = (event) => {
+    const fileList = event.target.files;
+    setFiles([...fileList]);
   };
 
   const handleMainImagesChange = (e) => {
     setMainFile(e.target.files[0]);
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const validateFields = () => {
+    let tempErrors = {};
+    if (!product.productName) tempErrors.productName = "Product Name is required";
+    if (!product.unitPrice) tempErrors.unitPrice = "Unit Price is required";
+    if (!product.unitInStock) tempErrors.unitInStock = "Unit In Stock is required";
+    if (!product.unitInOrder) tempErrors.unitInOrder = "Unit In Order is required";
+    if (!selectedManufacturer) tempErrors.selectedManufacturer = "Manufacturer is required";
+    if (!selectedCategory) tempErrors.selectedCategory = "Category is required";
+    if (!mainFile) tempErrors.mainFile = "Main product image is required";
+    if (files.length === 0 && clonedImages.length === 0)
+      tempErrors.additionalImages = "At least one additional image is required";
+    setErrors(tempErrors);
+    return Object.keys(tempErrors).length === 0;
+  };
 
-    const productData = new FormData();
+  const handleAddProduct = async () => {
+    if (!validateFields()) {
+      showAlert("Please fill in all required fields.", "error");
+      return;
+    }
 
-    productData.append(
+    // Prepare product data
+    const newProductData = {
+      ...product,
+      manufacturer: listManufacturer.find((man) => man.id === selectedManufacturer),
+      category: listCategory.find((cat) => cat.id === selectedCategory),
+      promotion: listPromotion.find((promo) => promo.id === selectedPromotion),
+      product_image: [...clonedImages, ...files],
+    };
+
+    // Create FormData to send to the server
+    const formData = new FormData();
+    formData.append(
       "product",
-      new Blob([JSON.stringify(formData)], { type: "application/json" })
+      new Blob([JSON.stringify(newProductData)], { type: "application/json" })
     );
 
     if (mainFile) {
-      productData.append("mainImage", mainFile);
+      formData.append("mainImage", mainFile);
     }
 
     files.forEach((file) => {
-      productData.append("images", file);
+      formData.append("images", file);
     });
 
     try {
-      await productValidationSchema.validate(formData, { abortEarly: false });
-      setErrors({});
-
-      await productImageValidationSchema.validate(
-        { mainImage: mainFile, additionalImage: files },
-        { abortEarly: false }
-      );
-
-      dispatch(productThunk.createProduct(productData));
-      dispatch(productThunk.getAllProduct());
-      dispatch(promotionThunk.getAllPromotions());
-      dispatch(manufacturerThunk.getAllManufacturers());
-      dispatch(categoryThunk.getAllCategories());
-      showAlert("Add product successfully.", "success");
-      setErrors({});
-
+      dispatch(productThunk.createProduct({productData: formData}));
+      dispatch(addedProduct(newProductData))
+      showAlert("Product added successfully.", "success");
       setTimeout(() => setActiveComponent({ name: "AdminProduct" }), 1000);
     } catch (error) {
-      if (error.name === "ValidationError") {
-        alertValidationError(error);
-      } else {
-        console.error("There was an error creating the product!", error);
-        showAlert("Failed to add product.", "error");
-      }
+      console.error("Error adding product:", error);
+      showAlert("Failed to add product.", "error");
     }
   };
 
-  const alertValidationError = (error) => {
-    const validationErrors = error.inner.reduce((acc, err) => {
-      acc[err.path] = err.message;
-      return acc;
-    }, {});
-    setErrors(validationErrors);
-    console.log(validationErrors);
-    showAlert("Failed to add product. Check the information again", "error");
+  const handleRemoveImage = (index) => {
+    setClonedImages(clonedImages.filter((_, imgIndex) => imgIndex !== index));
   };
 
+  const handleRemoveSpecification = (index) => {
+    setProduct({
+      ...product,
+      specification: product.specification.filter(
+        (_, specIndex) => specIndex !== index
+      ),
+    });
+  };
+
+  if (isLoading) {
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+          width: "100vw",
+          position: "fixed",
+          top: 0,
+          left: 0,
+          backgroundColor: "black",
+          zIndex: 9999,
+        }}
+      >
+        <CircularProgress size={60} thickness={4} sx={{ color: "#4CAF50" }} />
+        <Typography variant="h6" sx={{ mt: 2, color: "#4CAF50" }}>
+          PLEASE WAIT...
+        </Typography>
+      </Box>
+    );
+  }
+
   return (
-    <Grid container justifyContent="center" alignItems="center">
-      {isLoading && (
-        <LoadingOverlay isLoading={isLoading} message="Loading..." />
-      )}
-      <Grid item xs={12} md={8}>
-        <Card>
-          <CardContent>
-            <Box component="form" onSubmit={handleSubmit} noValidate>
-              <Typography variant="h5" gutterBottom>
-                Add New Product
-              </Typography>
+    <Box sx={{ padding: 2 }}>
+      <Typography variant="h4" gutterBottom>
+        Add Product
+      </Typography>
+      <Card>
+        <CardContent>
+          <Grid container spacing={2}>
+            <Grid item xs={12} md={6}>
+              <TextField
+                fullWidth
+                margin="normal"
+                label="Product Name"
+                name="productName"
+                value={product.productName}
+                onChange={(e) =>
+                  setProduct({ ...product, productName: e.target.value })
+                }
+                error={!!errors.productName}
+                helperText={errors.productName}
+              />
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <TextField
+                fullWidth
+                margin="normal"
+                label="Unit Price"
+                name="unitPrice"
+                type="number"
+                value={product.unitPrice || ""}
+                onChange={(e) =>
+                  setProduct({ ...product, unitPrice: e.target.value })
+                }
+                error={!!errors.unitPrice}
+                helperText={errors.unitPrice}
+              />
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <TextField
+                fullWidth
+                margin="normal"
+                label="Unit In Stock"
+                name="unitInStock"
+                type="number"
+                value={product.unitInStock || ""}
+                onChange={(e) =>
+                  setProduct({ ...product, unitInStock: e.target.value })
+                }
+                error={!!errors.unitInStock}
+                helperText={errors.unitInStock}
+              />
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <TextField
+                fullWidth
+                margin="normal"
+                label="Unit In Order"
+                name="unitInOrder"
+                type="number"
+                value={product.unitInOrder || ""}
+                onChange={(e) =>
+                  setProduct({ ...product, unitInOrder: e.target.value })
+                }
+                error={!!errors.unitInOrder}
+                helperText={errors.unitInOrder}
+              />
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <FormControl
+                fullWidth
+                margin="normal"
+                error={!!errors.selectedManufacturer}
+              >
+                <InputLabel>Manufacturer</InputLabel>
+                <Select
+                  value={selectedManufacturer} // Use id of manufacturer
+                  onChange={(e) => {
+                    setSelectedManufacturer(e.target.value); // Save id of manufacturer
+                  }}
+                >
+                  {listManufacturer.map((manufacturer) => (
+                    <MenuItem key={manufacturer.id} value={manufacturer.id}>
+                      {manufacturer.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+              {errors.selectedManufacturer && (
+                <Typography color="error">
+                  {errors.selectedManufacturer}
+                </Typography>
+              )}
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <FormControl
+                fullWidth
+                margin="normal"
+                error={!!errors.selectedCategory}
+              >
+                <InputLabel>Category</InputLabel>
+                <Select
+                  value={selectedCategory} // Use id of category
+                  onChange={(e) => {
+                    setSelectedCategory(e.target.value); // Save id of category
+                  }}
+                >
+                  {listCategory.map((category) => (
+                    <MenuItem key={category.id} value={category.id}>
+                      {category.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+
+              {errors.selectedCategory && (
+                <Typography color="error">{errors.selectedCategory}</Typography>
+              )}
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <FormControl fullWidth margin="normal">
+                <InputLabel>Promotion</InputLabel>
+                <Select
+                  value={selectedPromotion} // Use id of promotion
+                  onChange={(e) => {
+                    setSelectedPromotion(e.target.value); // Save id of promotion
+                  }}
+                >
+                  {listPromotion.map((promotion) => (
+                    <MenuItem key={promotion.id} value={promotion.id}>
+                      {promotion.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+            {product.specification.map((spec, index) => (
+              <Grid item xs={12} key={index}>
+                <TextField
+                  fullWidth
+                  label="Specification Name"
+                  value={spec.specificationName}
+                  onChange={(e) => {
+                    const newSpecifications = [...product.specification];
+                    newSpecifications[index].specificationName = e.target.value;
+                    setProduct({
+                      ...product,
+                      specification: newSpecifications,
+                    });
+                  }}
+                  margin="normal"
+                />
+                <TextField
+                  fullWidth
+                  label="Specification Data"
+                  value={spec.specificationData}
+                  onChange={(e) => {
+                    const newSpecifications = [...product.specification];
+                    const updatedSpec = { ...newSpecifications[index] };
+                    updatedSpec.specificationData = e.target.value;
+                    newSpecifications[index] = updatedSpec;
+                    setProduct({
+                      ...product,
+                      specification: newSpecifications,
+                    });
+                  }}
+                  margin="normal"
+                />
+                <IconButton
+                  color="error"
+                  onClick={() => handleRemoveSpecification(index)}
+                >
+                  <Delete />
+                </IconButton>
+              </Grid>
+            ))}
+            <Grid item xs={12}>
+              <Button
+                variant="outlined"
+                onClick={() => {
+                  const newSpecifications = [
+                    ...product.specification,
+                    { specificationName: "", specificationData: "" },
+                  ];
+                  setProduct({ ...product, specification: newSpecifications });
+                }}
+              >
+                Add Specification
+              </Button>
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                type="file"
+                fullWidth
+                margin="normal"
+                label="Main Product Image (1 image only)"
+                InputLabelProps={{ shrink: true }}
+                inputProps={{ accept: "image/*" }}
+                error={!!errors.mainFile}
+                helperText={errors.mainFile}
+                onChange={handleMainImagesChange}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                type="file"
+                fullWidth
+                margin="normal"
+                label="Additional Images (at least 2 image and less than 5 images)"
+                InputLabelProps={{ shrink: true }}
+                inputProps={{ multiple: true }}
+                error={!!errors.additionalImages}
+                helperText={errors.additionalImages}
+                onChange={handleFilesChange}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <Typography variant="h6">Existing Images</Typography>
               <Grid container spacing={2}>
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    fullWidth
-                    label="Product Name"
-                    name="productName"
-                    value={formData.productName}
-                    onChange={handleChange}
-                    margin="normal"
-                    error={!!errors.productName}
-                    helperText={errors.productName}
-                  />
-                </Grid>
-                {/* <Grid item xs={12} md={6}>
-                  <TextField
-                    fullWidth
-                    label="CPU"
-                    name="cpu"
-                    value={formData.cpu}
-                    onChange={handleChange}
-                    margin="normal"
-                  />
-                </Grid> */}
-                {/* <Grid item xs={12} md={6}>
-                  <TextField
-                    fullWidth
-                    label="GPU"
-                    name="gpu"
-                    value={formData.gpu}
-                    onChange={handleChange}
-                    margin="normal"
-                  />
-                </Grid> */}
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    fullWidth
-                    label="Unit Price"
-                    name="unitPrice"
-                    type="number"
-                    value={formData.unitPrice}
-                    onChange={handleChange}
-                    error={errors.unitPrice}
-                    helperText={errors.unitPrice}
-                    margin="normal"
-                  />
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    fullWidth
-                    label="Unit In Stock"
-                    name="unitInStock"
-                    type="number"
-                    value={formData.unitInStock}
-                    error={errors.unitInStock}
-                    helperText={errors.unitInStock}
-                    onChange={handleChange}
-                    margin="normal"
-                  />
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    fullWidth
-                    label="Unit In Order"
-                    name="unitInOrder"
-                    type="number"
-                    value={formData.unitInOrder}
-                    error={errors.unitInOrder}
-                    helperText={errors.unitInOrder}
-                    onChange={handleChange}
-                    margin="normal"
-                  />
-                </Grid>
-                {/* <Grid item xs={12} md={6}>
-                  <TextField
-                    fullWidth
-                    label="Battery Capacity"
-                    name="batteryCapacity"
-                    value={formData.batteryCapacity}
-                    onChange={handleChange}
-                    margin="normal"
-                  />
-                </Grid> */}
-                {/* <Grid item xs={12} md={6}>
-                  <TextField
-                    fullWidth
-                    label="Operating System"
-                    name="operatingSystem"
-                    value={formData.operatingSystem}
-                    onChange={handleChange}
-                    margin="normal"
-                  />
-                </Grid> */}
-                {/* <Grid item xs={12} md={6}>
-                  <TextField
-                    fullWidth
-                    label="Screen"
-                    name="screen"
-                    value={formData.screen}
-                    onChange={handleChange}
-                    margin="normal"
-                  />
-                </Grid> */}
-                {/* <Grid item xs={12} md={6}>
-                  <TextField
-                    fullWidth
-                    label="RAM"
-                    name="ram"
-                    value={formData.ram}
-                    onChange={handleChange}
-                    margin="normal"
-                  />
-                </Grid> */}
-                {/* <Grid item xs={12} md={6}>
-                  <TextField
-                    fullWidth
-                    label="Design"
-                    name="design"
-                    value={formData.design}
-                    onChange={handleChange}
-                    margin="normal"
-                  />
-                </Grid> */}
-                {/* <Grid item xs={12} md={6}>
-                  <TextField
-                    fullWidth
-                    label="Warranty Information"
-                    name="warrantyInformation"
-                    value={formData.warrantyInformation}
-                    onChange={handleChange}
-                    margin="normal"
-                  />
-                </Grid>
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    label="General Information"
-                    name="generalInformation"
-                    value={formData.generalInformation}
-                    onChange={handleChange}
-                    margin="normal"
-                  />
-                </Grid> */}
-
-                {/* Category */}
-                <Grid item xs={12} md={6}>
-                  <FormControl fullWidth margin="normal">
-                    <InputLabel>Category</InputLabel>
-                    <Select
-                      name="category"
-                      value={formData.category.id || ""}
-                      onChange={handleChange}
-                      error={errors["category.id"]}
-                    >
-                      <MenuItem value="">None</MenuItem>
-                      {listCategory.map((category) => (
-                        <MenuItem key={category.id} value={category.id}>
-                          {category.name}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                    <FormHelperText error={errors["category.id"]}>{errors["category.id"]}</FormHelperText>
-                  </FormControl>
-                </Grid>
-
-                {/* Manufacturer */}
-                <Grid item xs={12} md={6}>
-                  <FormControl fullWidth margin="normal">
-                    <InputLabel>Manufacturer</InputLabel>
-                    <Select
-                      name="manufacturer"
-                      value={formData.manufacturer.id || ""}
-                      onChange={handleChange}
-                      error={errors["manufacturer.id"]}
-                    >
-                      {listManufacturer.map((manufacturer) => (
-                        <MenuItem key={manufacturer.id} value={manufacturer.id}>
-                          {manufacturer.name}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                    <FormHelperText error={errors["manufacturer.id"]}>{errors["manufacturer.id"]}</FormHelperText>
-                  </FormControl>
-                </Grid>
-
-                {/* Promotion */}
-                <Grid item xs={12} md={6}>
-                  <FormControl fullWidth margin="normal">
-                    <InputLabel>Promotion</InputLabel>
-                    <Select
-                      name="promotion"
-                      value={formData.promotion.id || ""}
-                      onChange={handleChange}
-                    >
-                      <MenuItem value="">None</MenuItem>
-                      {listPromotion.map((promotion) => (
-                        <MenuItem key={promotion.id} value={promotion.id}>
-                          {promotion.name}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </Grid>
-
-                {/* Specifications */}
-                {formData.specification.map((spec, index) => (
-                  <Grid item xs={12} md={6} key={index}>
-                    <TextField
-                      fullWidth
-                      label="Specification Name"
-                      value={spec.specificationName}
-                      onChange={(e) =>
-                        handleSpecificationChange(
-                          index,
-                          "specificationName",
-                          e.target.value
-                        )
-                      }
-                      margin="normal"
-                      error={
-                        errors[`specification[${index}].specificationName`]
-                      }
-                      helperText={
-                        errors[`specification[${index}].specificationName`]
-                      }
-                    />
-                    <TextField
-                      fullWidth
-                      label="Specification Data"
-                      value={spec.specificationData}
-                      onChange={(e) =>
-                        handleSpecificationChange(
-                          index,
-                          "specificationData",
-                          e.target.value
-                        )
-                      }
-                      margin="normal"
-                      error={
-                        errors[`specification[${index}].specificationData`]
-                      }
-                      helperText={
-                        errors[`specification[${index}].specificationData`]
-                      }
-                    />
+                {clonedImages.map((image, index) => (
+                  <Grid item xs={4} key={index}>
+                    <div style={{ position: "relative" }}>
+                      <img
+                        src={image.url}
+                        alt={`Product Image ${index}`}
+                        style={{ width: "100%", height: "auto" }}
+                      />
+                      <IconButton
+                        style={{ position: "absolute", top: 0, right: 0 }}
+                        color="error"
+                        onClick={() => handleRemoveImage(index)}
+                      >
+                        <Delete />
+                      </IconButton>
+                    </div>
                   </Grid>
                 ))}
-
-                <Grid item xs={12}>
-                  <Button variant="outlined" onClick={handleAddSpecification}>
-                    Add Specification
-                  </Button>
-                </Grid>
-
-                {/* Main image */}
-                <Grid item xs={12} md={6}>
-                  <Typography variant="body1" gutterBottom>
-                    Upload Main Image
-                  </Typography>
-                  <Button
-                    variant="outlined"
-                    component="label"
-                    fullWidth
-                    sx={{ marginBottom: 2 }}
-                    disabled={isLoading}
-                  >
-                    Choose Main Image
-                    <input
-                      type="file"
-                      hidden
-                      onChange={handleMainImagesChange}
-                    />
-                  </Button>
-                  <FormHelperText error={errors.mainImage}>{errors.mainImage}</FormHelperText>
-                </Grid>
-
-                <Grid item xs={12} md={6}>
-                  <Typography variant="body1" gutterBottom>
-                    Upload Additional Images
-                  </Typography>
-                  <Button
-                    variant="outlined"
-                    component="label"
-                    fullWidth
-                    sx={{ marginBottom: 2 }}
-                    disabled={isLoading}
-                  >
-                    Choose Files
-                    <input
-                      type="file"
-                      hidden
-                      multiple
-                      onChange={handleFileChange}
-                    />
-                  </Button>
-                  <FormHelperText error={errors.additionalImage}>{errors.additionalImage}</FormHelperText>
-                </Grid>
-
-                <Grid item xs={12}>
-                  <Button
-                    type="submit"
-                    variant="contained"
-                    color="primary"
-                    disabled={isLoading}
-                  >
-                    Add Product
-                  </Button>
-                </Grid>
               </Grid>
-            </Box>
-          </CardContent>
-        </Card>
-      </Grid>
-    </Grid>
+            </Grid>
+            <Grid item xs={12}>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleAddProduct}
+                sx={{ marginTop: 2 }}
+                disabled={isLoading}
+              >
+                Add Product
+              </Button>
+              <Button
+                variant="outlined"
+                color="secondary"
+                onClick={() => setActiveComponent({ name: "AdminProduct" })}
+                sx={{ marginTop: 2, marginLeft: 2 }}
+                disabled={isLoading}
+              >
+                Return to AdminProduct
+              </Button>
+            </Grid>
+          </Grid>
+        </CardContent>
+      </Card>
+    </Box>
   );
-};
+}
 
 export default AdminAddProduct;

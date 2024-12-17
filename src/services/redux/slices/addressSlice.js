@@ -18,6 +18,14 @@ const addressSlice = createSlice({
         addAddressToList: (state, action) => {
             state.listAddress.push(action.payload);
         },
+        updateAddress: (state,action) => {
+            const index = state.listAddress.findIndex(
+                (address) => address.id = action.payload.id
+            );
+            if(index !== -1){
+                state.listAddress[index] = { ...state.listAddress[index], ...action.payload };
+            }
+        }
     },
     extraReducers: (builder) => {
         // getAllAddresses

@@ -15,6 +15,13 @@ const promotionSlice = createSlice({
         clearSelectedPromotionId: (state) => {
             state.selectedPromotion = null;
         },
+        updatePromotion: (state, action) => {
+            const updatedPromotion = action.payload;
+            const promotionIndex = state.listPromotion.findIndex((promotion) => promotion.id === updatedPromotion.id);
+            if (promotionIndex !== -1) {
+              state.listPromotion[promotionIndex] = updatedPromotion;
+            }
+          },
     },
     extraReducers: (builder) => {
         // getAllPromotions
@@ -105,5 +112,5 @@ const promotionSlice = createSlice({
     },
 });
 
-export const { clearSelectedPromotionId } = promotionSlice.actions;
+export const { clearSelectedPromotionId , updatePromotion } = promotionSlice.actions;
 export default promotionSlice.reducer;

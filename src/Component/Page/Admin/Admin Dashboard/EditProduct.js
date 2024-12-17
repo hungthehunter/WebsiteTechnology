@@ -14,13 +14,11 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { clearSelectedProductId } from "../../../../services/redux/slices/productSlice";
+import { clearSelectedProductId, updatedProduct } from "../../../../services/redux/slices/productSlice";
 import { productThunk } from "../../../../services/redux/thunks/thunk";
 import "./assets/css/style.scss";
-
 function AdminEditProduct({ id, setActiveComponent, showAlert }) {
   const isLoading = useSelector((state) => state.product.isLoading);
   const dispatch = useDispatch();
@@ -45,8 +43,6 @@ function AdminEditProduct({ id, setActiveComponent, showAlert }) {
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedManufacturer, setSelectedManufacturer] = useState("");
   const [selectedPromotion, setSelectedPromotion] = useState("");
-  const [newCategory, setNewCategory] = useState("");
-  const [newManufacturer, setNewManufacturer] = useState("");
   const [files, setFiles] = useState([]);
   const [clonedImages, setClonedImages] = useState([]);
   const [errors, setErrors] = useState({});
@@ -59,10 +55,17 @@ function AdminEditProduct({ id, setActiveComponent, showAlert }) {
     if (selectedProduct) {
       setProduct({
         ...selectedProduct,
-        manufacturer: { id: selectedProduct.manufacturer.id },
+        unitInOrder: selectedProduct.unitInOrder,
+        manufacturer: selectedProduct.manufacturer,
+        category: selectedProduct.category,
+        promotion: selectedProduct.promotion,
         specification: selectedProduct.specification || [],
       });
       setClonedImages(selectedProduct.product_image || []); // Set existing images
+      // Set selected category, manufacturer, and promotion based on the product
+      setSelectedCategory(selectedProduct.category?.id || ""); // Use id of category
+      setSelectedManufacturer(selectedProduct.manufacturer?.id || ""); // Use id of manufacturer
+      setSelectedPromotion(selectedProduct.promotion?.id || ""); // Use id of promotion
     }
   }, [selectedProduct]);
 
@@ -100,56 +103,21 @@ function AdminEditProduct({ id, setActiveComponent, showAlert }) {
       return;
     }
 
-    let categoryId = selectedCategory;
-    let manufacturerId = selectedManufacturer;
-
-    // Check for new category
-    if (newCategory) {
-      const existingCategory = listCategory.find(
-        (category) =>
-          category.categoryName.toLowerCase() === newCategory.toLowerCase()
-      );
-      if (existingCategory) {
-        categoryId = existingCategory.id;
-      } else {
-        const response = await axios.post(
-          "http://localhost:8080/api/categories",
-          { categoryName: newCategory }
-        );
-        categoryId = response.data.id;
-      }
-    }
-
-    // Check for new manufacturer
-    if (newManufacturer) {
-      const existingManufacturer = listManufacturer.find(
-        (manufacturer) =>
-          manufacturer.manufacturerName.toLowerCase() ===
-          newManufacturer.toLowerCase()
-      );
-      if (existingManufacturer) {
-        manufacturerId = existingManufacturer.id;
-      } else {
-        const response = await axios.post(
-          "http://localhost:8080/api/manufacturers",
-          { manufacturerName: newManufacturer }
-        );
-        manufacturerId = response.data.id;
-      }
-    }
-
     // Prepare product data
-    const updatedProduct = {
+    const updateProductData = {
       ...product,
-      manufacturer: { id: manufacturerId },
-      product_image: [...clonedImages, ...files], // Combine existing and new images
+      manufacturer: listManufacturer.find((man) => man.id === selectedManufacturer),
+      category: listCategory.find((cat) => cat.id === selectedCategory),
+      promotion: listPromotion.find((promo) => promo.id === selectedPromotion),
+      product_image: [...clonedImages, ...files],
     };
+    
 
     // Create FormData to send to the server
     const formData = new FormData();
     formData.append(
       "product",
-      new Blob([JSON.stringify(updatedProduct)], { type: "application/json" })
+      new Blob([JSON.stringify(updateProductData)], { type: "application/json" })
     );
 
     if (mainFile) {
@@ -160,13 +128,9 @@ function AdminEditProduct({ id, setActiveComponent, showAlert }) {
     files.forEach((file) => {
       formData.append("images", file);
     });
-    console.log(formData);
     try {
-      dispatch(
-        productThunk.updateProduct({ id: id, productData: formData })
-      ).then(() => {
-        dispatch(productThunk.getAllProduct());
-      });
+      dispatch(productThunk.updateProduct({ id: id, productData: formData }))
+      dispatch(updatedProduct(updateProductData));
       showAlert("Edit product successfully.", "success");
       dispatch(clearSelectedProductId());
       setTimeout(() => setActiveComponent({ name: "AdminProduct" }), 1000);
@@ -289,13 +253,9 @@ function AdminEditProduct({ id, setActiveComponent, showAlert }) {
               >
                 <InputLabel>Manufacturer</InputLabel>
                 <Select
-                  value={selectedManufacturer}
+                  value={selectedManufacturer} // Use id of manufacturer
                   onChange={(e) => {
-                    setSelectedManufacturer(e.target.value);
-                    setProduct({
-                      ...product,
-                      manufacturer: { id: e.target.value },
-                    });
+                    setSelectedManufacturer(e.target.value); // Save id of manufacturer
                   }}
                 >
                   {listManufacturer.map((manufacturer) => (
@@ -319,13 +279,9 @@ function AdminEditProduct({ id, setActiveComponent, showAlert }) {
               >
                 <InputLabel>Category</InputLabel>
                 <Select
-                  value={selectedCategory}
+                  value={selectedCategory} // Use id of category
                   onChange={(e) => {
-                    setSelectedCategory(e.target.value);
-                    setProduct({
-                      ...product,
-                      category: { id: e.target.value },
-                    });
+                    setSelectedCategory(e.target.value); // Save id of category
                   }}
                 >
                   {listCategory.map((category) => (
@@ -335,6 +291,7 @@ function AdminEditProduct({ id, setActiveComponent, showAlert }) {
                   ))}
                 </Select>
               </FormControl>
+
               {errors.selectedCategory && (
                 <Typography color="error">{errors.selectedCategory}</Typography>
               )}
@@ -343,13 +300,9 @@ function AdminEditProduct({ id, setActiveComponent, showAlert }) {
               <FormControl fullWidth margin="normal">
                 <InputLabel>Promotion</InputLabel>
                 <Select
-                  value={selectedPromotion}
+                  value={selectedPromotion} // Use id of promotion
                   onChange={(e) => {
-                    setSelectedPromotion(e.target.value);
-                    setProduct({
-                      ...product,
-                      promotion: { id: e.target.value },
-                    });
+                    setSelectedPromotion(e.target.value); // Save id of promotion
                   }}
                 >
                   {listPromotion.map((promotion) => (

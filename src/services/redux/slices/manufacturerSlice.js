@@ -15,6 +15,13 @@ const manufacturerSlice = createSlice({
         clearSelectedManufacturerId: (state) => {
             state.selectedManufacturer = null;
         },
+        updateManufacturer: (state, action) => {
+            const updatedManufacturer = action.payload;
+            const manufacturerIndex = state.listManufacturer.findIndex((manufacturer) => manufacturer.id === updatedManufacturer.id);
+            if (manufacturerIndex !== -1) {
+              state.listManufacturer[manufacturerIndex] = updatedManufacturer;
+            }
+          },
     },
     extraReducers: (builder) => {
         // getAllManufacturers
@@ -105,5 +112,5 @@ const manufacturerSlice = createSlice({
     },
 });
 
-export const { clearSelectedManufacturerId } = manufacturerSlice.actions;
+export const { clearSelectedManufacturerId , updateManufacturer} = manufacturerSlice.actions;
 export default manufacturerSlice.reducer;

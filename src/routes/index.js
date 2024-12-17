@@ -30,7 +30,7 @@ import {
   default as AdminManufacturer,
 } from "../Component/Page/Admin/Admin Dashboard/Manufacturer.js";
 import AdminOrder from "../Component/Page/Admin/Admin Dashboard/Order.js";
-import AdminProduct from "../Component/Page/Admin/Admin Dashboard/Product.js";
+import AdminProduct from "../Component/Page/Admin/Admin Dashboard/Product/Product.js";
 import AdminPromotion from "../Component/Page/Admin/Admin Dashboard/Promotion.js";
 import AdminStaff from "../Component/Page/Admin/Admin Dashboard/Staff.js";
 import AdminViewCategory from "../Component/Page/Admin/Admin Dashboard/ViewCategory.js";

@@ -32,10 +32,9 @@ function AdminCustomer({ setActiveComponent, showAlert }) {
   const [anchorEl, setAnchorEl] = useState(null); // State for Popover
   const [openDialog, setOpenDialog] = useState(false); // Dialog state
   const [userToDelete, setUserToDelete] = useState(null); // Store user to delete
-
+  const [addresses, setAddresses] = useState([]);
   const dispatch = useDispatch();
   const listUser = useSelector((state) => state.user.listUser);
-
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
   };
@@ -217,6 +216,9 @@ function AdminCustomer({ setActiveComponent, showAlert }) {
                   Email
                 </TableCell>
                 <TableCell style={{ textAlign: "end", fontSize: "1.5rem" }}>
+                  Address
+                </TableCell>
+                <TableCell style={{ textAlign: "end", fontSize: "1.5rem" }}>
                   Role
                 </TableCell>
                 <TableCell style={{ textAlign: "end", fontSize: "1.5rem" }}>
@@ -238,6 +240,25 @@ function AdminCustomer({ setActiveComponent, showAlert }) {
                   </TableCell>
                   <TableCell style={{ textAlign: "end", fontSize: "1.3rem" }}>
                     {user.email}
+                  </TableCell>
+                  <TableCell style={{ textAlign: "end", fontSize: "1.3rem" }}>
+                  {
+                      user.addresses.length > 0 ? (
+                        <Box>
+                          {user.addresses.map((address, index) => (
+                            <Typography
+                              key={index}
+                              variant="body1"
+                              sx={{ mb: 1 }}
+                            >
+                              {`${address.houseNumber}, ${address.street}, ${address.ward}, ${address.district}, ${address.city}, ${address.country}`}
+                            </Typography>
+                          ))}
+                        </Box>
+                      ) : (
+                        "No addresses available"
+                      )
+                    }
                   </TableCell>
                   <TableCell style={{ textAlign: "end", fontSize: "1.3rem" }}>
                     <span className={`status ${user.role.toLowerCase()}`}>

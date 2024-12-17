@@ -157,8 +157,6 @@ function AdminEditCustomer({ id, setActiveComponent, showAlert }) {
       setErrors(errorMessages);
     }
   };
-  
-  
 
   if (isLoading) {
     return (

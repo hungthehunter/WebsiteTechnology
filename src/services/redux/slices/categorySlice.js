@@ -15,6 +15,13 @@ const categorySlice = createSlice({
         clearSelectedCategoryId: (state) => {
             state.selectedCategory = null;
         },
+        updateCategory: (state, action) => {
+            const updatedCategory = action.payload;
+            const categoryIndex = state.listCategory.findIndex((category) => category.id === updatedCategory.id);
+            if (categoryIndex !== -1) {
+              state.listCategory[categoryIndex] = updatedCategory;
+            }
+          },
     },
     extraReducers: (builder) => {
         // getAllCategories
@@ -105,5 +112,5 @@ const categorySlice = createSlice({
     },
 });
 
-export const { clearSelectedCategoryId } = categorySlice.actions;
+export const { clearSelectedCategoryId , updateCategory} = categorySlice.actions;
 export default categorySlice.reducer;

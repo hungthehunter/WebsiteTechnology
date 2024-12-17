@@ -47,7 +47,7 @@ import AdminHeader from "./Header";
 import AdminImport from "./Import";
 import AdminManufacturer from "./Manufacturer";
 import AdminOrder from "./Order";
-import AdminProduct from "./Product";
+import AdminProduct from "./Product/Product";
 import AdminPromotion from "./Promotion";
 import SidebarAdmin from "./Sidebar";
 import AdminStaff from "./Staff";

@@ -1,0 +1,40 @@
+
+services:
+  app:
+    build: .
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./docker-application.properties:/app/application.properties:ro
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://host.docker.internal:3306/nvidiaconvince
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: Grandy-092358
+    extra_hosts: 
+      - "host.docker.internal:host-gateway" 
+    depends_on:
+      - db
+  db:
+    image: mysql:5.7
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+      MYSQL_ROOT_PASSWORD: 
+      MYSQL_DATABASE: nvidia
+    volumes:
+      - "D:/hoctapSGU/CosoDLieu-SQL/DATABASE_NVIDIA.sql:/app/DATABASE_NVIDIA.sql"
+    ports:
+      - "3307:3306"
+    user: 1000:50
+    extra_hosts: 
+      - "host.docker.internal:host-gateway"
+  
+  front-end:
+    build: D:/NopDoAn/WebsiteTechnology
+    ports:
+      - "3000:3000" # Cổng của Front-end
+    volumes:
+      - D:/NopDoAn/WebsiteTechnology:/app
+    environment:
+      REACT_APP_API_URL: "http://localhost:8080" # URL của Back-end
+    depends_on:
+      - app

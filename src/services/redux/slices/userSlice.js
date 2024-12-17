@@ -33,6 +33,14 @@ const userSlice = createSlice({
     setLoginError: (state, action) => {
       state.loginError = action.payload; // Thiết lập lỗi đăng nhập
     },
+    updateUser: (state, action) => {
+      const index = state.listUser.findIndex(
+        (user) => user.id === action.payload.id
+      );
+      if (index !== -1) {
+        state.listUser[index] = { ...state.listUser[index], ...action.payload };
+      }
+    },
   },
   extraReducers: (builder) => {
     // getAllUsers

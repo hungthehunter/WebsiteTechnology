@@ -55,7 +55,7 @@ import ImageUpload from "../Component/Page/Products/index.js";
 import ProductReview from "../Component/Page/Review/Review.js";
 import Shop from "../Component/Page/Shop/index.js";
 import SuccessOrder from "../Component/Page/Success/index.js";
-const BASE_PATH = "/websiteTechnology";
+const BASE_PATH = "/WebsiteTechnology";
 
 // Routes với tiền tố BASE_PATH
 const publicRoutes = [

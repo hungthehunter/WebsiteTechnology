@@ -48,14 +48,14 @@ function Header({ toggleSidebar }) {
     dispatch(clearUserCart());
     localStorage.removeItem("authToken");
     setEmail("");
-    navigate("/websiteDoAn/Login");
+    navigate("/websiteTechnology/Login");
   };
 
   const handleLoginLogout = () => {
     if (isLoggingOut) {
       handleLogout();
     } else {
-      navigate("/websiteDoAn/Login");
+      navigate("/websiteTechnology/Login");
     }
   };
 
@@ -75,7 +75,7 @@ function Header({ toggleSidebar }) {
                     <MdOutlineEventNote size={24} style={{ paddingRight: 5, marginLeft: 3 }} />
                   </span>
                   <span className={cx("box-text")}>
-                    <Link to="/websiteDoAn/AccountHistory">Tra cứu</Link>
+                    <Link to="/websiteTechnology/AccountHistory">Tra cứu</Link>
                   </span>
                 </div>
                 <div className={cx("header-action_text")}>
@@ -84,7 +84,7 @@ function Header({ toggleSidebar }) {
                     <FiShoppingCart size={23} style={{ paddingRight: 5, marginLeft: 3 }} onClick={() => setShowCart(!showCart)} />
                   </span>
                   <span className={cx("box-text")}>
-                    <Link to="/websiteDoAn/CartPage">Giỏ hàng</Link>
+                    <Link to="/websiteTechnology/CartPage">Giỏ hàng</Link>
                   </span>
                 </div>
                 {!isLoggingOut ? (

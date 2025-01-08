@@ -15,6 +15,19 @@ const orderSlice = createSlice({
         clearSelectedOrderId: (state) => {
             state.selectedOrder = null;
         },
+        addOrder: (state,action) => {
+           const newOrder = action.payload;
+           state.listOrder.push(newOrder);
+        },
+        updatedOrders: (state,action) =>{
+        const updatedOrder = action.payload;
+        const orderIndex = state.listOrder.findIndex(
+            (order) => order.id === updatedOrder.id
+        );
+        if(orderIndex !== -1){
+            state.listOrder[orderIndex] = updatedOrder;
+        }
+        }
     },
     extraReducers: (builder) => {
         // getAllOrders
@@ -105,5 +118,5 @@ const orderSlice = createSlice({
     },
 });
 
-export const { clearSelectedOrderId } = orderSlice.actions;
+export const { clearSelectedOrderId , addOrder, updatedOrders } = orderSlice.actions;
 export default orderSlice.reducer;

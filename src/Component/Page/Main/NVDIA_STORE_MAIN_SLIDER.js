@@ -1,8 +1,7 @@
 import {
   Box,
   Button,
-  Typography,
-  useTheme
+  Typography
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import React, { useEffect, useState } from 'react';
@@ -80,7 +79,6 @@ const SliderButton = styled(Button)(({ theme }) => ({
 
 const SLIDER = ({ images, activeSlide, onChangeSlide }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const theme = useTheme();
 
   useEffect(() => {
     setCurrentIndex(activeSlide);
@@ -109,13 +107,6 @@ const SLIDER = ({ images, activeSlide, onChangeSlide }) => {
             <Typography variant="h2" component="div" gutterBottom sx={{ fontWeight: 'bold' }}>
               {image?.name}
             </Typography>
-            {/* 
-            {image?.name && (
-              <Typography variant="h2" component="div" gutterBottom sx={{ fontWeight: 'bold' }}>
-                {image?.name}
-              </Typography>
-            )}
-              */}
             <Typography variant="h3" component="div" gutterBottom sx={{ fontWeight: 'bold', marginBottom: 2 }}>
               {image?.description}
             </Typography>

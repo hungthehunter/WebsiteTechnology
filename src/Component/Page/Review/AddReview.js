@@ -1,9 +1,9 @@
 import {
-    Box,
-    Button,
-    Rating,
-    TextField,
-    Typography
+  Box,
+  Button,
+  Rating,
+  TextField,
+  Typography
 } from "@mui/material";
 import { useState } from "react";
 import toast from "react-hot-toast";
@@ -21,7 +21,7 @@ import { reviewThunk } from "../../../services/redux/thunks/thunk";
         id: selectedProduct.id,
       },
       user: {
-        id: currentUser.id,
+        id: currentUser?.id,
       },
       reviewDate: "",
     });

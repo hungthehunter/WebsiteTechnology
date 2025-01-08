@@ -17,10 +17,12 @@ import {
 import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { useDispatch, useSelector } from "react-redux";
+import { addOrder } from "../../../../services/redux/slices/orderSlice";
 import {
   addressThunk,
   cartThunk,
-  orderThunk, userThunk
+  orderThunk,
+  userThunk,
 } from "../../../../services/redux/thunks/thunk";
 import PICTURE from "../../../Assests/PICTURE";
 
@@ -30,7 +32,7 @@ const PaymentConfirmation = ({ open, handleClose, note }) => {
   const userCurrentLogged = useSelector(
     (state) => state.user.userCurrentLogged
   );
-  
+
   const selectedUser = useSelector((state) => state.user.selectedUser);
   const [cardHolderName, setCardHolderName] = useState("");
   const [cardNumber, setCardNumber] = useState("");
@@ -41,15 +43,11 @@ const PaymentConfirmation = ({ open, handleClose, note }) => {
   const totalPrice = listCartItems?.reduce((sum, item) => {
     return sum + (item?.totalPrice || 0);
   }, 0);
-  
-  // const listAddress = useSelector((state) =>
-  //   state?.address?.listAddress?.filter(
-  //     (addr) => addr.user?.id === selectedUser?.id && addr?.status == true
-  //   )
-  // );
 
-  const listAddress = (selectedUser?.addresses || []).filter(address => address.status === true);
-  
+  const listAddress = (selectedUser?.addresses || []).filter(
+    (address) => address.status === true
+  );
+
   useEffect(() => {
     if (userCurrentLogged) {
       dispatch(userThunk.getUserById(userCurrentLogged.id));
@@ -85,8 +83,8 @@ const PaymentConfirmation = ({ open, handleClose, note }) => {
 
   const handleAddAddress = async () => {
     try {
-      await dispatch(addressThunk.createAddress(newAddress))
-      await dispatch(userThunk.getUserById(userCurrentLogged.id))
+      dispatch(addressThunk.createAddress(newAddress));
+      dispatch(userThunk.getUserById(userCurrentLogged.id));
       toast.success(
         "Địa chỉ đã được thêm thành công . Vui lòng chọn Address để tiếp tục"
       );
@@ -158,6 +156,13 @@ const PaymentConfirmation = ({ open, handleClose, note }) => {
       status: item.status,
     }));
 
+  // Form Order
+  const formOrderData = {
+    ...orderData,
+    orderItem: cartData,
+  };
+
+
     // Tạo FormData
     const formData = new FormData();
     formData.append(
@@ -170,7 +175,9 @@ const PaymentConfirmation = ({ open, handleClose, note }) => {
     );
 
     try {
-      await dispatch(orderThunk.createOrder(formData));
+      dispatch(orderThunk.createOrder(formData));
+      dispatch(addOrder(formOrderData));
+      dispatch(orderThunk.getAllOrders())
       toast.success("Order placed successfully!");
       await handleRemoveAllFromCart();
       handleClose();
@@ -243,7 +250,7 @@ const PaymentConfirmation = ({ open, handleClose, note }) => {
                   >
                     {listAddress.map((address) => (
                       <MenuItem key={address.id} value={address.id}>
-                       {address.houseNumber}, {address.street}, {address.city}
+                        {address.houseNumber}, {address.street}, {address.city}
                       </MenuItem>
                     ))}
                   </Select>

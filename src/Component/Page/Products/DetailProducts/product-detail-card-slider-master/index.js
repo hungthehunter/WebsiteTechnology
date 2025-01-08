@@ -1,11 +1,10 @@
-
 import {
   ArrowBackIos,
   ArrowForwardIos,
   ExpandLess,
   ExpandMore,
   Home,
-  ShoppingCart
+  ShoppingCart,
 } from "@mui/icons-material";
 import {
   Box,
@@ -21,9 +20,9 @@ import {
   TableCell,
   TableContainer,
   TableRow,
-  Typography
+  Typography,
 } from "@mui/material";
-import CircularProgress from '@mui/material/CircularProgress';
+import CircularProgress from "@mui/material/CircularProgress";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { motion } from "framer-motion";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
@@ -31,7 +30,10 @@ import toast from "react-hot-toast";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import { clearSelectedProductId } from "../../../../../services/redux/slices/productSlice";
-import { cartThunk, productThunk } from "../../../../../services/redux/thunks/thunk";
+import {
+  cartThunk,
+  productThunk,
+} from "../../../../../services/redux/thunks/thunk";
 import ProductReview from "../../../Review/Review";
 
 // Cập nhật theme
@@ -77,9 +79,9 @@ const theme = createTheme({
     MuiPaper: {
       styleOverrides: {
         root: {
-          transition: 'transform 0.3s ease-in-out',
-          '&:hover': {
-            transform: 'scale(1.02)',
+          transition: "transform 0.3s ease-in-out",
+          "&:hover": {
+            transform: "scale(1.02)",
           },
         },
       },
@@ -90,18 +92,14 @@ const theme = createTheme({
 function ProductDetail() {
   const dispatch = useDispatch();
   const { id } = useParams();
-
-  const {
-    selectedProduct,
-    listProduct,
-    userCurrentLogged,
-    cartItems,
-  } = useSelector((state) => ({
-    selectedProduct: state.product.selectedProduct,
-    listProduct: state.product.listProduct,
-    userCurrentLogged: state.user.userCurrentLogged,
-    cartItems: state.cart.listCartItems,
-  }));
+  const MAX_PRODUCTS = 3;
+  const { selectedProduct, listProduct, userCurrentLogged, cartItems } =
+    useSelector((state) => ({
+      selectedProduct: state.product.selectedProduct,
+      listProduct: state.product.listProduct,
+      userCurrentLogged: state.user.userCurrentLogged,
+      cartItems: state.cart.listCartItems,
+    }));
 
   const [quantity, setQuantity] = useState(1);
   const [product, setProduct] = useState(null);
@@ -198,78 +196,107 @@ function ProductDetail() {
     );
   };
 
-  const handleAddToCart = useCallback((product, userCurrentLogged) => {
-    if (!userCurrentLogged) {
-      toast.error("Bạn cần đăng nhập để thêm sản phẩm vào giỏ hàng.");
-      return navigate(`/websiteDoAn/Login`);
+  const calculateDiscountedPrice = (item) => {
+    if (item?.promotion && item?.promotion?.active) {
+      return (
+        item?.unitPrice -
+        (item?.unitPrice * (item?.promotion?.discountPercentage || 0)) / 100
+      ).toFixed(2);
     }
+    return item?.unitPrice?.toFixed(2);
+  };
 
-    if (cartItems?.length >= 3) {
-      toast.error("Please proceed with checkout before adding more products.");
-      return;
-    }
-  
-    const existingCartItem = cartItems?.find((item) => item.product?.id === product.id);
-    const totalPrice = product.unitPrice;
-  
-    const cartData = {
-      quantity: existingCartItem ? existingCartItem.quantity + 1 : 1, // Tăng số lượng nếu sản phẩm đã có
-      user: { id: userCurrentLogged.id },
-      product: { id: product.id },
-      totalPrice: totalPrice, // Thêm totalPrice vào cartData
-    };
-  
-    const updateCartItem = (itemId, cartData) => {
-      dispatch(cartThunk.updateCartItem({ id: itemId, cartData }))
-        .then(() => {
-          dispatch(cartThunk.getUserCart(userCurrentLogged.id));
-          toast.success(`Đã tăng số lượng của ${product.productName} trong giỏ hàng!`);
-        })
-        .catch((error) => {
-          console.error("Lỗi khi cập nhật số lượng sản phẩm:", error);
-          toast.error("Không thể cập nhật số lượng sản phẩm. Vui lòng thử lại.");
-        });
-    };
-  
-    const addNewCartItem = (cartItem) => {
-      dispatch(cartThunk.addToCart(cartItem))
-        .then(() => {
-          dispatch(cartThunk.getUserCart(userCurrentLogged.id));
-          toast.success(`${product.productName} đã được thêm vào giỏ hàng!`);
-        })
-        .catch((error) => {
-          console.error("Lỗi khi thêm vào giỏ hàng:", error);
-          toast.error("Không thể thêm sản phẩm vào giỏ hàng. Vui lòng thử lại.");
-        });
-    };
-  
-    if (existingCartItem) {
-      // Nếu sản phẩm đã có trong giỏ hàng, cập nhật số lượng và totalPrice
-      updateCartItem(existingCartItem.id, cartData);
-    } else {
-      // Thêm sản phẩm mới vào giỏ hàng
-      addNewCartItem(cartData);
-    }
-  }, [dispatch, cartItems, navigate]);
-  
-  
+  const handleAddToCart = useCallback(
+    (product, userCurrentLogged) => {
+      if (!userCurrentLogged) {
+        toast.error("Bạn cần đăng nhập để thêm sản phẩm vào giỏ hàng.");
+        return navigate(`/websiteDoAn/Login`);
+      }
+
+      if (cartItems?.length >= 3) {
+        toast.error(
+          "Please proceed with checkout before adding more products."
+        );
+        return;
+      }
+
+      // Calculate discounted price for the product
+      const discountedPrice = calculateDiscountedPrice(product);
+      const existingCartItem = cartItems?.find(
+        (item) => item.product?.id === product.id
+      );
+
+      const cartData = {
+        quantity: existingCartItem ? existingCartItem.quantity + 1 : 1, // Increase quantity if product already exists
+        user: { id: userCurrentLogged.id },
+        product: { id: product.id },
+        discountedPrice: discountedPrice,
+        totalPrice: (
+          discountedPrice *
+          (existingCartItem ? existingCartItem.quantity + 1 : 1)
+        ).toFixed(2), // Calculate total price with discount
+      };
+
+      const updateCartItem = (itemId, cartData) => {
+        dispatch(cartThunk.updateCartItem({ id: itemId, cartData }))
+          .then(() => {
+            dispatch(cartThunk.getUserCart(userCurrentLogged.id));
+            toast.success(
+              `Đã tăng số lượng của ${product.productName} trong giỏ hàng!`
+            );
+          })
+          .catch((error) => {
+            console.error("Lỗi khi cập nhật số lượng sản phẩm:", error);
+            toast.error(
+              "Không thể cập nhật số lượng sản phẩm. Vui lòng thử lại."
+            );
+          });
+      };
+
+      const addNewCartItem = (cartItem) => {
+        dispatch(cartThunk.addToCart(cartItem))
+          .then(() => {
+            dispatch(cartThunk.getUserCart(userCurrentLogged.id));
+            toast.success(`${product.productName} đã được thêm vào giỏ hàng!`);
+          })
+          .catch((error) => {
+            console.error("Lỗi khi thêm vào giỏ hàng:", error);
+            toast.error(
+              "Không thể thêm sản phẩm vào giỏ hàng. Vui lòng thử lại."
+            );
+          });
+      };
+
+      if (existingCartItem) {
+        // If the product already exists in the cart, update quantity and total price
+        updateCartItem(existingCartItem.id, cartData);
+      } else {
+        // Add the new product to the cart with the correct total price
+        addNewCartItem(cartData);
+      }
+    },
+    [dispatch, cartItems, navigate]
+  );
+
   if (isLoading || !selectedProduct) {
     return (
-      <Box sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
-        alignItems: 'center',
-        height: '100vh',
-        width: '100vw',
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        backgroundColor: 'black',
-        zIndex: 9999
-      }}>
-        <CircularProgress size={60} thickness={4}  sx={{ color: '#4CAF50' }}  />
-        <Typography variant="h6" sx={{ mt: 2, color: '#4CAF50' }}>
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+          width: "100vw",
+          position: "fixed",
+          top: 0,
+          left: 0,
+          backgroundColor: "black",
+          zIndex: 9999,
+        }}
+      >
+        <CircularProgress size={60} thickness={4} sx={{ color: "#4CAF50" }} />
+        <Typography variant="h6" sx={{ mt: 2, color: "#4CAF50" }}>
           PLEASE WAIT...
         </Typography>
       </Box>
@@ -286,11 +313,10 @@ function ProductDetail() {
 
   return (
     <ThemeProvider theme={theme}>
-    
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ duration: 0}}
+        transition={{ duration: 0 }}
       >
         <Box
           sx={{
@@ -311,7 +337,11 @@ function ProductDetail() {
               <Grid item xs={12}>
                 <Typography variant="body1">
                   <Home
-                    sx={{ verticalAlign: "middle", mr: 1, color: "primary.main" }}
+                    sx={{
+                      verticalAlign: "middle",
+                      mr: 1,
+                      color: "primary.main",
+                    }}
                   />
                   Home Page / {selectedProduct.productName}
                 </Typography>
@@ -324,78 +354,86 @@ function ProductDetail() {
             sx={{ p: 3, mb: 3, backgroundColor: "background.paper" }}
           >
             <Grid container spacing={4}>
-            <Grid item xs={12} md={4}>
-              <Box
-                sx={{
-                  position: "relative",
-                  width: MAIN_IMAGE_WIDTH,
-                  height: MAIN_IMAGE_HEIGHT,
-                  margin: "0 auto",
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  overflow: "hidden",
-                  "&:hover .arrows": { opacity: 1 },
-                }}
-                onMouseEnter={() => setShowArrows(true)}
-                onMouseLeave={() => setShowArrows(false)}
-              >
+              <Grid item xs={12} md={4}>
                 <Box
                   sx={{
+                    position: "relative",
                     width: MAIN_IMAGE_WIDTH,
                     height: MAIN_IMAGE_HEIGHT,
+                    margin: "0 auto",
                     display: "flex",
                     justifyContent: "center",
                     alignItems: "center",
                     overflow: "hidden",
+                    "&:hover .arrows": { opacity: 1 },
                   }}
+                  onMouseEnter={() => setShowArrows(true)}
+                  onMouseLeave={() => setShowArrows(false)}
                 >
-                  <motion.img
-                    key={currentImageIndex}
-                    src={selectedProduct?.product_image[currentImageIndex]?.url}
-                    alt={selectedProduct.productName}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 0.5 }}
-                    style={{
-                      maxWidth: "100%",
-                      maxHeight: "100%",
-                      objectFit: "contain",
+                  <Box
+                    sx={{
+                      width: MAIN_IMAGE_WIDTH,
+                      height: MAIN_IMAGE_HEIGHT,
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      overflow: "hidden",
                     }}
-                  />
+                  >
+                    <motion.img
+                      key={currentImageIndex}
+                      src={
+                        selectedProduct?.product_image[currentImageIndex]?.url
+                      }
+                      alt={selectedProduct.productName}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.5 }}
+                      style={{
+                        maxWidth: "100%",
+                        maxHeight: "100%",
+                        objectFit: "contain",
+                      }}
+                    />
+                  </Box>
+                  <Box
+                    className="arrows"
+                    sx={{
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      opacity: showArrows ? 1 : 0,
+                      transition: "opacity 0.3s",
+                    }}
+                  >
+                    <IconButton
+                      onClick={handlePrevImage}
+                      sx={{
+                        color: "white",
+                        backgroundColor: "rgba(0,0,0,0.5)",
+                      }}
+                    >
+                      <ArrowBackIos />
+                    </IconButton>
+                    <IconButton
+                      onClick={handleNextImage}
+                      sx={{
+                        color: "white",
+                        backgroundColor: "rgba(0,0,0,0.5)",
+                      }}
+                    >
+                      <ArrowForwardIos />
+                    </IconButton>
+                  </Box>
                 </Box>
                 <Box
-                  className="arrows"
                   sx={{
-                    position: "absolute",
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
                     display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    opacity: showArrows ? 1 : 0,
-                    transition: "opacity 0.3s",
-                  }}
-                >
-                  <IconButton
-                    onClick={handlePrevImage}
-                    sx={{ color: "white", backgroundColor: "rgba(0,0,0,0.5)" }}
-                  >
-                    <ArrowBackIos />
-                  </IconButton>
-                  <IconButton
-                    onClick={handleNextImage}
-                    sx={{ color: "white", backgroundColor: "rgba(0,0,0,0.5)" }}
-                  >
-                    <ArrowForwardIos />
-                  </IconButton>
-                </Box>
-              </Box>
-                <Box 
-                  sx={{ 
-                    display: "flex", 
                     justifyContent: "center",
                     mt: 2,
                     overflowX: "auto",
@@ -440,7 +478,10 @@ function ProductDetail() {
                 </Typography>
                 <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
                   <Typography variant="h5" color="error" sx={{ mr: 2 }}>
-                  ${selectedProduct?.unitPrice - (selectedProduct?.unitPrice * (selectedProduct?.promotion.discountPercentage / 100))}
+                    $
+                    {selectedProduct?.unitPrice -
+                      selectedProduct?.unitPrice *
+                        (selectedProduct?.promotion.discountPercentage / 100)}
                   </Typography>
                   <Typography
                     variant="body1"
@@ -450,7 +491,7 @@ function ProductDetail() {
                       color: "text.secondary",
                     }}
                   >
-                     ${selectedProduct?.unitPrice}
+                    ${selectedProduct?.unitPrice}
                   </Typography>
                   <Typography
                     variant="body1"
@@ -474,31 +515,33 @@ function ProductDetail() {
                     sx={{
                       mb: 2,
                       bgcolor: "primary.main",
-                      "&:hover": { 
+                      "&:hover": {
                         bgcolor: "primary.dark",
-                        boxShadow: '0 0 15px #76B900',
+                        boxShadow: "0 0 15px #76B900",
                       },
                       fontSize: "1.1rem",
                       padding: "10px 20px",
-                      position: 'relative',
-                      overflow: 'hidden',
-                      '&::after': {
+                      position: "relative",
+                      overflow: "hidden",
+                      "&::after": {
                         content: '""',
-                        position: 'absolute',
-                        top: '-50%',
-                        left: '-50%',
-                        width: '200%',
-                        height: '200%',
-                        backgroundColor: 'rgba(255,255,255,0.2)',
-                        transform: 'rotate(45deg)',
-                        transition: 'all 0.3s linear',
+                        position: "absolute",
+                        top: "-50%",
+                        left: "-50%",
+                        width: "200%",
+                        height: "200%",
+                        backgroundColor: "rgba(255,255,255,0.2)",
+                        transform: "rotate(45deg)",
+                        transition: "all 0.3s linear",
                       },
-                      '&:hover::after': {
-                        left: '100%',
-                        top: '100%',
+                      "&:hover::after": {
+                        left: "100%",
+                        top: "100%",
                       },
                     }}
-                    onClick={()=>handleAddToCart(selectedProduct,userCurrentLogged)}
+                    onClick={() =>
+                      handleAddToCart(selectedProduct, userCurrentLogged)
+                    }
                   >
                     Add To Cart
                   </Button>
@@ -543,49 +586,79 @@ function ProductDetail() {
           >
             <Grid container spacing={4}>
               <Grid item xs={12} md={7}>
-                <Typography variant="h5" gutterBottom color="primary">Product Description</Typography>
+                <Typography variant="h5" gutterBottom color="primary">
+                  Product Description
+                </Typography>
                 {selectedProduct && selectedProduct?.specification && (
                   <>
-                    <TableContainer component={Paper} sx={{ border: 1, borderColor: 'primary.main', borderRadius: 2, overflow: 'hidden' }}>
+                    <TableContainer
+                      component={Paper}
+                      sx={{
+                        border: 1,
+                        borderColor: "primary.main",
+                        borderRadius: 2,
+                        overflow: "hidden",
+                      }}
+                    >
                       <Table>
                         <TableBody>
-                          {selectedProduct.specification.slice(0, visibleSpecs).map((spec, index) => (
-                            <TableRow 
-                              key={spec.specificationName}
-                              sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                            >
-                              <TableCell 
-                                component="th" 
-                                scope="row"
-                                sx={{ 
-                                  backgroundColor: index % 2 === 0 ? 'rgba(76, 175, 80, 0.1)' : 'background.paper',
-                                  fontWeight: 'bold',
-                                  color: 'text.primary',
+                          {selectedProduct.specification
+                            .slice(0, visibleSpecs)
+                            .map((spec, index) => (
+                              <TableRow
+                                key={spec.specificationName}
+                                sx={{
+                                  "&:last-child td, &:last-child th": {
+                                    border: 0,
+                                  },
                                 }}
                               >
-                                <Typography variant="body1">{spec.specificationName}</Typography>
-                              </TableCell>
-                              <TableCell 
-                                sx={{ 
-                                  backgroundColor: index % 2 === 0 ? 'rgba(76, 175, 80, 0.1)' : 'background.paper',
-                                  color: 'text.primary',
-                                }}
-                              >
-                                <Typography variant="body2">{spec.specificationData}</Typography>
-                              </TableCell>
-                            </TableRow>
-                          ))}
+                                <TableCell
+                                  component="th"
+                                  scope="row"
+                                  sx={{
+                                    backgroundColor:
+                                      index % 2 === 0
+                                        ? "rgba(76, 175, 80, 0.1)"
+                                        : "background.paper",
+                                    fontWeight: "bold",
+                                    color: "text.primary",
+                                  }}
+                                >
+                                  <Typography variant="body1">
+                                    {spec.specificationName}
+                                  </Typography>
+                                </TableCell>
+                                <TableCell
+                                  sx={{
+                                    backgroundColor:
+                                      index % 2 === 0
+                                        ? "rgba(76, 175, 80, 0.1)"
+                                        : "background.paper",
+                                    color: "text.primary",
+                                  }}
+                                >
+                                  <Typography variant="body2">
+                                    {spec.specificationData}
+                                  </Typography>
+                                </TableCell>
+                              </TableRow>
+                            ))}
                         </TableBody>
                       </Table>
                     </TableContainer>
-                    <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+                    <Box
+                      sx={{ display: "flex", justifyContent: "center", mt: 2 }}
+                    >
                       <Button
                         onClick={() => setShowFullSpecs(!showFullSpecs)}
-                        endIcon={showFullSpecs ? <ExpandLess /> : <ExpandMore />}
-                        sx={{ color: 'text.primary', textTransform: 'none' }}
+                        endIcon={
+                          showFullSpecs ? <ExpandLess /> : <ExpandMore />
+                        }
+                        sx={{ color: "text.primary", textTransform: "none" }}
                       >
                         <Typography variant="body1">
-                          {showFullSpecs ? 'Thu gọn' : 'Xem thêm'}
+                          {showFullSpecs ? "Thu gọn" : "Xem thêm"}
                         </Typography>
                       </Button>
                     </Box>
@@ -597,34 +670,37 @@ function ProductDetail() {
                   Other products
                 </Typography>
                 <List>
-                  {filteredProducts.map((product) => (
-                    <ListItem
-                      key={product.id}
-                      alignItems="flex-start"
-                      sx={{ mb: 2 }}
-                      onClick={() => handleProductClick(product.id)}
-                    >
-                      <Box
-                        component="img"
-                        src={`${
-                          product.product_image.find((img) => img.mainImage)?.url || ""
-                  }`}
-                        alt={product.productName}
-                        sx={{
-                          width: 80,
-                          height: 80,
-                          objectFit: "cover",
-                          mr: 2,
-                          borderRadius: 1,
-                        }}
-                      />
-                      <Box sx={{ display: "flex", alignItems: "center" }}>
-                        <Typography variant="body1" component="span">
-                          {product.productName}
-                        </Typography>
-                      </Box>
-                    </ListItem>
-                  ))}
+                  {filteredProducts 
+                    .slice(0, 3) // Lấy 3 phần tử đầu tiên sau khi xáo trộn
+                    .map((product) => (
+                      <ListItem
+                        key={product.id}
+                        alignItems="flex-start"
+                        sx={{ mb: 2 }}
+                        onClick={() => handleProductClick(product.id)}
+                      >
+                        <Box
+                          component="img"
+                          src={`${
+                            product.product_image.find((img) => img.mainImage)
+                              ?.url || ""
+                          }`}
+                          alt={product.productName}
+                          sx={{
+                            width: 80,
+                            height: 80,
+                            objectFit: "cover",
+                            mr: 2,
+                            borderRadius: 1,
+                          }}
+                        />
+                        <Box sx={{ display: "flex", alignItems: "center" }}>
+                          <Typography variant="body1" component="span">
+                            {product.productName}
+                          </Typography>
+                        </Box>
+                      </ListItem>
+                    ))}
                 </List>
               </Grid>
             </Grid>

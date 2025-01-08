@@ -20,6 +20,7 @@ import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { reviewThunk } from "../../../services/redux/thunks/thunk";
 import AddReview from "./AddReview";
+import ReviewDialog from "./Dialog/dialog";
 import UpdateReview from "./UpdateReview";
 // Định nghĩa theme
 const theme = createTheme({
@@ -127,6 +128,7 @@ function ProductReview({ selectedProduct }) {
   const [isUpdatedReview, setIsUpdateReview] = useState(false);
   const [userHasReviewed, setUserHasReviewed] = useState(false);
   const [userReview, setUserReview] = useState(undefined);
+  const [openDialog, setOpenDialog] = useState(false);
 
   const ratingList = {
     five: 0,
@@ -159,7 +161,23 @@ function ProductReview({ selectedProduct }) {
     }
 
     dispatch(reviewThunk.getAllReviewsByProductId(selectedProduct.id));
-  }, []);
+  }, [selectedProduct]);
+
+  const handleAddReview = () => {
+    if (!currentUser) {
+      setOpenDialog(true);
+    } else {
+      setIsAddReview(true);
+    }
+  };
+
+  const handleUpdateReview = () =>{
+    if(!currentUser) {
+      setOpenDialog(true);
+    }else{
+      setIsUpdateReview(true);
+    }
+  }
 
   const checkUserHasReviewed = () => {
     let id = currentUser.id;
@@ -219,13 +237,15 @@ function ProductReview({ selectedProduct }) {
         ratingList.two,
         ratingList.one,
       ],
-      recentReviews: recentReviews.filter(
-        (item) => item.user.id !== currentUser.id
-      ),
+      recentReviews: recentReviews
+      // .filter(
+      //   (item) => item.user.id !== currentUser.id
+      // ),
     });
-    checkUserHasReviewed();
 
-    console.log(recentReviews);
+    if (currentUser != null) {
+      checkUserHasReviewed();
+    }
   }, [recentReviews]);
 
   const toggleReviews = () => {
@@ -395,9 +415,7 @@ function ProductReview({ selectedProduct }) {
                   fontSize: "1.2rem",
                   padding: "10px 20px",
                 }}
-                onClick={() => {
-                  setIsAddReview(true);
-                }}
+                onClick={() => handleAddReview()}
               >
                 Submit your review
               </Button>
@@ -408,6 +426,15 @@ function ProductReview({ selectedProduct }) {
                 currentUser={currentUser}
               />
             </Box>
+
+            {/* Dialog khi chưa đăng nhập */}
+            <ReviewDialog
+              open={openDialog}
+              onClose={() => setOpenDialog(false)}
+              title="Login Required"
+            >
+              <Typography>Please log in to submit a review.</Typography>
+            </ReviewDialog>
           </Box>
           <Box
             sx={{
@@ -449,16 +476,13 @@ function ProductReview({ selectedProduct }) {
                       fontSize: "1.2rem",
                       padding: "10px 20px",
                     }}
-                    onClick={() => {
-                      setIsUpdateReview(true);
-                    }}
+                    onClick={() => handleUpdateReview()}
                   >
                     Update Your Review
                   </Button>
                 </Box>
                 <Box display={isUpdatedReview ? "block" : "none"}>
-                  <UpdateReview userReview={userReview}
-                  />
+                  <UpdateReview userReview={userReview} />
                 </Box>
               </Box>
             ) : (

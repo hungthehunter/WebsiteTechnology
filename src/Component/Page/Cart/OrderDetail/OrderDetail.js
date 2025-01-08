@@ -40,7 +40,10 @@ export default function OrderDetail() {
   const [progress, setProgress] = useState(0);
   const [note,setNote] = useState("");
   const [open, setOpen] = useState(false);
-  const totalPrice = listCartItems?.reduce((sum, item) => sum + item?.totalPrice, 0);
+  const totalPrice = listCartItems?.reduce((sum, item) => {
+    const itemTotalPrice = item?.quantity * (item?.discountedPrice || item?.product?.unitPrice); // You can replace `item?.product?.unitPrice` with the relevant price field if needed
+    return sum + itemTotalPrice;
+  }, 0);
 
   useEffect(() => {
     const value = totalPrice / 20;
@@ -90,7 +93,7 @@ export default function OrderDetail() {
               Total:
             </Typography>
             <Typography variant="h6" sx={{ color: '#FFD700', fontWeight: 'bold' }}>
-              ${totalPrice?.toLocaleString()}
+              ${totalPrice}
             </Typography>
           </Box>
 

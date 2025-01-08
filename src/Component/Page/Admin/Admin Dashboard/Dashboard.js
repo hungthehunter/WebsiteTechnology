@@ -29,6 +29,8 @@ function AdminDashboard() {
   const [activeComponent, setActiveComponent] = useState("defaultComponent");
   const listUser = useSelector((state) => state.user.listUser);
   const listOrder = useSelector((state) => state.order.listOrder);
+  const listReview = useSelector((state) => state.review.listReview);
+  const listSummary = useSelector((state) => state.summary.listSummary)
   const formatOrderStatus = (status) => {
     // Tách trước chữ hoa và thêm khoảng trắng
     return status.replace(/([a-z])([A-Z])/g, "$1 $2");
@@ -52,7 +54,7 @@ function AdminDashboard() {
                 component="div"
                 sx={{ fontWeight: 500, fontSize: "2.5rem", color: "#2a2185" }}
               >
-                1,504
+                {listUser?.length}
               </Typography>
               <Typography
                 variant="body2"
@@ -75,7 +77,7 @@ function AdminDashboard() {
                 component="div"
                 sx={{ fontWeight: 500, fontSize: "2.5rem", color: "#2a2185" }}
               >
-                80
+                {listOrder?.length}
               </Typography>
               <Typography
                 variant="body2"
@@ -98,7 +100,7 @@ function AdminDashboard() {
                 component="div"
                 sx={{ fontWeight: 500, fontSize: "2.5rem", color: "#2a2185" }}
               >
-                284
+                {listReview.length}
               </Typography>
               <Typography
                 variant="body2"
@@ -121,7 +123,7 @@ function AdminDashboard() {
                 component="div"
                 sx={{ fontWeight: 500, fontSize: "2.5rem", color: "#2a2185" }}
               >
-                $7,842
+                ${listSummary?.totalProfit}.00
               </Typography>
               <Typography
                 variant="body2"

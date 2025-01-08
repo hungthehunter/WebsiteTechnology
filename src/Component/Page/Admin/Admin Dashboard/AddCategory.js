@@ -1,14 +1,10 @@
 import {
   Box,
   Button,
-  FormControl,
-  InputLabel,
-  MenuItem,
-  Select,
   TextField,
-  Typography,
+  Typography
 } from "@mui/material";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { categoryThunk } from "../../../../services/redux/thunks/thunk";
 import { addCategoryValidationSchema } from "../../../../services/yup/Admin/Category/addCategoryValidation";
@@ -21,16 +17,12 @@ function AdminAddCategory({ setActiveComponent, showAlert }) {
   const [imageFile, setImageFile] = useState(null);
   const [selectedPromotions, setSelectedPromotions] = useState(null);
   const [selectedProduct, setSelectedProduct] = useState([]);
-  const [filterProducts, setFilterProducts] = useState([]);
   const [errors, setErrors] = useState({});
   const listProduct = useSelector((state) => state.product.listProduct);
-  const listPromotion = useSelector((state) => state.promotion.listPromotion);
   const dispatch = useDispatch();
 
   const handleCategoryChange = (e) => setCategoryName(e.target.value);
   const handleDescriptionChange = (e) => setDescription(e.target.value);
-  const handlePromotionChange = (e) => setSelectedPromotions(e.target.value);
-  const handleProductChange = (e) => setSelectedProduct(e.target.value);
   const handleImageChange = (e) => setImageFile(e.target.files[0]);
 
   const handleAdd = async () => {
@@ -38,8 +30,8 @@ function AdminAddCategory({ setActiveComponent, showAlert }) {
       categoryName,
       description,
       imageFile,
-      selectedPromotions,
-      selectedProduct,
+      // selectedPromotions,
+      // selectedProduct,
     };
 
     try {
@@ -51,8 +43,8 @@ function AdminAddCategory({ setActiveComponent, showAlert }) {
       const categoryDTO = {
         name: categoryName,
         description,
-        products: selectedProduct.map((id) => ({ id })),
-        promotion: selectedPromotions ? { id: selectedPromotions } : null,
+        // products: selectedProduct.map((id) => ({ id })),
+        // promotion: selectedPromotions ? { id: selectedPromotions } : null,
       };
 
       formData.append(
@@ -64,7 +56,7 @@ function AdminAddCategory({ setActiveComponent, showAlert }) {
         formData.append("file", imageFile);
       }
 
-      await dispatch(categoryThunk.createCategory(formData));
+      dispatch(categoryThunk.createCategory(formData));
       showAlert("Category added successfully.", "success");
       setActiveComponent({ name: "AdminCategory" });
     } catch (error) {
@@ -81,17 +73,6 @@ function AdminAddCategory({ setActiveComponent, showAlert }) {
       }
     }
   };
-
-  useEffect(() => {
-    if (selectedPromotions) {
-      const result = listProduct.filter(
-        (product) => product.promotion?.id === selectedPromotions
-      );
-      setFilterProducts(result);
-    } else {
-      setFilterProducts([]);
-    }
-  }, [selectedPromotions, listProduct]);
 
   return (
     <Box sx={{ padding: 4 }}>
@@ -121,7 +102,7 @@ function AdminAddCategory({ setActiveComponent, showAlert }) {
           helperText={errors.description}
         />
 
-        <FormControl fullWidth margin="normal" error={!!errors.selectedPromotions}>
+        {/* <FormControl fullWidth margin="normal" error={!!errors.selectedPromotions}>
           <InputLabel id="promotion-select-label">Select Promotion</InputLabel>
           <Select
             labelId="promotion-select-label"
@@ -141,9 +122,9 @@ function AdminAddCategory({ setActiveComponent, showAlert }) {
               {errors.selectedPromotions}
             </Typography>
           )}
-        </FormControl>
+        </FormControl> */}
 
-        <FormControl
+        {/* <FormControl
           sx={{ display: !selectedPromotions ? "none" : "inline-flex" }}
           fullWidth
           margin="normal"
@@ -164,7 +145,7 @@ function AdminAddCategory({ setActiveComponent, showAlert }) {
               </MenuItem>
             ))}
           </Select>
-        </FormControl>
+        </FormControl> */}
 
         <TextField
           type="file"

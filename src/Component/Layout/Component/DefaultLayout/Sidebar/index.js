@@ -1,20 +1,22 @@
+import { ShoppingCart } from "@mui/icons-material";
 import {
   Box,
   Button,
   List,
   ListItem,
-  ListItemIcon,
-  ListItemText,
   Typography,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
+import { motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
-import { BiLogOut } from "react-icons/bi";
 import { useDispatch, useSelector } from "react-redux";
 import { Link as RouterLink } from "react-router-dom";
 import { cartThunk } from "../../../../../services/redux/thunks/thunk";
 import icon from "../../../../Assests/ICON";
-
 function Sidebar({ show, onClose }) {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [toggle, setToggle] = useState(true);
   const [color, setColor] = useState(false);
   const dispatch = useDispatch();
@@ -23,7 +25,6 @@ function Sidebar({ show, onClose }) {
     (state) => state.user.userCurrentLogged
   );
   const cartItems = useSelector((state) => state.cart.listCartItems || []);
-
   useEffect(() => {
     if (sidebarColor.current) {
       sidebarColor.current.style.backgroundColor = color
@@ -31,6 +32,18 @@ function Sidebar({ show, onClose }) {
         : "var(--sidebar-color)";
     }
   }, [color]);
+
+  const calculateDiscountedPrice = (item) => {
+    if (item?.product?.promotion && item?.product?.promotion?.active) {
+      return (
+        item?.product?.unitPrice -
+        (item?.product?.unitPrice *
+          (item?.product?.promotion?.discountPercentage || 0)) /
+          100
+      ).toFixed(2);
+    }
+    return item?.product?.unitPrice?.toFixed(2);
+  };
 
   const handleDecreaseQuantity = (item) => {
     if (!item) {
@@ -42,7 +55,8 @@ function Sidebar({ show, onClose }) {
     }
 
     const newQuantity = item.quantity - 1;
-    const totalPrice = newQuantity * item.product.unitPrice;
+    const discountedPrice = item?.discountedPrice;
+    const totalPrice = newQuantity * item?.discountedPrice;
     if (newQuantity <= 0) {
       // Nếu số lượng <= 0, xóa sản phẩm khỏi giỏ hàng
       handleRemoveFromCart(item.id);
@@ -51,12 +65,14 @@ function Sidebar({ show, onClose }) {
       const updatedCartData = {
         quantity: newQuantity,
         status: true,
-        totalPrice: totalPrice, // ở đây là tính totalPrice
+        discountedPrice: discountedPrice,
+        totalPrice: totalPrice,
         user: {
           id: userCurrentLogged.id,
         },
         product: {
           id: item.product.id,
+          promotion: item.product.promotion,
         },
       };
 
@@ -82,17 +98,20 @@ function Sidebar({ show, onClose }) {
     }
 
     const newQuantity = item.quantity + 1;
-    const totalPrice = newQuantity * item.product.unitPrice;
+    const discountedPrice = item?.discountedPrice;
+    const totalPrice = newQuantity * discountedPrice;
 
     const updatedCartData = {
       quantity: newQuantity,
       status: true,
-      totalPrice: totalPrice, // ở đây là tính totalPrice
+      discountedPrice: discountedPrice,
+      totalPrice: totalPrice,
       user: {
         id: userCurrentLogged.id,
       },
       product: {
         id: item.product.id,
+        promotion: item.product.promotion,
       },
     };
 
@@ -133,7 +152,7 @@ function Sidebar({ show, onClose }) {
         component="aside"
         ref={sidebarColor}
         sx={{
-          width: "300px",
+          width: "350px",
           backgroundColor: "var(--sidebar-color)",
           position: "fixed",
           top: 0,
@@ -191,45 +210,103 @@ function Sidebar({ show, onClose }) {
                     }
                     alt={item?.product?.productName}
                     style={{
-                      width: "60px",
+                      width: "70px",
+                      height: "50px",
                       borderRadius: "6px",
                       marginRight: "10px",
                     }}
                   />
                   <Box sx={{ flex: 1 }}>
-                    <Typography variant="body1" sx={{ color: "white" }}>
+                    {/* Product Name */}
+                    <Typography
+                      variant="body1"
+                      sx={{ color: "white", fontWeight: "bold" }}
+                    >
                       {item?.product?.productName}
                     </Typography>
-                    <Typography variant="body2" sx={{ color: "white" }}>
-                      ${item?.product?.unitPrice?.toFixed(2)}
+
+                    {/* Original Price */}
+                    <Typography variant="body2" sx={{ color: "grey" }}>
+                      <strong>Price:</strong> $
+                      {item?.product?.unitPrice?.toFixed(2)}
                     </Typography>
-                    <Typography variant="body2" sx={{ color: "white" }}>
-                      ${item?.quantity * item?.product?.unitPrice}
+
+                    {/* Discounted Price */}
+                    <Typography variant="body2" sx={{ color: "red" }}>
+                      <strong>Price After Discount:</strong> $
+                      {item?.discountedPrice}
                     </Typography>
-                    <Box sx={{ display: "flex", alignItems: "center" }}>
+
+                    {/* Total Price */}
+                    <Typography variant="body2" sx={{ color: "yellow" }}>
+                      <strong>Total Price:</strong> $
+                      {(
+                        item?.quantity * calculateDiscountedPrice(item)
+                      ).toFixed(2)}
+                    </Typography>
+
+                    {/* Quantity Controls */}
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        marginTop: "8px",
+                      }}
+                    >
+                      {/* Decrease Quantity */}
                       <Button
                         onClick={() => handleDecreaseQuantity(item)}
                         sx={{
                           color: "white",
-                          minWidth: "20px",
+                          minHeight: "30px",
+                          minWidth: "35px",
                           padding: 0,
                           marginRight: "5px",
+                          backgroundColor: "rgba(255, 255, 255, 0.1)",
+                          "&:hover": {
+                            backgroundColor: "rgba(255, 255, 255, 0.2)",
+                          },
                         }}
                       >
                         -
                       </Button>
-                      <Typography variant="body2" sx={{ color: "white" }}>
-                        Quantity: {item.quantity}
+
+                      {/* Quantity Display */}
+                      <Typography
+                        variant="body2"
+                        sx={{ color: "white", marginX: "5px" }}
+                      >
+                        <strong>Quantity:</strong> {item.quantity}
                       </Typography>
+
+                      {/* Increase Quantity */}
                       <Button
                         onClick={() => handleIncreaseQuantity(item)}
-                        sx={{ color: "white", marginLeft: "5px" }}
+                        sx={{
+                          minWidth: "35px",
+                          minHeight: "30px",
+                          color: "white",
+                          marginLeft: "5px",
+                          backgroundColor: "rgba(255, 255, 255, 0.1)",
+                          "&:hover": {
+                            backgroundColor: "rgba(255, 255, 255, 0.2)",
+                          },
+                        }}
                       >
                         +
                       </Button>
+
+                      {/* Remove Item */}
                       <Button
                         onClick={() => handleRemoveFromCart(item.id)}
-                        sx={{ color: "white", marginLeft: "10px" }}
+                        sx={{
+                          color: "white",
+                          marginLeft: "10px",
+                          backgroundColor: "rgba(255, 0, 0, 0.1)",
+                          "&:hover": {
+                            backgroundColor: "rgba(255, 0, 0, 0.2)",
+                          },
+                        }}
                       >
                         X
                       </Button>
@@ -249,12 +326,76 @@ function Sidebar({ show, onClose }) {
             justifyContent: "flex-start",
           }}
         >
-          <ListItem component={RouterLink} to="/websiteDoAn/CartPage">
-            <ListItemIcon>
-              <BiLogOut size={45} style={{ color: "white" }} />
-            </ListItemIcon>
-            <ListItemText primary="Cart Page" sx={{ color: "white" }} />
-          </ListItem>
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              marginTop: "20px",
+            }}
+          >
+            <Button
+              component={RouterLink}
+              to="/websiteDoAn/CartPage"
+              variant="contained"
+              startIcon={<ShoppingCart />}
+              sx={{
+                width: 300,
+                textTransform: "uppercase",
+                backgroundColor: "#663399",
+                color: "#FFF",
+                fontSize: isMobile ? "1.1rem" : "1.3rem",
+                padding: "12px 24px",
+                margin: "auto",
+                borderRadius: 2,
+                transition:
+                  "background-color 0.3s, box-shadow 0.3s, transform 0.2s",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                position: "relative",
+                overflow: "hidden",
+                "&:hover": {
+                  backgroundColor: "#76B900",
+                  boxShadow: "0 4px 15px rgba(255, 255, 255, 0.2)",
+                  transform: "translateY(-2px)",
+                },
+                "&:active": {
+                  backgroundColor: "#76B900",
+                  boxShadow: "0 2px 8px rgba(255, 255, 255, 0.1)",
+                  transform: "translateY(0)",
+                },
+                "&::after": {
+                  content: '""',
+                  position: "absolute",
+                  top: "-50%",
+                  left: "-50%",
+                  width: "200%",
+                  height: "200%",
+                  backgroundColor: "rgba(255,255,255,0.2)",
+                  transform: "rotate(45deg)",
+                  transition: "all 0.3s linear",
+                },
+                "&:hover::after": {
+                  left: "100%",
+                  top: "100%",
+                },
+              }}
+            >
+              <Typography
+                variant="button"
+                sx={{
+                  color: "#FFF",
+                  fontWeight: "bold",
+                  textAlign: "center",
+                  letterSpacing: "1px",
+                }}
+              >
+                Cart Page
+              </Typography>
+            </Button>
+          </motion.div>
         </List>
       </Box>
     </>

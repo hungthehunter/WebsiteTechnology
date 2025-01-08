@@ -12,6 +12,10 @@ import AdminAddCategory from "../Component/Page/Admin/Admin Dashboard/AddCategor
 import AdminAddManufacturer from "../Component/Page/Admin/Admin Dashboard/AddManufacturer.js";
 import AdminAddPromotion from "../Component/Page/Admin/Admin Dashboard/AddPromotion.js";
 import AdminAddStaff from "../Component/Page/Admin/Admin Dashboard/AddStaff.js";
+import AdminAddBanner from "../Component/Page/Admin/Admin Dashboard/Banner/AddBanner.js";
+import AdminBanner from "../Component/Page/Admin/Admin Dashboard/Banner/Banner.js";
+import AdminEditBanner from "../Component/Page/Admin/Admin Dashboard/Banner/EditBanner.js";
+import AdminViewBanner from "../Component/Page/Admin/Admin Dashboard/Banner/ViewBanner.js";
 import AdminCategory from "../Component/Page/Admin/Admin Dashboard/Category.js";
 import AdminChart from "../Component/Page/Admin/Admin Dashboard/Chart.js";
 import AdminCustomer from "../Component/Page/Admin/Admin Dashboard/Customer.js";
@@ -348,6 +352,31 @@ const publicRoutes = [
   {
     path: "/websiteDoAn/AdminEditPromotion",
     component: AdminEditPromotion,
+    layout: BodyOnly,
+  },
+
+  {
+    path: "/websiteDoAn/AdminBanner",
+    component: AdminBanner,
+    layout: BodyOnly,
+  },
+
+  {
+    path: "/websiteDoAn/AdminEditBanner",
+    component:AdminEditBanner,
+    layout: BodyOnly,
+  },
+  
+  
+  {
+    path: "/websiteDoAn/AdminAddBanner",
+    component: AdminAddBanner,
+    layout: BodyOnly,
+  },
+  
+  {
+    path: "/websiteDoAn/AdminViewBanner",
+    component:AdminViewBanner,
     layout: BodyOnly,
   },
 

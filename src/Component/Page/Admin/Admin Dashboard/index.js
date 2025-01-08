@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import {
   accessThunk,
   addressThunk,
+  bannerThunk,
   categoryThunk,
   decentralizationThunk,
   exportThunk,
@@ -15,6 +16,8 @@ import {
   orderThunk,
   productThunk,
   promotionThunk,
+  reviewThunk,
+  summaryThunk,
   userThunk,
 } from "../../../../services/redux/thunks/thunk";
 import AdminAccess from "./Access";
@@ -28,6 +31,10 @@ import AdminAddProduct from "./AddProduct";
 import AdminAddPromotion from "./AddPromotion";
 import AdminAddStaff from "./AddStaff";
 import "./assets/css/style.scss";
+import AdminAddBanner from "./Banner/AddBanner";
+import AdminBanner from "./Banner/Banner";
+import AdminEditBanner from "./Banner/EditBanner";
+import AdminViewBanner from "./Banner/ViewBanner";
 import AdminCategory from "./Category";
 import AdminChart from "./Chart";
 import AdminCustomer from "./Customer";
@@ -92,7 +99,10 @@ function AdminPage() {
           dispatch(categoryThunk.getAllCategories()).unwrap(),
           dispatch(manufacturerThunk.getAllManufacturers()).unwrap(),
           dispatch(importThunk.getAllImports()).unwrap(),
-          dispatch(exportThunk.getAllExports()).unwrap,
+          dispatch(exportThunk.getAllExports()).unwrap(),
+          dispatch(bannerThunk.getAllBanners()).unwrap(),
+          dispatch(summaryThunk.getAllSummary()).unwrap(),
+          dispatch(reviewThunk.getAllReviews()).unwrap()
         ]);
       } catch (error) {
         console.error("Failed to fetch data:", error);
@@ -344,7 +354,7 @@ function AdminPage() {
             />
           ) : null;
         case "AdminChart":
-          return checkPermission("View Chart") ? <AdminChart /> : null;
+          return checkPermission("View Chart") ? <AdminChart setActiveComponent={setActiveComponent}/> : null;
 
         case "AdminExport":
           return checkPermission("View Export List") ? (
@@ -447,6 +457,44 @@ function AdminPage() {
               showAlert={showAlert}
             />
           ) : null;
+
+          case "AdminBanner":
+            return checkPermission("View Banner List") ? (
+              <AdminBanner
+              setActiveComponent={setActiveComponent}
+              showAlert={showAlert}
+            />
+            
+            ) :null
+
+            case "AdminViewBanner":
+              return checkPermission("View Banner List") ? (
+                <AdminViewBanner
+                id={activeComponent.props.id}
+                setActiveComponent={setActiveComponent}
+                showAlert={showAlert}
+              />
+              
+              ) :null
+
+              case "AdminEditBanner":
+                return checkPermission("Edit Banner") ? (
+                  <AdminEditBanner
+                  id={activeComponent.props.id}
+                  setActiveComponent={setActiveComponent}
+                  showAlert={showAlert}
+                />
+                
+                ) :null
+
+                case "AdminAddBanner":
+                  return checkPermission("Create Banner") ? (
+                    <AdminAddBanner
+                    setActiveComponent={setActiveComponent}
+                    showAlert={showAlert}
+                  />
+                  
+                  ) :null
 
         default:
           return null;

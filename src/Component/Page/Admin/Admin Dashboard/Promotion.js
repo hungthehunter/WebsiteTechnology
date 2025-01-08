@@ -123,6 +123,7 @@ const AdminPromotion = ({ setActiveComponent, showAlert }) => {
             </Button>
           </Box>
         </Box>
+        {/* Table */}
         <TableContainer component={Paper}>
           <Table>
             <TableHead>

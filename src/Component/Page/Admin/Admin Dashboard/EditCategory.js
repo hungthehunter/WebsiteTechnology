@@ -4,11 +4,8 @@ import {
   FormControl,
   Grid,
   InputAdornment,
-  InputLabel,
-  MenuItem,
-  Select,
   TextField,
-  Typography,
+  Typography
 } from "@mui/material";
 import CircularProgress from "@mui/material/CircularProgress";
 import React, { useEffect, useState } from "react";
@@ -26,10 +23,11 @@ function AdminEditCategory({ id, setActiveComponent, showAlert }) {
   const [selectedProduct, setSelectedProduct] = useState([]);
   const [selectedPromotions, setSelectedPromotions] = useState(null);
   const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState("");
 
   // Dữ liệu lấy từ Redux
   const listProduct = useSelector((state) => state.product.listProduct);
-  const listPromotion = useSelector((state) => state.promotion.listPromotion);
+  // const listPromotion = useSelector((state) => state.promotion.listPromotion);
   const selectedCategory = useSelector(
     (state) => state.category.selectedCategory
   );
@@ -49,8 +47,18 @@ function AdminEditCategory({ id, setActiveComponent, showAlert }) {
         selectedCategory.products?.map((product) => product.id) || []
       );
       setSelectedPromotions(selectedCategory.promotion?.id || null);
+      setImagePreview(selectedCategory.imageCloud?.url || "");
     }
   }, [selectedCategory]);
+  
+  // Handle Image Change for Preview
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImageFile(file);
+      setImagePreview(URL.createObjectURL(file)); // Show preview for new upload
+    }
+  };
 
   const handleCategoryChange = (e) => {
     setCategoryName(e.target.value);
@@ -60,24 +68,20 @@ function AdminEditCategory({ id, setActiveComponent, showAlert }) {
     setDescription(e.target.value);
   };
 
-  const handleProductChange = (e) => {
-    setSelectedProduct(e.target.value); // Đảm bảo giá trị giữ nguyên dạng mảng
-  };
+  // const handleProductChange = (e) => {
+  //   setSelectedProduct(e.target.value);
+  // };
 
-  const handlePromotionChange = (e) => {
-    setSelectedPromotions(e.target.value);
-  };
-
-  const handleImageChange = (e) => {
-    setImageFile(e.target.files[0]);
-  };
+  // const handlePromotionChange = (e) => {
+  //   setSelectedPromotions(e.target.value);
+  // };
 
   const clearForm = () => {
     setCategoryName("");
     setDescription("");
-    setSelectedProduct([]); // Reset lại mảng selectedProduct
-    setSelectedPromotions(null); // Reset selectedPromotions
-    setImageFile(null); // Xóa file ảnh
+    // setSelectedProduct([]); 
+    // setSelectedPromotions(null); 
+    setImageFile(null); 
   };
 
   const handleSave = async (id) => {
@@ -85,8 +89,8 @@ function AdminEditCategory({ id, setActiveComponent, showAlert }) {
     const categoryDTO = {
       name: categoryName,
       description: description,
-      products: selectedProduct.map((id) => ({ id })),
-      promotion: selectedPromotions ? { id: selectedPromotions } : null,
+      // products: selectedProduct.map((id) => ({ id })),
+      // promotion: selectedPromotions ? { id: selectedPromotions } : null,
     };
 
     formData.append(
@@ -114,12 +118,12 @@ function AdminEditCategory({ id, setActiveComponent, showAlert }) {
     }
   };
 
-  const filterProducts = listProduct.filter(
-    (item) =>
-      item.category &&
-      selectedCategory &&
-      (!item.category.id || item.category.id == selectedCategory.id)
-  );
+  // const filterProducts = listProduct.filter(
+  //   (item) =>
+  //     item.category &&
+  //     selectedCategory &&
+  //     (!item.category.id || item.category.id == selectedCategory.id)
+  // );
 
   if (isLoading) {
     return (
@@ -168,7 +172,7 @@ function AdminEditCategory({ id, setActiveComponent, showAlert }) {
           />
 
           {/* Product Selection */}
-          <FormControl fullWidth margin="normal" variant="outlined">
+          {/* <FormControl fullWidth margin="normal" variant="outlined">
             <InputLabel id="product-select-label">Select Product</InputLabel>
             <Select
               labelId="product-select-label"
@@ -190,10 +194,10 @@ function AdminEditCategory({ id, setActiveComponent, showAlert }) {
                 </MenuItem>
               )}
             </Select>
-          </FormControl>
+          </FormControl> */}
 
           {/* Promotion Selection */}
-          <FormControl fullWidth margin="normal">
+          {/* <FormControl fullWidth margin="normal">
             <InputLabel id="promotion-select-label">
               Select Promotion
             </InputLabel>
@@ -216,27 +220,52 @@ function AdminEditCategory({ id, setActiveComponent, showAlert }) {
                 </MenuItem>
               )}
             </Select>
-          </FormControl>
+          </FormControl> */}
 
           {/* Image Upload */}
-          <TextField
-            type="file"
-            fullWidth
-            margin="normal"
-            label="Category Image"
-            InputLabelProps={{ shrink: true }}
-            inputProps={{ accept: "image/*" }}
-            onChange={handleImageChange}
-            InputProps={{
-              endAdornment: (
-                <InputAdornment position="end">
-                  <Button variant="contained" component="span">
-                    Upload
-                  </Button>
-                </InputAdornment>
-              ),
-            }}
-          />
+          <FormControl fullWidth margin="normal">
+            <Typography variant="body1" sx={{ marginBottom: 1 }}>
+              Current Category Image:
+            </Typography>
+            {imagePreview && (
+              <Box
+                sx={{
+                  marginBottom: 2,
+                  textAlign: "center",
+                }}
+              >
+                <img
+                  src={imagePreview}
+                  alt="Category"
+                  style={{
+                    width: "200px",
+                    height: "200px",
+                    objectFit: "cover",
+                    borderRadius: "8px",
+                    border: "1px solid #ccc",
+                  }}
+                />
+              </Box>
+            )}
+            <TextField
+              type="file"
+              fullWidth
+              margin="normal"
+              label="Upload New Image"
+              InputLabelProps={{ shrink: true }}
+              inputProps={{ accept: "image/*" }}
+              onChange={handleImageChange}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <Button variant="contained" component="span">
+                      Upload
+                    </Button>
+                  </InputAdornment>
+                ),
+              }}
+            />
+          </FormControl>
 
           {/* Submit Button */}
           <Grid item xs={12}>

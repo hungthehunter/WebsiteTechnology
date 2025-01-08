@@ -2,6 +2,7 @@ import { IonIcon } from "@ionic/react";
 import {
   arrowDownCircleOutline,
   arrowUpCircleOutline,
+  calendarClearOutline,
   cashOutline,
   desktopOutline,
   gridOutline,
@@ -74,9 +75,13 @@ const SidebarAdmin = ({
     "Create Export": "AdminAddExport",
     "Edit Export": "AdminEditExport",
     "View Promotion List": "AdminPromotion",
-    "Create Promotion": "AdminPromotion",
+    "Create Promotion": "AdminAddPromotion",
     "Edit Promotion": "AdminPromotion",
     "Delete Promotion": "AdminDeletePromotion",
+    "View Banner List": "AdminBanner",
+    "Create Banner": "AdminAddBanner",
+    "Edit Banner": "AdminEditBanner",
+    "Delete Banner": "AdminDeleteBanner",
   };
 
   // Sidebar items with links and components
@@ -152,7 +157,13 @@ const SidebarAdmin = ({
       title: "Promotion",
       link: "/websiteDoAn/AdminPromotion",
       component: "AdminPromotion"
-    }
+    },
+    {
+      icon: calendarClearOutline,
+      title: "Banner",
+      link: "/websiteDoAn/AdminBanner",
+      component: "AdminBanner"
+    },
   ];
 
   // Populate user functions based on decentralization data
@@ -211,8 +222,8 @@ const SidebarAdmin = ({
           </li>
         ))}
         <li
-          onMouseOver={() => handleMouseOver(12)}
-          className={activeIndex === 12 ? "hovered" : ""}
+          onMouseOver={() => handleMouseOver(13)}
+          className={activeIndex === 13 ? "hovered" : ""}
           onClick={handleLoginLogout}
         >
           <a href="#">

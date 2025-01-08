@@ -8,17 +8,19 @@ import {
   Typography,
 } from "@mui/material"; // Thêm các thành phần MUI cần thiết
 import CircularProgress from "@mui/material/CircularProgress";
-import { createTheme } from "@mui/material/styles";
+import { createTheme, styled } from "@mui/material/styles";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import {
+  bannerThunk,
   categoryThunk,
   manufacturerThunk,
   productThunk,
 } from "../../../services/redux/thunks/thunk";
 import "../Shop/Shop.scss";
 import Shop_Fake from "./Shop_Fake";
+import Slider from "./Slider/Slider";
 
 const theme = createTheme({
   palette: {
@@ -59,6 +61,13 @@ const theme = createTheme({
     },
   },
 });
+
+const BannerDiscountSection = styled(Box)(({ theme }) => ({
+  backgroundSize: 'cover',
+  backgroundPosition: 'center',
+  padding: theme.spacing(8,0),
+  color: theme.palette.common.black,
+}));
 
 function Shop() {
   const [inputValue, setInputValue] = useState("");
@@ -129,6 +138,20 @@ function Shop() {
     });
   };
 
+
+  {/* SLIDE */}
+    const [activeSlide, setActiveSlide] = useState(0);
+  
+    const handleSlideChange = (newIndex) => {
+      setActiveSlide(newIndex);
+    };
+
+    const images = useSelector((state) => state.banner.listBanner);
+
+    useEffect(()=>{
+    dispatch(bannerThunk.getAllBanners()).unwrap();
+    },[dispatch])
+
   return (
     <ThemeProvider theme={theme}>
       <>
@@ -163,8 +186,12 @@ function Shop() {
               <div id="content">
                 <div className="grid wide">
                   <Typography variant="h1" className="shop-header">
-                    Shop GeForce Graphics Cards, Laptops, and Systems
+                    Shop GeForce Graphics Cards, Laptops, and Systems 
                   </Typography>
+
+                  <BannerDiscountSection>
+                    <Slider images={images} activeSlide={activeSlide} onChangeSlide={handleSlideChange}  height="300px" />
+                  </BannerDiscountSection>
                   <div className="container">
                     <form className="column grid__column-3 content-product">
                       <div className="Reset-Filters">

@@ -1,15 +1,11 @@
 import {
   Box,
   Button,
-  FormControl,
   Grid,
   InputAdornment,
-  InputLabel,
-  MenuItem,
-  Select,
   TextField,
   Typography,
-  useTheme
+  useTheme,
 } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -19,9 +15,9 @@ import "./assets/css/style.scss";
 import LoadingOverlay from "./overlay/LoadingOverlay";
 
 function AdminEditManufacturer({ id, setActiveComponent, showAlert }) {
-  const isLoading = useSelector((state) => state.manufacturer.isLoading)
+  const isLoading = useSelector((state) => state.manufacturer.isLoading);
   const theme = useTheme();
-  const [products, setProducts] = useState([]);
+  // const [products, setProducts] = useState([]);
   const [selectedProducts, setSelectedProducts] = useState([]);
   const [imageFile, setImageFile] = useState(null);
   const dispatch = useDispatch();
@@ -39,9 +35,9 @@ function AdminEditManufacturer({ id, setActiveComponent, showAlert }) {
   useEffect(() => {
     if (selectedManufacturer) {
       setManufacturer(selectedManufacturer);
-      setSelectedProducts(
-        selectedManufacturer.products.map((product) => product.id)
-      ); // Thiết lập selectedProducts
+      // setSelectedProducts(
+      //   selectedManufacturer.products.map((product) => product.id)
+      // );
     }
   }, [selectedManufacturer]);
 
@@ -51,10 +47,10 @@ function AdminEditManufacturer({ id, setActiveComponent, showAlert }) {
     setter(e.target.value);
   };
 
-  const handleProductChange = (e) => {
-    const value = e.target.value;
-    setSelectedProducts(typeof value === "string" ? value.split(",") : value);
-  };
+  // const handleProductChange = (e) => {
+  //   const value = e.target.value;
+  //   setSelectedProducts(typeof value === "string" ? value.split(",") : value);
+  // };
 
   const handleImageChange = (e) => {
     setImageFile(e.target.files[0]);
@@ -64,7 +60,7 @@ function AdminEditManufacturer({ id, setActiveComponent, showAlert }) {
     const formData = new FormData();
     const updatedManufacturer = {
       ...manufacturer,
-      products: selectedProducts.map((id) => ({ id })),
+      // products: selectedProducts.map((id) => ({ id })),
     };
 
     formData.append(
@@ -79,7 +75,7 @@ function AdminEditManufacturer({ id, setActiveComponent, showAlert }) {
     }
 
     try {
-      await dispatch(
+      dispatch(
         manufacturerThunk.updateManufacturer({
           id: selectedManufacturer.id,
           manufacturerData: formData,
@@ -96,7 +92,7 @@ function AdminEditManufacturer({ id, setActiveComponent, showAlert }) {
 
   return (
     <Box sx={{ padding: 4 }}>
-         {isLoading && (
+      {isLoading && (
         <LoadingOverlay isLoading={isLoading} message="Please wait..." />
       )}
       <Box className="details_table">
@@ -111,7 +107,7 @@ function AdminEditManufacturer({ id, setActiveComponent, showAlert }) {
             }}
           >
             {/* Product Selection */}
-            <FormControl fullWidth margin="normal" variant="outlined">
+            {/* <FormControl fullWidth margin="normal" variant="outlined">
               <InputLabel id="product-select-label">Select Products</InputLabel>
               <Select
                 labelId="product-select-label"
@@ -138,7 +134,7 @@ function AdminEditManufacturer({ id, setActiveComponent, showAlert }) {
                   </MenuItem>
                 )}
               </Select>
-            </FormControl>
+            </FormControl> */}
 
             {/* Các trường thông tin khác */}
             <TextField
@@ -270,19 +266,21 @@ function AdminEditManufacturer({ id, setActiveComponent, showAlert }) {
                 variant="contained"
                 sx={{ backgroundColor: theme.palette.primary.main }}
                 type="submit" // Thay đổi thành type="submit"
-                disabled = {isLoading}
+                disabled={isLoading}
               >
                 Update Manufacturer
               </Button>
               <Button
-              variant="outlined"
-              color="secondary"
-              onClick={() => setActiveComponent({ name: "AdminManufacturer" })}
-              sx={{ marginTop: 0, marginLeft: 2 }}
-              disabled = {isLoading}
-            >
-              Return to Manufacturer
-            </Button>
+                variant="outlined"
+                color="secondary"
+                onClick={() =>
+                  setActiveComponent({ name: "AdminManufacturer" })
+                }
+                sx={{ marginTop: 0, marginLeft: 2 }}
+                disabled={isLoading}
+              >
+                Return to Manufacturer
+              </Button>
             </Grid>
           </form>
         </Box>

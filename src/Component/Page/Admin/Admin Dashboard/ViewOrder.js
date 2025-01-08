@@ -19,17 +19,11 @@ import { orderThunk } from '../../../../services/redux/thunks/thunk';
 export default function AdminViewOrder({ id, setActiveComponent }) {
   const dispatch = useDispatch();
   const isLoading = useSelector((state) => state.order.isLoading);
-
-  // Tìm order cụ thể theo id
   const order = useSelector((state) => state.order.selectedOrder);
 
   useEffect(() => {
-    const fetchOrder = async () => {
-    await dispatch(orderThunk.getOrderById(id));
-    };
-    fetchOrder();
-  }, [dispatch, id]);
-
+    dispatch(orderThunk.getOrderById(id));
+  }, [id]);
 
   if (isLoading) {
     return (
@@ -53,121 +47,221 @@ export default function AdminViewOrder({ id, setActiveComponent }) {
       </Box>
     );
   }
-
   return (
     <Container>
-      <Button
-        startIcon={<ArrowBackIcon />}
-        onClick={() => 
-            setActiveComponent({
-                name: "AdminOrder",
-              })
-        }
-        sx={{ marginBottom: 3, backgroundColor: '#1976d2', color: 'white', '&:hover': { backgroundColor: '#1565c0' } }}
-      >
-        Back to Orders
-      </Button>
+    <Button
+      startIcon={<ArrowBackIcon />}
+      onClick={() => 
+          setActiveComponent({
+              name: "AdminOrder",
+            })
+      }
+      sx={{ marginBottom: 3, backgroundColor: '#1976d2', color: 'white', '&:hover': { backgroundColor: '#1565c0' } }}
+    >
+      Back to Orders
+    </Button>
 
-      <Paper elevation={4} sx={{ padding: 4, marginTop: 2, borderRadius: 2, backgroundColor: '#f5f5f5' }}>
-        <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#333', marginBottom: 2 }}>
-          Order Details
-        </Typography>
-
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, marginBottom: 3 }}>
-          <Box sx={{ flex: 1 }}>
-            <Typography variant="subtitle1" sx={{ marginBottom: 1 }}>
-              <strong>Order ID:</strong> {order.id}
-            </Typography>
-            <Typography variant="subtitle1" sx={{ marginBottom: 1 }}>
-              <strong>Order Date:</strong> {new Date(order.order_date).toLocaleString()}
-            </Typography>
-            <Typography variant="subtitle1" sx={{ marginBottom: 1 }}>
-              <strong>Total Price:</strong> ${order.total_price.toFixed(2)}
-            </Typography>
-          </Box>
-          <Box sx={{ flex: 1 }}>
-            <Typography variant="subtitle1" sx={{ marginBottom: 1 }}>
-              <strong>Status:</strong> <span style={{ color: order.status ? 'green' : 'red' }}>{order.status ? 'Active' : 'Inactive'}</span>
-            </Typography>
-            <Typography variant="subtitle1" sx={{ marginBottom: 1 }}>
-              <strong>Order Status:</strong> {order.order_status}
-            </Typography>
-            <Typography variant="subtitle1" sx={{ marginBottom: 1 }}>
-              <strong>Note:</strong> {order.note || 'N/A'}
-            </Typography>
-          </Box>
+    <Paper elevation={4} sx={{ padding: 4, marginTop: 2, borderRadius: 2, backgroundColor: '#f5f5f5' }}>
+      <Typography sx={{ fontWeight: 'bold', color: '#1976d2', marginBottom: 1, fontSize: 18 }}>
+        Customer Information
+      </Typography>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          <Typography component="span" sx={{ fontWeight: 'bold', minWidth: '120px', fontSize: 16 }}>
+            Name:
+          </Typography>
+          <Typography component="span" sx={{ fontSize: 14 }}>
+            {order.user.fullname}
+          </Typography>
         </Box>
 
-        <Divider sx={{ marginY: 2 }} />
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          <Typography component="span" sx={{ fontWeight: 'bold', minWidth: '120px', fontSize: 16 }}>
+            Email:
+          </Typography>
+          <Typography component="span" sx={{ fontSize: 14 }}>
+            {order.user.email}
+          </Typography>
+        </Box>
 
-        <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#1976d2', marginBottom: 1 }}>
-          Customer Information
-        </Typography>
-        <Typography variant="subtitle1">
-          <strong>Name:</strong> {order.user.fullname}
-        </Typography>
-        <Typography variant="subtitle1">
-          <strong>Email:</strong> {order.user.email}
-        </Typography>
-        <Typography variant="subtitle1">
-          <strong>Mobile:</strong> {order.user.mobile}
-        </Typography>
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          <Typography component="span" sx={{ fontWeight: 'bold', minWidth: '120px', fontSize: 16 }}>
+            Mobile:
+          </Typography>
+          <Typography component="span" sx={{ fontSize: 14 }}>
+            {order.user.mobile}
+          </Typography>
+        </Box>
 
-        <Divider sx={{ marginY: 2 }} />
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          <Typography component="span" sx={{ fontWeight: 'bold', minWidth: '120px', fontSize: 16 }}>
+            Shipping Address:
+          </Typography>
+          <Typography component="span" sx={{ fontSize: 14 }}>
+            {`${order.address.houseNumber}, ${order.address.street}, ${order.address.ward}, ${order.address.district}, ${order.address.city}, ${order.address.country}`}
+          </Typography>
+        </Box>
+      </Box>
 
-        <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#1976d2', marginBottom: 1 }}>
-          Shipping Address
-        </Typography>
-        <Typography variant="body1" sx={{ padding: 1, backgroundColor: '#e0f7fa', borderRadius: 1 }}>
-          {`${order.address.houseNumber}, ${order.address.street}, ${order.address.ward}, ${order.address.district}, ${order.address.city}, ${order.address.country}`}
-        </Typography>
+      <Divider sx={{ marginY: 2 }} />
 
-        <Divider sx={{ marginY: 2 }} />
+      <Typography sx={{ fontWeight: 'bold', color: '#1976d2', marginBottom: 1, fontSize: 18 }}>
+        Order Details
+      </Typography>
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, marginBottom: 3, flexDirection: 'column' }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, marginBottom: 3 }}>
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <Typography component="span" sx={{ fontWeight: 'bold', minWidth: '120px', fontSize: 16 }}>
+              Order ID:
+            </Typography>
+            <Typography component="span" sx={{ fontSize: 14 }}>
+              {order.id}
+            </Typography>
+          </Box>
 
-        <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#1976d2', marginBottom: 1 }}>
-          Order Items
-        </Typography>
-        <List>
-          {order.orderItem.map((item) => (
-            <ListItem key={item.id} sx={{ padding: 0, marginBottom: 2 }}>
-              <Card sx={{ display: 'flex', width: '100%', borderRadius: 2, overflow: 'hidden' }}>
-                <CardMedia
-                  component="img"
-                  sx={{ width: 151 }}
-                  image={item.product.product_image.find((img) => img.mainImage)?.url || ''}
-                  alt={item.product.productName}
-                />
-                <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1, padding: 2 }}>
-                  <CardContent sx={{ padding: 0 }}>
-                    <Typography variant="h6" sx={{ color: '#424242', fontWeight: 'bold' }}>{item.product.productName}</Typography>
-                    <Typography variant="body2" sx={{ marginTop: 1 }}>
-                      <strong>Quantity:</strong> {item.quantity}
-                    </Typography>
-                    <Typography variant="body2">
-                      <strong>Total Price:</strong> ${item.totalPrice.toFixed(2)}
-                    </Typography>
-                  </CardContent>
-                </Box>
-              </Card>
-            </ListItem>
-          ))}
-        </List>
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <Typography component="span" sx={{ fontWeight: 'bold', minWidth: '120px', fontSize: 16 }}>
+              Order Date:
+            </Typography>
+            <Typography component="span" sx={{ fontSize: 14 }}>
+              {new Date(order.order_date).toLocaleString()}
+            </Typography>
+          </Box>
 
-        <Divider sx={{ marginY: 2 }} />
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <Typography component="span" sx={{ fontWeight: 'bold', minWidth: '120px', fontSize: 16 }}>
+              Total Price:
+            </Typography>
+            <Typography component="span" sx={{ fontSize: 14 }}>
+              ${order.total_price.toFixed(2)}
+            </Typography>
+          </Box>
 
-        <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#1976d2', marginBottom: 1 }}>
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <Typography component="span" sx={{ fontWeight: 'bold', minWidth: '120px', fontSize: 16 }}>
+              Status:
+            </Typography>
+            <Typography component="span" sx={{ fontSize: 14 }}>
+              {order.status ? 'Active' : 'Inactive'}
+            </Typography>
+          </Box>
+
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <Typography component="span" sx={{ fontWeight: 'bold', minWidth: '120px', fontSize: 16 }}>
+              Order Status:
+            </Typography>
+            <Typography component="span" sx={{ fontSize: 14 }}>
+              {order.order_status}
+            </Typography>
+          </Box>
+
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <Typography component="span" sx={{ fontWeight: 'bold', minWidth: '120px', fontSize: 16 }}>
+              Note:
+            </Typography>
+            <Typography component="span" sx={{ fontSize: 14 }}>
+              {order.note || 'N/A'}
+            </Typography>
+          </Box>
+
+          <Typography component="span" sx={{ fontWeight: 'bold', fontSize: 16, marginTop: 2 }}>
+            Order Items
+          </Typography>
+
+          <List>
+            {order?.orderItem?.map((item) => (
+              <ListItem key={item.id} sx={{ padding: 0, marginBottom: 2 }}>
+                <Card sx={{ display: 'flex', flexDirection: 'column', borderRadius: 2, overflow: 'hidden' }}>
+                  <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                    <Box sx={{ 
+                      flex: '0 0 auto',
+                      display: 'flex',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      padding: 2
+                    }}>
+                      <CardMedia
+                        component="img"
+                        sx={{ width: 250, height: 150 }}
+                        image={item?.product?.product_image.find((img) => img.mainImage)?.url || ''}
+                        alt={item?.product?.productName}
+                      />
+                    </Box>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1, padding: 2 }}>
+                      <CardContent sx={{ padding: 0 }}>
+                        <Box sx={{ display: 'flex', gap: 1 }}>
+                          <Typography component="span" sx={{ fontWeight: 'bold', fontSize: 16 }}>
+                            Name product:
+                          </Typography>
+                          <Typography sx={{ fontSize: 14 }}>
+                            {item?.product?.productName}
+                          </Typography>
+                        </Box>
+                      </CardContent>
+                      <CardContent sx={{ padding: 0, marginTop: 2 }}>
+                        <Box sx={{ display: 'flex', gap: 1 }}>
+                          <Typography component="span" sx={{ fontWeight: 'bold', fontSize: 16 }}>
+                            Quantity:
+                          </Typography>
+                          <Typography sx={{ fontSize: 14 }}>
+                            {item?.quantity}
+                          </Typography>
+                        </Box>
+                      </CardContent>
+                      <CardContent sx={{ padding: 0, marginTop: 2 }}>
+                        <Box sx={{ display: 'flex', gap: 1 }}>
+                          <Typography component="span" sx={{ fontWeight: 'bold', fontSize: 16 }}>
+                            Total Price:
+                          </Typography>
+                          <Typography sx={{ fontSize: 14 }}>
+                            ${item?.totalPrice?.toFixed(2)}
+                          </Typography>
+                        </Box>
+                      </CardContent>
+                    </Box>
+                  </Box>
+                </Card>
+              </ListItem>
+            ))}
+          </List>
+        </Box>
+      </Box>
+
+      <Divider sx={{ marginY: 2 }} />
+
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+        <Typography sx={{ fontWeight: 'bold', color: '#1976d2', marginBottom: 2, fontSize: 18 }}>
           Payment Information
         </Typography>
-        <Typography variant="subtitle1" sx={{ marginBottom: 1 }}>
-          <strong>Payment Date:</strong> {new Date(order.payment.payment_date).toLocaleString()}
-        </Typography>
-        <Typography variant="subtitle1" sx={{ marginBottom: 1 }}>
-          <strong>Payment Method:</strong> {order.payment.payment_method}
-        </Typography>
-        <Typography variant="subtitle1" sx={{ marginBottom: 1 }}>
-          <strong>Payment Status:</strong> {order.payment.payment_status}
-        </Typography>
-      </Paper>
-    </Container>
+
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          <Typography component="span" sx={{ fontWeight: 'bold', minWidth: '120px', fontSize: 16 }}>
+            Payment Date:
+          </Typography>
+          <Typography component="span" sx={{ fontSize: 14 }}>
+            {new Date(order?.payment?.payment_date).toLocaleString()}
+          </Typography>
+        </Box>
+
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          <Typography component="span" sx={{ fontWeight: 'bold', minWidth: '120px', fontSize: 16 }}>
+            Payment Method:
+          </Typography>
+          <Typography component="span" sx={{ fontSize: 14 }}>
+            {order?.payment?.payment_method}
+          </Typography>
+        </Box>
+
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          <Typography component="span" sx={{ fontWeight: 'bold', minWidth: '120px', fontSize: 16 }}>
+            Payment Status:
+          </Typography>
+          <Typography component="span" sx={{ fontSize: 14 }}>
+            {order?.payment?.payment_status}
+          </Typography>
+        </Box>
+      </Box>
+    </Paper>
+  </Container>
   );
 }

@@ -1,5 +1,6 @@
 import {
   Box,
+  Button,
   MenuItem,
   Stack,
   Table,
@@ -16,7 +17,7 @@ import { useSelector } from "react-redux";
 
 // Define color arrays
 const productSalesColor = ["orange", "black", "purple"];
-const orderStatusColor = ['#ffb300', '#f44336', '#4caf50', '#2196f3'];  // Example colors for Pending, Return, Shipped, In Progress
+const orderStatusColor = ["#ffb300", "#f44336", "#4caf50", "#2196f3"]; // Example colors for Pending, Return, Shipped, In Progress
 const productColors = [
   "orange",
   "blue",
@@ -35,11 +36,12 @@ const productColors = [
   "lime",
 ];
 
-const AdminChart = () => {
+const AdminChart = ({setActiveComponent}) => {
   const [selectedChart, setSelectedChart] = useState("Product Sales");
   const [selectedMonth, setSelectedMonth] = useState("");
   const listOrder = useSelector((state) => state.order.listOrder);
   const listProduct = useSelector((state) => state.product.listProduct);
+  const listSummary = useSelector((state) => state.summary.listSummary);
 
   // Product sales pie chart data processing (1 function: dataProductSales)
   const mergedProducts = listOrder.reduce((acc, order) => {
@@ -61,64 +63,61 @@ const AdminChart = () => {
   }, {});
   const dataProductSales = Object.values(mergedProducts);
 
-
   // Order status bar chart data processing (2 function: monthlyOrderStatus , dataForBarChart)
-const monthlyOrderStatus = listOrder.reduce((acc, item) => {
-  const orderDate = new Date(item.order_date);
-  const month = orderDate.getMonth() + 1;  // Get month (1-based)
-  const year = orderDate.getFullYear();   // Get year
-  const status = item.order_status;
-  const key = `${year}-${month}`; // Combine year and month to create a unique key
+  const monthlyOrderStatus = listOrder.reduce((acc, item) => {
+    const orderDate = new Date(item.order_date);
+    const month = orderDate.getMonth() + 1; // Get month (1-based)
+    const year = orderDate.getFullYear(); // Get year
+    const status = item.order_status;
+    const key = `${year}-${month}`; // Combine year and month to create a unique key
 
-  if (!acc[key]) {
-    acc[key] = {
-      year,
-      month,
-      statuses: { Pending: 0, Return: 0, Shipped: 0, inProgress: 0 },
-    };
-  }
-  acc[key].statuses[status] += 1;
-  return acc;
-}, {});
+    if (!acc[key]) {
+      acc[key] = {
+        year,
+        month,
+        statuses: { Pending: 0, Return: 0, Shipped: 0, inProgress: 0 },
+      };
+    }
+    acc[key].statuses[status] += 1;
+    return acc;
+  }, {});
 
+  const dataForBarChart = Object.values(monthlyOrderStatus).map((item) => ({
+    month: `Tháng ${item.month} - ${item.year}`, // Display both month and year
+    Pending: item.statuses.Pending,
+    Return: item.statuses.Return,
+    Shipped: item.statuses.Shipped,
+    inProgress: item.statuses.inProgress,
+  }));
 
-const dataForBarChart = Object.values(monthlyOrderStatus).map((item) => ({
-  month: `Tháng ${item.month} - ${item.year}`,  // Display both month and year
-  Pending: item.statuses.Pending,
-  Return: item.statuses.Return,
-  Shipped: item.statuses.Shipped,
-  inProgress: item.statuses.inProgress,
-}));
+  const pieChartData = Object.values(monthlyOrderStatus).map((item) => ({
+    label: `Tháng ${item.month} - ${item.year}`, // Label with both month and year
+    Pending: item.statuses.Pending,
+    Return: item.statuses.Return,
+    Shipped: item.statuses.Shipped,
+    inProgress: item.statuses.inProgress,
+  }));
 
-const pieChartData = Object.values(monthlyOrderStatus).map((item) => ({
-  label: `Tháng ${item.month} - ${item.year}`,  // Label with both month and year
-  Pending: item.statuses.Pending,
-  Return: item.statuses.Return,
-  Shipped: item.statuses.Shipped,
-  inProgress: item.statuses.inProgress,
-}));
+  const filteredDataForBarChart = selectedMonth
+    ? dataForBarChart.filter((item) => {
+        const [selectedYear, selectedMonthNumber] = selectedMonth.split("-");
+        return (
+          item.month.includes(selectedYear) &&
+          item.month.includes(selectedMonthNumber)
+        );
+      })
+    : dataForBarChart;
 
-const filteredDataForBarChart = selectedMonth
-  ? dataForBarChart.filter((item) => {
-      const [selectedYear, selectedMonthNumber] = selectedMonth.split("-");
-      return (
-        item.month.includes(selectedYear) && item.month.includes(selectedMonthNumber)
-      );
-    })
-  : dataForBarChart;
+  const filteredPieChartData = selectedMonth
+    ? pieChartData.filter((item) => {
+        const [selectedYear, selectedMonthNumber] = selectedMonth.split("-");
+        return (
+          item.label.includes(selectedYear) &&
+          item.label.includes(selectedMonthNumber)
+        );
+      })
+    : pieChartData;
 
-const filteredPieChartData = selectedMonth
-  ? pieChartData.filter((item) => {
-      const [selectedYear, selectedMonthNumber] = selectedMonth.split("-");
-      return (
-        item.label.includes(selectedYear) && item.label.includes(selectedMonthNumber)
-      );
-    })
-  : pieChartData;
-
-
-
-  
   // Inventory levels bar chart data processing (1 function: dataInventoryLevels)
   const dataInventoryLevels = listProduct.map((inventory, index) => ({
     productName: inventory.productName,
@@ -130,17 +129,17 @@ const filteredPieChartData = selectedMonth
   const dataForPerformanceKPI = [
     {
       label: "Revenue",
-      value: listOrder.reduce((acc, order) => acc + order.total_price, 0),
+      value: listSummary.totalRevenue,
     },
     {
       label: "Profit",
-      value: listOrder.reduce((acc, order) => acc + (order.total_price - order.total_price * 0.2), 0),
-    }, 
+      value: listSummary.totalProfit,
+    },
     {
       label: "Remaining Inventory",
-      value: listProduct.reduce((acc, product) => acc + product.unitInStock, 0),
+      value: listSummary.totalInventory,
     },
-    { label: "Total Orders", value: listOrder.length },
+    { label: "Total Orders", value: listSummary.totalOrderedProducts },
   ];
 
   // User Buy the Most (1 function: dataUserBuyTheMost)
@@ -254,54 +253,142 @@ const filteredPieChartData = selectedMonth
           </Box>
         )}
 
+        {selectedChart === "Order Status by Month" && (
+          <Box flexGrow={2} minWidth={300} marginBottom={2}>
+            <Typography sx={{ marginTop: 2 }}>Order Status by Month</Typography>
 
+            {/* Pie Chart for Order Status */}
+            <PieChart
+              series={[
+                {
+                  data: [
+                    {
+                      label: "Pending",
+                      value: listSummary.pendingOrders
+                    },
+                    {
+                      label: "Canceled",
+                      value: listSummary.canceledOrders,
+                    },
+                    {
+                      label: "Completed",
+                      value: listSummary.completedOrders,
+                    },
+                    {
+                      label: "In Progress",
+                      value: listSummary.inProgressOrders,
+                    },
+                  ],
+                },
+              ]}
+              height={200}
+              colors={["#ffb300", "#f44336", "#4caf50", "#2196f3"]} // Màu sắc cho các phần
+              sx={{
+                [`& .${pieArcLabelClasses.root}`]: {
+                  fill: "white",
+                  fontWeight: "bold",
+                },
+              }}
+            />
 
-{selectedChart === "Order Status by Month" && (
+            {/* Table for Order Status by Month */}
+            <Box sx={{ width: "50%", overflowX: "auto", marginTop: 2 }}>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Month</TableCell>
+                    <TableCell>Pending</TableCell>
+                    <TableCell>Return</TableCell>
+                    <TableCell>Shipped</TableCell>
+                    <TableCell>In Progress</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {filteredDataForBarChart.map((item) => (
+                    <TableRow key={item.month}>
+                      <TableCell>{item.month}</TableCell>
+                      <TableCell>{item.Pending}</TableCell>
+                      <TableCell>{item.Return}</TableCell>
+                      <TableCell>{item.Shipped}</TableCell>
+                      <TableCell>{item.inProgress}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </Box>
+          </Box>
+        )}
+
+        {/* Inventory Levels */}
+        {selectedChart === "Inventory Levels" && (
   <Box flexGrow={2} minWidth={300} marginBottom={2}>
-    <Typography sx={{ marginTop: 2 }}>Order Status by Month</Typography>
+    <Typography sx={{ marginTop: 2 }}>
+      Inventory Levels by Product
+    </Typography>
 
-    {/* Pie Chart for Order Status */}
-    <PieChart
-      series={[
-        {
-          data: [
-            { label: 'Pending', value: filteredPieChartData.reduce((sum, item) => sum + item.Pending, 0) },
-            { label: 'Return', value: filteredPieChartData.reduce((sum, item) => sum + item.Return, 0) },
-            { label: 'Shipped', value: filteredPieChartData.reduce((sum, item) => sum + item.Shipped, 0) },
-            { label: 'In Progress', value: filteredPieChartData.reduce((sum, item) => sum + item.inProgress, 0) }
-          ]
-        }
-      ]}
-      height={200}
-      colors={['#ffb300', '#f44336', '#4caf50', '#2196f3']}  // Màu sắc cho các phần
-      sx={{
-        [`& .${pieArcLabelClasses.root}`]: {
-          fill: "white",
-          fontWeight: "bold",
-        },
-      }}
-    />
+    {/* Horizontal Bar Chart for Inventory Levels */}
+    {/* <Box sx={{ height: 300, marginTop: 2 }}>
+      <BarChart
+        dataset={dataInventoryLevels}
+        yAxis={[{
+          scaleType: 'band',
+          dataKey: 'productName',  // Dữ liệu trục Y là tên sản phẩm
+          axisLabel: {
+            style: {
+              display: 'none',  // Ẩn nhãn trục Y
+            },
+          },
+        }]}
+        xAxis={[{
+          label: 'Units in Stock',
+        }]}
+        series={[
+          {
+            dataKey: 'unitInStock',  // Dữ liệu giá trị trục X là số lượng sản phẩm
+            label: 'Units in Stock',
+          },
+        ]}
+        layout="horizontal"  // Dùng layout ngang cho cột
+        grid={{ vertical: true }}  // Hiển thị lưới theo chiều dọc
+        height={300}
+        margin={{ top: 20, right: 30, left: 40, bottom: 50 }}
+      />
+    </Box> */}
 
-    {/* Table for Order Status by Month */}
+    {/* Table for Inventory Levels */}
     <Box sx={{ width: "50%", overflowX: "auto", marginTop: 2 }}>
       <Table>
         <TableHead>
           <TableRow>
-            <TableCell>Month</TableCell>
-            <TableCell>Pending</TableCell>
-            <TableCell>Return</TableCell>
-            <TableCell>Shipped</TableCell>
-            <TableCell>In Progress</TableCell>
+            <TableCell>Product Name</TableCell>
+            <TableCell>Unit in Stock</TableCell>
+            <TableCell>Warning</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
-          {filteredDataForBarChart.map((item) => (
-            <TableRow key={item.month}>
-              <TableCell>{item.month}</TableCell>
-              <TableCell>{item.Pending}</TableCell>
-              <TableCell>{item.Return}</TableCell>
-              <TableCell>{item.Shipped}</TableCell>
-              <TableCell>{item.inProgress}</TableCell>
+          {dataInventoryLevels.map((item, index) => (
+            <TableRow key={index}>
+              <TableCell>{item.productName}</TableCell>
+              <TableCell>{item.unitInStock}</TableCell>
+              <TableCell>
+                <Button
+                  variant="contained"
+                  onClick={() =>
+                    setActiveComponent({
+                      name: "AdminImport",
+                    })
+                  }
+                  sx={{
+                    backgroundColor: item.unitInStock < 10 ? "red" : "gray",
+                    color: "white",
+                    "&:hover": {
+                      backgroundColor: item.unitInStock < 10 ? "darkred" : "darkgray",
+                    },
+                  }}
+                >
+                  Warning
+                </Button>
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>
@@ -311,79 +398,6 @@ const filteredPieChartData = selectedMonth
 )}
 
 
-
-
-
-        {selectedChart === "Inventory Levels" && (
-          <Box flexGrow={2} minWidth={300} marginBottom={2}>
-            <Typography sx={{ marginTop: 2 }}>
-              Inventory Levels by Product
-            </Typography>
-            <PieChart
-              colors={dataInventoryLevels.map((item) => item.color)}
-              series={[
-                {
-                  data: dataInventoryLevels.map((item) => ({
-                    label: item.productName,
-                    value: item.unitInStock,
-                  })),
-                },
-              ]}
-              height={200}
-              sx={{
-                [`& .${pieArcLabelClasses.root}`]: {
-                  fill: "white",
-                  fontWeight: "bold",
-                },
-              }}
-            />
-            <Stack
-              direction="row"
-              justifyContent="center"
-              spacing={2}
-              sx={{ marginTop: 2 }}
-            >
-              {dataInventoryLevels.map((item, index) => (
-                <Stack
-                  direction="row"
-                  alignItems="center"
-                  key={index}
-                  spacing={1}
-                >
-                  <Box
-                    sx={{
-                      width: 16,
-                      height: 16,
-                      backgroundColor: item.color,
-                      borderRadius: "50%",
-                    }}
-                  />
-                  <Typography>{item.productName}</Typography>
-                </Stack>
-              ))}
-            </Stack>
-
-            {/* Table for Inventory Levels */}
-            <Box sx={{ width: "50%", overflowX: "auto", marginTop: 2 }}>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Product Name</TableCell>
-                    <TableCell>Unit in Stock</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {dataInventoryLevels.map((item, index) => (
-                    <TableRow key={index}>
-                      <TableCell>{item.productName}</TableCell>
-                      <TableCell>{item.unitInStock}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </Box>
-          </Box>
-        )}
 
         {/* Table for Performance KPI */}
         {selectedChart === "Performance KPI" && (

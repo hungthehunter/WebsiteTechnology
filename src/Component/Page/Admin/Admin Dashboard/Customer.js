@@ -245,7 +245,9 @@ function AdminCustomer({ setActiveComponent, showAlert }) {
                   {
                       user.addresses.length > 0 ? (
                         <Box>
-                          {user.addresses.map((address, index) => (
+                          {user.addresses
+                          .filter((address) => address.status === true)
+                          .map((address, index) => (
                             <Typography
                               key={index}
                               variant="body1"

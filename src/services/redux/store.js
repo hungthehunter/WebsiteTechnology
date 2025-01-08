@@ -5,6 +5,7 @@ import { persistReducer, persistStore } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
 import accessReducer from './slices/accessSlice';
 import addressReducer from './slices/addressSlice';
+import bannerReducer from './slices/bannerSlice';
 import cartReducer from './slices/cartSlice';
 import categoryReducer from './slices/categorySlice';
 import decentralizationReducer from './slices/decentralizationSlice';
@@ -19,6 +20,7 @@ import productReducer from './slices/productSlice';
 import promotionReducer from './slices/promotionSlice';
 import purchaseHistoryReducer from './slices/purchaseHistorySlice';
 import reviewReducer from './slices/reviewSlice';
+import summaryReducer from './slices/summarySlice';
 import userReducer from './slices/userSlice';
 // Kết hợp các reducers lại
 const rootReducer = combineReducers({
@@ -38,7 +40,9 @@ const rootReducer = combineReducers({
   review: reviewReducer,
   user: userReducer,
   import: importReducer,
-  export: exportReducer
+  export: exportReducer,
+  banner: bannerReducer,
+  summary: summaryReducer,
 });
 
 // Cấu hình persist

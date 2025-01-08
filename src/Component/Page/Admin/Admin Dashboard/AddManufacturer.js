@@ -1,12 +1,4 @@
-import {
-  Box,
-  Button,
-  FormControl,
-  InputLabel,
-  MenuItem,
-  Select,
-  TextField,
-} from "@mui/material";
+import { Box, Button, Grid, TextField, Typography } from "@mui/material";
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { manufacturerThunk } from "../../../../services/redux/thunks/thunk";
@@ -15,7 +7,6 @@ import "./assets/css/style.scss";
 
 function AdminAddManufacturer({ setActiveComponent, showAlert }) {
   const isLoading = useSelector((state) => state.manufacturer.isLoading);
-  const [selectedProduct, setSelectedProduct] = useState([]);
   const [imageFile, setImageFile] = useState(null);
   const [name, setName] = useState("");
   const [country, setCountry] = useState("");
@@ -27,11 +18,16 @@ function AdminAddManufacturer({ setActiveComponent, showAlert }) {
   const [createdAt, setCreatedAt] = useState(null);
   const [updatedAt, setUpdatedAt] = useState(null);
   const [errors, setErrors] = useState({});
-  const listProduct = useSelector((state) => state.product.listProduct);
   const dispatch = useDispatch();
+  const [imagePreview, setImagePreview] = useState("");
 
-  const handleProductChange = (e) => setSelectedProduct(e.target.value);
-  const handleImageChange = (e) => setImageFile(e.target.files[0]);
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImageFile(file);
+      setImagePreview(URL.createObjectURL(file));
+    }
+  };
   const handleInputChange = (setter) => (e) => setter(e.target.value);
 
   const handleAdd = async () => {
@@ -44,13 +40,11 @@ function AdminAddManufacturer({ setActiveComponent, showAlert }) {
       phone,
       address,
       imageFile,
-      selectedProduct,
       createdAt,
       updatedAt,
     };
 
     try {
-      // Validate using Yup
       await addManufacturerValidationSchema.validate(dataToValidate, {
         abortEarly: false,
       });
@@ -68,7 +62,6 @@ function AdminAddManufacturer({ setActiveComponent, showAlert }) {
         address,
         createdAt,
         updatedAt,
-        products: selectedProduct.map((id) => ({ id })),
       };
 
       formData.append(
@@ -81,8 +74,8 @@ function AdminAddManufacturer({ setActiveComponent, showAlert }) {
       if (imageFile) {
         formData.append("file", imageFile);
       }
-      console.log(manufacturerDTO)
-      await dispatch(manufacturerThunk.createManufacturer(formData));
+
+      dispatch(manufacturerThunk.createManufacturer(formData));
       showAlert("Add new manufacturer successfully", "success");
       setActiveComponent({ name: "AdminManufacturer" });
     } catch (error) {
@@ -98,49 +91,10 @@ function AdminAddManufacturer({ setActiveComponent, showAlert }) {
       }
     }
   };
-
-  const filterProducts = listProduct.filter(
-    (item) => !item.manufacturer || !item.manufacturer.id
-  );
-
   return (
     <Box sx={{ padding: 4 }}>
       <h2>Add Manufacturer</h2>
       <form id="editForm">
-        <FormControl
-          fullWidth
-          margin="normal"
-          error={!!errors.selectedProduct}
-          variant="outlined"
-        >
-          <InputLabel id="product-select-label">Select Product</InputLabel>
-          <Select
-            labelId="product-select-label"
-            value={selectedProduct}
-            onChange={handleProductChange}
-            label="Select Product"
-            multiple
-          >
-            <MenuItem value={null}>None</MenuItem>
-            {filterProducts.length > 0 ? (
-              filterProducts.map((product) => (
-                <MenuItem key={product.id} value={product.id}>
-                  {product.productName}
-                </MenuItem>
-              ))
-            ) : (
-              <MenuItem disabled value="">
-                No products available
-              </MenuItem>
-            )}
-          </Select>
-          {errors.selectedProduct && (
-            <p style={{ color: "red", fontSize: "0.875rem" }}>
-              {errors.selectedProduct}
-            </p>
-          )}
-        </FormControl>
-
         <TextField
           fullWidth
           margin="normal"
@@ -240,15 +194,50 @@ function AdminAddManufacturer({ setActiveComponent, showAlert }) {
           helperText={errors.imageFile}
         />
 
-        <Button
-          fullWidth
-          variant="contained"
-          color="primary"
-          onClick={handleAdd}
-          disabled={isLoading}
-        >
-          Add Manufacturer
-        </Button>
+        {imagePreview && (
+          <Box
+            sx={{
+              marginTop: 2,
+              marginBottom: 2,
+              textAlign: "left",
+            }}
+          >
+            <Typography variant="body1" sx={{ marginBottom: 1 }}>
+              Preview Image:
+            </Typography>
+            <img
+              src={imagePreview}
+              alt="Preview"
+              style={{
+                width: "200px",
+                height: "200px",
+                objectFit: "cover",
+                borderRadius: "8px",
+                border: "1px solid #ccc",
+              }}
+            />
+          </Box>
+        )}
+
+        <Grid item xs={12}>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleAdd}
+            disabled={isLoading}
+          >
+            Add Manufacturer
+          </Button>
+          <Button
+            variant="outlined"
+            color="secondary"
+            onClick={() => setActiveComponent({ name: "AdminManufacturer" })}
+            sx={{ marginTop: 0, marginLeft: 2 }}
+            disabled={isLoading}
+          >
+            Return to Manufacturer
+          </Button>
+        </Grid>
       </form>
     </Box>
   );

@@ -8,6 +8,7 @@ import {
 } from "ionicons/icons";
 import React, { useState } from 'react';
 import { useNavigate } from "react-router-dom";
+import { BASE_PATH } from "../../Config/config";
 import "./css/style.scss";
 
 const SidebarAccountHistory = ({ activeIndex, menuActive, handleMouseOver, setActiveComponent }) => {
@@ -21,9 +22,9 @@ const SidebarAccountHistory = ({ activeIndex, menuActive, handleMouseOver, setAc
             localStorage.removeItem("userEmail");
             setIsLoggedIn(false);
             setEmail("");
-            navigate("/websiteDoAn/Login");
+            navigate(`${BASE_PATH}/Login`);
         } else {
-            navigate("/websiteDoAn/Login");
+            navigate(`${BASE_PATH}/Login`);
         }
     };
 
@@ -34,10 +35,10 @@ const SidebarAccountHistory = ({ activeIndex, menuActive, handleMouseOver, setAc
                   {}
                 </li>
                 {[
-                    { icon: personOutline, title: "Account Information", link: "/websiteDoAn/AccountDetail", component: "AccountDetail" },
-                    { icon: locationOutline, title: "Address Detail", link: "/websiteDoAn/AccountAddress", component: "AccountAddress" },
-                    { icon: bagHandleOutline, title: "Order manage", link: "/websiteDoAn/AccountOrder", component: "AccountOrder" },
-                    { icon: eyeOutline, title: "Product History", link: "/websiteDoAn/AccountProductHistory", component: "AccountProductHistory" },
+                    { icon: personOutline, title: "Account Information", link: `/${BASE_PATH}/AccountDetail`, component: "AccountDetail" },
+                    { icon: locationOutline, title: "Address Detail", link: `/${BASE_PATH}/AccountAddress`, component: "AccountAddress" },
+                    { icon: bagHandleOutline, title: "Order manage", link: `/${BASE_PATH}/AccountOrder`, component: "AccountOrder" },
+                    { icon: eyeOutline, title: "Product History", link: `/${BASE_PATH}/AccountProductHistory`, component: "AccountProductHistory" },
                    
                 ].map((item, index) => (
                     <li

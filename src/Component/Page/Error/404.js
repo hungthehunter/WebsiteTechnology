@@ -1,8 +1,8 @@
+import { Box, Button, Typography } from "@mui/material";
 import React from "react";
 import { Link } from "react-router-dom";
-import { Box, Typography, Button } from "@mui/material";
+import { BASE_PATH } from "../../Config/config";
 import "./404.scss"; // Assuming you saved your SCSS file as 404.scss
-
 function ErrorPage() {
   return (
     <Box
@@ -67,7 +67,7 @@ function ErrorPage() {
           <Box className="error__nav e-nav">
             <Button
               component={Link}
-              to="/websiteDoAn/"
+              to={`${BASE_PATH}/`}
               variant="contained"
               sx={{
                 mt: 2,

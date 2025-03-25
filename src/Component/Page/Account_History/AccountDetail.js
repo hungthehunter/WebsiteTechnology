@@ -14,7 +14,7 @@ import { useNavigate } from "react-router-dom";
 import { clearUserLoggedIn } from "../../../services/redux/slices/userSlice";
 import { userThunk } from "../../../services/redux/thunks/thunk";
 import { accountDetailValidation } from "../../../services/yup/AccountDetailValidation";
-
+import { BASE_PATH } from "../../Config/config";
 const AccountDetail = () => {
   const userCurrentLogged = useSelector(
     (state) => state.user.userCurrentLogged
@@ -73,7 +73,7 @@ const AccountDetail = () => {
       );
       await dispatch(clearUserLoggedIn());
       toast.success("Update successfully, please log in again");
-      navigate("/websiteDoAn/Login");
+      navigate(`/${BASE_PATH}/Login`);
     } catch (error) {
       if (error.name === "ValidationError") {
         const validationErrors = error.inner.reduce((acc, curr) => {

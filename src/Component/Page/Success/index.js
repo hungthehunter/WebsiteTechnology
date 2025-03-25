@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import icon from "../../Assests/ICON"; // Kiểm tra lại đường dẫn đến ảnh ICON của bạn
+import { BASE_PATH } from "../../Config/config";
 import "./style.scss";
 
 function SuccessOrder() {
@@ -13,7 +14,7 @@ function SuccessOrder() {
 
   const closePopup = () => {
     setPopupOpen(false);
-    navigate("/websiteDoAn/");
+    navigate(`${BASE_PATH}/`);
   };
 
   return (

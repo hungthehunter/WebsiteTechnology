@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { productThunk } from '../../../../../services/redux/thunks/thunk';
+import { promotionThunk } from '../../../../../services/redux/thunks/thunk';
 
 export const useReloadTable = (showAlert) => {
-    const shouldReload = useSelector((state) => state.product.shouldReload);
+    const shouldReload = useSelector((state) => state.promotion.shouldReload);
     const dispatch = useDispatch();
     const [isLoading, setIsLoading] = useState(false);
 
@@ -12,7 +12,7 @@ export const useReloadTable = (showAlert) => {
         setIsLoading(true);
 
         try {
-            await dispatch(productThunk.getAllProduct());
+            await dispatch(promotionThunk.getAllPromotions());
             if (showAlert) {
                 showAlert('Table reloaded successfully.', 'success');
             }

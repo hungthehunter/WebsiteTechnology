@@ -7,6 +7,7 @@ import React, { useState } from 'react';
 import { AiOutlineShoppingCart } from 'react-icons/ai';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+import { BASE_PATH } from '../../../Config/config.js';
 import CartItem from '../CartItem/CartItem.js';
 // Dữ liệu giả
 const dummyData = {
@@ -118,7 +119,7 @@ export default function CartList({ maxHeight, maxWidthItem }) {
             fontWeight: 'bold', 
             marginTop: 'auto', 
           }}
-          onClick={()=>navigate("/websiteDoAn/Shop")}
+          onClick={()=>navigate(`${BASE_PATH}/Shop`)}
         >
           Shop Now
         </GreenButton>

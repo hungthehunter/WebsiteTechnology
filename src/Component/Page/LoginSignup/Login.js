@@ -12,6 +12,7 @@ import {
 } from "../../../services/redux/slices/userSlice";
 import { cartThunk, userThunk } from "../../../services/redux/thunks/thunk";
 import { loginValidationSchema } from "../../../services/yup/loginValidation";
+import { BASE_PATH } from "../../Config/config";
 import LoadingOverlay from "../Admin/Admin Dashboard/overlay/LoadingOverlay";
 import "./LoginSignup.scss";
 
@@ -34,7 +35,7 @@ const Login = () => {
         dispatch(setUserLoggedIn(user));
         dispatch(cartThunk.getUserCart(user?.id));
         toast.success("Login successfully");
-        navigate("/websiteDoAn/");
+        navigate(`${BASE_PATH}/`);
       })
       .catch((error) => {
         console.log("Login failed:", error);

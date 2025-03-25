@@ -10,6 +10,7 @@ const initialState = {
   isLoggingOut: false,
   isLoggingError: null,
   signupError: null,
+  shouldReload: false,
 };
 
 const userSlice = createSlice({
@@ -40,6 +41,12 @@ const userSlice = createSlice({
       if (index !== -1) {
         state.listUser[index] = { ...state.listUser[index], ...action.payload };
       }
+    },
+    triggerReload: (state) => {
+      state.shouldReload = true; // Đặt trạng thái cần reload
+    },
+    resetReload: (state) => {
+      state.shouldReload = false; // Reset trạng thái sau khi reload
     },
   },
   extraReducers: (builder) => {
@@ -197,5 +204,8 @@ export const {
   setUserLoggedIn,
   clearUserLoggedIn,
   setLoginError,
+  resetReload,
+  triggerReload,
+  updateUser,
 } = userSlice.actions;
 export default userSlice.reducer;

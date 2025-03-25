@@ -6,12 +6,12 @@ import {
   Checkbox,
   FormControlLabel,
   Typography,
-} from "@mui/material"; // Thêm các thành phần MUI cần thiết
+} from "@mui/material";
 import CircularProgress from "@mui/material/CircularProgress";
 import { createTheme, styled } from "@mui/material/styles";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Link } from "react-router-dom";
+import { useSearchParams } from "react-router-dom"; // Thêm useSearchParams
 import {
   bannerThunk,
   categoryThunk,
@@ -25,18 +25,18 @@ import Slider from "./Slider/Slider";
 const theme = createTheme({
   palette: {
     primary: {
-      main: "#4CAF50", // Xanh lá
+      main: "#4CAF50",
     },
     secondary: {
-      main: "#FFC107", // Vàng cho các ngôi sao
+      main: "#FFC107",
     },
     background: {
-      default: "#000000", // Đen
-      paper: "#1C1C1C", // Đen nhạt hơn cho các phần tử Paper
+      default: "#000000",
+      paper: "#1C1C1C",
     },
     text: {
-      primary: "#FFFFFF", // Trắng cho text chính
-      secondary: "#B0B0B0", // Xám nhạt cho text phụ
+      primary: "#FFFFFF",
+      secondary: "#B0B0B0",
     },
   },
   typography: {
@@ -63,13 +63,14 @@ const theme = createTheme({
 });
 
 const BannerDiscountSection = styled(Box)(({ theme }) => ({
-  backgroundSize: 'cover',
-  backgroundPosition: 'center',
-  padding: theme.spacing(8,0),
+  backgroundSize: "cover",
+  backgroundPosition: "center",
+  padding: theme.spacing(8, 0),
   color: theme.palette.common.black,
 }));
 
 function Shop() {
+  const [searchParams, setSearchParams] = useSearchParams(); // useSearchParams để quản lý query params
   const [inputValue, setInputValue] = useState("");
   const [isGridView, setGridView] = useState(true);
   const [placeholder, setPlaceholder] = useState("Example: Geforce RTX");
@@ -84,26 +85,63 @@ function Shop() {
     dispatch(manufacturerThunk.getAllManufacturers()).unwrap();
   }, [dispatch]);
 
-  // Take all list of Category and Manufacturer
+  // Lấy danh sách categories và manufacturers từ Redux store
   const listCategory = useSelector((state) => state.category.listCategory);
   const listManufacturer = useSelector(
     (state) => state.manufacturer.listManufacturer
   );
 
-  const [categoryFilters, setCategoryFilters] = useState({
-    prices: {
-      under500: false,
-      averagePrice: false,
-      over1000: false,
-      over2000: false,
-    },
-  });
+  // Đọc filters từ URL
+  const getFiltersFromURL = () => {
+    const filters = { prices: {} };
+    for (const [key, value] of searchParams.entries()) {
+      if (["under500", "averagePrice", "over1000", "over2000"].includes(key)) {
+        filters.prices[key] = value === "true";
+      } else {
+        filters[key] = value === "true";
+      }
+    }
+    return filters;
+  };
+
+  const [categoryFilters, setCategoryFilters] = useState(getFiltersFromURL);
+
+  // Cập nhật URL khi filters thay đổi
+  const updateFiltersInURL = (updatedFilters) => {
+    const params = {};
+    for (const key in updatedFilters) {
+      if (key === "prices") {
+        for (const priceKey in updatedFilters.prices) {
+          if (updatedFilters.prices[priceKey]) {
+            params[priceKey] = true;
+          }
+        }
+      } else if (updatedFilters[key]) {
+        params[key] = true;
+      }
+    }
+    setSearchParams(params);
+  };
 
   const handleCategoryChange = (category) => {
-    setCategoryFilters((prevFilters) => ({
-      ...prevFilters,
-      [category]: !prevFilters[category],
-    }));
+    const updatedFilters = {
+      ...categoryFilters,
+      [category]: !categoryFilters[category],
+    };
+    setCategoryFilters(updatedFilters);
+    updateFiltersInURL(updatedFilters);
+  };
+
+  const handlePriceChange = (priceKey) => {
+    const updatedFilters = {
+      ...categoryFilters,
+      prices: {
+        ...categoryFilters.prices,
+        [priceKey]: !categoryFilters.prices[priceKey],
+      },
+    };
+    setCategoryFilters(updatedFilters);
+    updateFiltersInURL(updatedFilters);
   };
 
   const handleClickButton = () => {
@@ -121,36 +159,21 @@ function Shop() {
   };
 
   const handleResetFilters = () => {
-    setCategoryFilters({
-      gpu: false,
-      laptop: false,
-      RTX4090: false,
-      RTX4080: false,
-      RTX4070: false,
-      RTX4050: false,
-      NVIDIA: false,
-      ACER: false,
-      ASUS: false,
-      under500: false,
-      averagePrice: false,
-      over1000: false,
-      over2000: false,
-    });
+    setCategoryFilters({});
+    setSearchParams({});
   };
 
+  const [activeSlide, setActiveSlide] = useState(0);
 
-  {/* SLIDE */}
-    const [activeSlide, setActiveSlide] = useState(0);
-  
-    const handleSlideChange = (newIndex) => {
-      setActiveSlide(newIndex);
-    };
+  const handleSlideChange = (newIndex) => {
+    setActiveSlide(newIndex);
+  };
 
-    const images = useSelector((state) => state.banner.listBanner);
+  const images = useSelector((state) => state.banner.listBanner);
 
-    useEffect(()=>{
+  useEffect(() => {
     dispatch(bannerThunk.getAllBanners()).unwrap();
-    },[dispatch])
+  }, [dispatch]);
 
   return (
     <ThemeProvider theme={theme}>
@@ -186,11 +209,16 @@ function Shop() {
               <div id="content">
                 <div className="grid wide">
                   <Typography variant="h1" className="shop-header">
-                    Shop GeForce Graphics Cards, Laptops, and Systems 
+                    Shop GeForce Graphics Cards, Laptops, and Systems
                   </Typography>
 
                   <BannerDiscountSection>
-                    <Slider images={images} activeSlide={activeSlide} onChangeSlide={handleSlideChange}  height="300px" />
+                    <Slider
+                      images={images}
+                      activeSlide={activeSlide}
+                      onChangeSlide={handleSlideChange}
+                      height="300px"
+                    />
                   </BannerDiscountSection>
                   <div className="container">
                     <form className="column grid__column-3 content-product">
@@ -204,7 +232,6 @@ function Shop() {
                         </Button>
                       </div>
                       <ul className="Filter-list">
-                        {/* Lọc theo Category */}
                         <fieldset className="filter-item">
                           <legend className="filter-title">
                             Product Category
@@ -216,7 +243,10 @@ function Shop() {
                                   <FormControlLabel
                                     control={
                                       <Checkbox
-                                        checked={categoryFilters[category.name]}
+                                        checked={
+                                          categoryFilters[category.name] ||
+                                          false
+                                        }
                                         onChange={() =>
                                           handleCategoryChange(category.name)
                                         }
@@ -243,7 +273,8 @@ function Shop() {
                                     control={
                                       <Checkbox
                                         checked={
-                                          categoryFilters[manufacturer.name]
+                                          categoryFilters[manufacturer.name] ||
+                                          false
                                         }
                                         onChange={() =>
                                           handleCategoryChange(
@@ -265,30 +296,31 @@ function Shop() {
                           <div className="filter-content">
                             <ul className="filter-values">
                               {[
-                                "under500",
-                                "averagePrice",
-                                "over1000",
-                                "over2000",
+                                { key: "under500", label: "Up to $500" },
+                                {
+                                  key: "averagePrice",
+                                  label: "Between $500 and $1000",
+                                },
+                                {
+                                  key: "over1000",
+                                  label: "Between $1000 and $2000",
+                                },
+                                { key: "over2000", label: "Above $2000" },
                               ].map((price) => (
-                                <li className="filter-value" key={price}>
+                                <li className="filter-value" key={price.key}>
                                   <FormControlLabel
                                     control={
                                       <Checkbox
-                                        checked={categoryFilters[price]}
+                                        checked={
+                                          categoryFilters.prices[price.key] ||
+                                          false
+                                        }
                                         onChange={() =>
-                                          handleCategoryChange(price)
+                                          handlePriceChange(price.key)
                                         }
                                       />
                                     }
-                                    label={
-                                      price === "under500"
-                                        ? "Up to $500"
-                                        : price === "averagePrice"
-                                        ? "Between $500 and $1000"
-                                        : price === "over1000"
-                                        ? "Between $1000 and $2000"
-                                        : "Above $2000"
-                                    }
+                                    label={price.label}
                                   />
                                 </li>
                               ))}
@@ -319,9 +351,6 @@ function Shop() {
                               <i className="fa fa-search" aria-hidden="true" />
                             </Button>
                           </div>
-                          <div className="total-product-list">
-                            {/* <div className="total-product">221 results found</div> */}
-                          </div>
 
                           <Shop_Fake
                             isGridView={isGridView}
@@ -333,26 +362,6 @@ function Shop() {
                       </div>
                     </div>
                   </div>
-
-                  <footer id="footer">
-                    <div className="footer-wrapper">
-                      <div className="left-link">
-                        <div className="footer-item country-link">
-                          <Link to="">USA - United States</Link>{" "}
-                        </div>
-                        <div className="footer-item">
-                          {" "}
-                          <Link to="">Privacy</Link>
-                        </div>
-                        <div className="footer-item">
-                          <Link to="">Legal</Link>
-                        </div>
-                        <div className="footer-item">
-                          <Link to="">Contact</Link>
-                        </div>
-                      </div>
-                    </div>
-                  </footer>
                 </div>
               </div>
             </div>
@@ -364,3 +373,4 @@ function Shop() {
 }
 
 export default Shop;
+

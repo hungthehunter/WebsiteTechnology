@@ -8,6 +8,11 @@
       "type": "image/x-icon"
     },
     {
+      "src": "nvidia-green-background.jpeg",
+      "type": "image/jpeg",
+      "sizes": "192x192"
+    },
+    {
       "src": "logo192.png",
       "type": "image/png",
       "sizes": "192x192"

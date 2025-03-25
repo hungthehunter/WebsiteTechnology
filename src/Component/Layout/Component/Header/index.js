@@ -10,9 +10,9 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { clearUserCart } from "../../../../services/redux/slices/cartSlice.js";
 import { clearUserLoggedIn } from "../../../../services/redux/slices/userSlice.js";
 import icon from "../../../Assests/ICON";
+import { BASE_PATH } from "../../../Config/config.js";
 import Sidebar from "../DefaultLayout/Sidebar/index.js";
 import styles from "./Header.module.scss";
-
 const cx = classNames.bind(styles);
 
 function Header({ toggleSidebar }) {
@@ -48,14 +48,14 @@ function Header({ toggleSidebar }) {
     dispatch(clearUserCart());
     localStorage.removeItem("authToken");
     setEmail("");
-    navigate("/WebsiteTechnology/Login");
+    navigate(`${BASE_PATH}/Login`);
   };
 
   const handleLoginLogout = () => {
     if (isLoggingOut) {
       handleLogout();
     } else {
-      navigate("/WebsiteTechnology/Login");
+      navigate(`${BASE_PATH}/Login`);
     }
   };
 
@@ -75,7 +75,7 @@ function Header({ toggleSidebar }) {
                     <MdOutlineEventNote size={24} style={{ paddingRight: 5, marginLeft: 3 }} />
                   </span>
                   <span className={cx("box-text")}>
-                    <Link to="/WebsiteTechnology/AccountHistory">Tra cứu</Link>
+                    <Link to={`${BASE_PATH}/AccountHistory`}>Tra cứu</Link>
                   </span>
                 </div>
                 <div className={cx("header-action_text")}>
@@ -84,7 +84,7 @@ function Header({ toggleSidebar }) {
                     <FiShoppingCart size={23} style={{ paddingRight: 5, marginLeft: 3 }} onClick={() => setShowCart(!showCart)} />
                   </span>
                   <span className={cx("box-text")}>
-                    <Link to="/WebsiteTechnology/CartPage">Giỏ hàng</Link>
+                    <Link to={`${BASE_PATH}/CartPage`}>Giỏ hàng</Link>
                   </span>
                 </div>
                 {!isLoggingOut ? (

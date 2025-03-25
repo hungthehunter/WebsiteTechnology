@@ -1,6 +1,7 @@
 import axios from "axios";
 
-const MAIN_URL="http://localhost:8080/api";
+// const MAIN_URL="http://localhost:8080/api";
+const MAIN_URL="https://websitetechnologybackend.onrender.com/api";
 
 // cấu hình request ngoài những thành phần này còn data , header ,....
 const shopAPI=axios.create({

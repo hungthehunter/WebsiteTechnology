@@ -6,6 +6,7 @@ const initialState = {
     selectedCategory: null,
     isLoading: false,
     isError: false,
+    shouldReload: false,
 };
 
 const categorySlice = createSlice({
@@ -21,6 +22,12 @@ const categorySlice = createSlice({
             if (categoryIndex !== -1) {
               state.listCategory[categoryIndex] = updatedCategory;
             }
+          },
+          triggerReload: (state) => {
+            state.shouldReload = true; // Đặt trạng thái cần reload
+          },
+          resetReload: (state) => {
+            state.shouldReload = false; // Reset trạng thái sau khi reload
           },
     },
     extraReducers: (builder) => {
@@ -112,5 +119,5 @@ const categorySlice = createSlice({
     },
 });
 
-export const { clearSelectedCategoryId , updateCategory} = categorySlice.actions;
+export const { clearSelectedCategoryId , updateCategory , resetReload,triggerReload} = categorySlice.actions;
 export default categorySlice.reducer;

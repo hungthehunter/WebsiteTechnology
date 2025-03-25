@@ -1,23 +1,26 @@
-import { MenuItem, Popover } from '@mui/material';
-import React from 'react';
+// SortPopover.js
+import { MenuItem, Popover } from "@mui/material";
+import React from "react";
 
-const SortPopover = React.memo(({ anchorEl, open, onClick, onClose, onSortChange }) => {
-  const idPopover = open ? 'sort-popover' : undefined;
+function SortPopover({ anchorEl, open, onClose, onSortChange, onRoleFilterChange }) {
+  const id = open ? "simple-popover" : undefined;
 
   return (
     <Popover
-      id={idPopover}
+      id={id}
       open={open}
       anchorEl={anchorEl}
       onClose={onClose}
-      anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-      transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+      anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+      transformOrigin={{ vertical: "top", horizontal: "left" }}
     >
-      <MenuItem onClick={() => onSortChange('category')}>Category</MenuItem>
-      <MenuItem onClick={() => onSortChange('manufacturer')}>Manufacturer</MenuItem>
-      <MenuItem onClick={() => onSortChange('')}>Clear Filters</MenuItem>
+      <MenuItem onClick={() => onSortChange("fullname")}>Full Name</MenuItem>
+      <MenuItem onClick={() => onSortChange("email")}>Email</MenuItem>
+      <MenuItem onClick={() => onRoleFilterChange("User")}>User</MenuItem>
+      <MenuItem onClick={() => onRoleFilterChange("Employee")}>Employee</MenuItem>
+      <MenuItem onClick={() => onRoleFilterChange("")}>Clear Role Filter</MenuItem>
     </Popover>
   );
-});
+}
 
 export default SortPopover;

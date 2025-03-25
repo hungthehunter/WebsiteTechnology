@@ -1,14 +1,15 @@
 import SearchIcon from "@mui/icons-material/Search";
 import {
-    Box,
-    Button,
-    InputAdornment,
-    TextField,
-    Typography
+  Box,
+  Button,
+  InputAdornment,
+  TextField,
+  Typography
 } from "@mui/material";
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { promotionThunk } from "../../../../services/redux/thunks/thunk";
+import { promotionThunk } from "../../../../../services/redux/thunks/thunk";
+import DeleteDialog from "./DeleteDialog";
 import PromotionTable from "./PromotionTable";
 
 const AdminPromotion = ({ setActiveComponent, showAlert }) => {
@@ -22,7 +23,7 @@ const AdminPromotion = ({ setActiveComponent, showAlert }) => {
 
   // Lọc danh sách khuyến mãi dựa trên từ khóa tìm kiếm
   const filteredPromotions = listPromotion.filter((promotion) =>
-    promotion.name.toLowerCase().includes(searchKeyword.toLowerCase())
+    promotion?.name?.toLowerCase().includes(searchKeyword.toLowerCase())
   );
 
   const handleOpenDialog = (id) => {
@@ -115,13 +116,13 @@ const AdminPromotion = ({ setActiveComponent, showAlert }) => {
 
         <PromotionTable
         promotions={filteredPromotions}
-        onViewProduct={(id) =>
+        onViewPromotion={(id) =>
           setActiveComponent({ name: "AdminViewProduct", props: { id } })
         }
-        onEditProduct={(id) =>
+        onEditPromotion={(id) =>
           setActiveComponent({ name: "AdminEditProduct", props: { id } })
         }
-        onDeleteProduct={handleOpenDialog}
+        onDeletePromotion={handleOpenDialog}
         />
           </Box>
 

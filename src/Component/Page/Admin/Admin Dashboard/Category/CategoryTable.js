@@ -1,6 +1,6 @@
 import { Button, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
 import React from 'react';
-const CategoryTable = React.memo(({category , onViewCategory , onEditCategory , onDeleteCategory}) => {
+const CategoryTable = React.memo(({categories , onEditCategory , onDeleteCategory}) => {
     return(
         <TableContainer component={Paper}>
         <Table>
@@ -21,8 +21,8 @@ const CategoryTable = React.memo(({category , onViewCategory , onEditCategory , 
             </TableRow>
           </TableHead>
           <TableBody>
-            {filteredCategories.length > 0 ? (
-              filteredCategories.map((category, index) => (
+            {categories.length > 0 ? (
+              categories.map((category, index) => (
                 <TableRow key={index}>
                   <TableCell
                     style={{ textAlign: "start", fontSize: "1.3rem" }}
@@ -48,10 +48,7 @@ const CategoryTable = React.memo(({category , onViewCategory , onEditCategory , 
                     <Button
                       variant="outlined"
                       onClick={() =>
-                        setActiveComponent({
-                          name: "AdminEditCategory",
-                          props: { id: category.id },
-                        })
+                    onEditCategory(category.id)
                       }
                     >
                       Edit
@@ -59,7 +56,7 @@ const CategoryTable = React.memo(({category , onViewCategory , onEditCategory , 
                     <Button
                       variant="outlined"
                       color="error"
-                      onClick={() => handleOpenDialog(category.id)}
+                      onClick={() => onDeleteCategory(category.id)}
                     >
                       Delete
                     </Button>

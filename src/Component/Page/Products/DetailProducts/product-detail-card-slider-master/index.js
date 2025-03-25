@@ -29,13 +29,10 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import toast from "react-hot-toast";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
-import { clearSelectedProductId } from "../../../../../services/redux/slices/productSlice";
-import {
-  cartThunk,
-  productThunk,
-} from "../../../../../services/redux/thunks/thunk";
+import { cartThunk, productThunk } from "../../../../../services/redux/thunks/thunk";
+import { toSlug } from "../../../../../services/slug";
+import { BASE_PATH } from "../../../../Config/config";
 import ProductReview from "../../../Review/Review";
-
 // Cập nhật theme
 const theme = createTheme({
   palette: {
@@ -91,8 +88,7 @@ const theme = createTheme({
 
 function ProductDetail() {
   const dispatch = useDispatch();
-  const { id } = useParams();
-  const MAX_PRODUCTS = 3;
+  const { productName } = useParams();
   const { selectedProduct, listProduct, userCurrentLogged, cartItems } =
     useSelector((state) => ({
       selectedProduct: state.product.selectedProduct,
@@ -100,29 +96,37 @@ function ProductDetail() {
       userCurrentLogged: state.user.userCurrentLogged,
       cartItems: state.cart.listCartItems,
     }));
-
-  const [quantity, setQuantity] = useState(1);
+    console.log(selectedProduct)
   const [product, setProduct] = useState(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showArrows, setShowArrows] = useState(false);
   const isLoading = useSelector((state) => state.product.isLoading);
   const [showFullSpecs, setShowFullSpecs] = useState(false);
-  const [showReviews, setShowReviews] = useState(false);
-  const [visibleReviews, setVisibleReviews] = useState(3);
   const [offsetY, setOffsetY] = useState(0);
   const navigate = useNavigate();
   const MAIN_IMAGE_WIDTH = 400;
   const MAIN_IMAGE_HEIGHT = 400;
 
   useEffect(() => {
-    if (id) {
-      dispatch(productThunk.getAllProduct());
-      dispatch(productThunk.getProductById(id));
+    if (listProduct.length === 0) {
+      dispatch(productThunk.getAllProduct()); // Tải danh sách sản phẩm nếu rỗng
     }
-    return () => {
-      dispatch(clearSelectedProductId());
-    };
-  }, [id, dispatch]);
+  }, [listProduct, dispatch]);
+
+  useEffect(() => {
+    // Tìm sản phẩm dựa trên slug
+    const selected = listProduct.find(
+      (product) => toSlug(product.productName) === productName
+    );
+
+    if (selected) {
+      dispatch(productThunk.getProductById(selected.id));
+    } else {
+      toast.error("Product not found.");
+    }
+  }, [productName, dispatch]);
+
+
 
   const handleScroll = useCallback(() => {
     setOffsetY(window.pageYOffset);
@@ -210,7 +214,7 @@ function ProductDetail() {
     (product, userCurrentLogged) => {
       if (!userCurrentLogged) {
         toast.error("Bạn cần đăng nhập để thêm sản phẩm vào giỏ hàng.");
-        return navigate(`/websiteDoAn/Login`);
+        return navigate(`${BASE_PATH}/Login`);
       }
 
       if (cartItems?.length >= 3) {
@@ -303,8 +307,9 @@ function ProductDetail() {
     );
   }
 
-  const handleProductClick = (id) => {
-    navigate(`/websiteDoAn/ProductDetail/${id}`);
+  const handleProductClick = (productName) => {
+    const slug = toSlug(productName)
+    navigate(`${BASE_PATH}/ProductDetail/${slug}`);
   };
 
   const filteredProducts = listProduct.filter(
@@ -677,7 +682,7 @@ function ProductDetail() {
                         key={product.id}
                         alignItems="flex-start"
                         sx={{ mb: 2 }}
-                        onClick={() => handleProductClick(product.id)}
+                        onClick={() => handleProductClick(product.productName)}
                       >
                         <Box
                           component="img"

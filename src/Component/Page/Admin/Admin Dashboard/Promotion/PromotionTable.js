@@ -9,7 +9,7 @@ import {
   TableRow
 } from "@mui/material";
 import React from "react";
-const PromotionTable = React.memo((promotions , onViewCategory , onEditCategory , onDeleteCategory ) => {
+const PromotionTable = React.memo(({promotions , onViewPromotion , onEditPromotion , onDeletePromotion }) => {
     return(
         <TableContainer component={Paper}>
         <Table>
@@ -36,10 +36,10 @@ const PromotionTable = React.memo((promotions , onViewCategory , onEditCategory 
             </TableRow>
           </TableHead>
           <TableBody>
-            {promotions.map((promotion, index) => (
+            {promotions?.map((promotion, index) => (
               <TableRow key={index}>
                 <TableCell style={{ textAlign: "start", fontSize: "1.3rem" }}>
-                  {promotion.id}
+                  {promotion?.id}
                 </TableCell>
                 <TableCell style={{ textAlign: "start", fontSize: "1.3rem" }}>
                   <img
@@ -66,10 +66,7 @@ const PromotionTable = React.memo((promotions , onViewCategory , onEditCategory 
                   <Button
                     variant="outlined"
                     onClick={() =>
-                      setActiveComponent({
-                        name: "AdminViewPromotion",
-                        props: { id: promotion.id },
-                      })
+                      onViewPromotion(promotion.id)
                     }
                   >
                     View
@@ -77,10 +74,7 @@ const PromotionTable = React.memo((promotions , onViewCategory , onEditCategory 
                   <Button
                     variant="outlined"
                     onClick={() =>
-                      setActiveComponent({
-                        name: "AdminEditPromotion",
-                        props: { id: promotion.id },
-                      })
+                      onEditPromotion(promotion.id)
                     }
                   >
                     Edit
@@ -88,14 +82,14 @@ const PromotionTable = React.memo((promotions , onViewCategory , onEditCategory 
                   <Button
                     variant="outlined"
                     color="error"
-                    onClick={() => handleOpenDialog(promotion.id)}
+                    onClick={() => onDeletePromotion(promotion.id)}
                   >
                     Delete
                   </Button>
                 </TableCell>
               </TableRow>
             ))}
-            {filteredPromotions.length === 0 && (
+            {promotions.length === 0 && (
               <TableRow>
                 <TableCell
                   colSpan={5}

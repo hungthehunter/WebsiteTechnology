@@ -6,6 +6,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { userThunk } from "../../../services/redux/thunks/thunk";
 import { signUpValidationSchema } from "../../../services/yup/signUpValidation";
+import { BASE_PATH } from "../../Config/config";
 
 const SignUp = () => {
   const theme = useTheme()
@@ -65,7 +66,7 @@ const SignUp = () => {
 
       await dispatch(userThunk.signUpUser(userData));
       toast.success("Sign up successfully. Please login before continuing.");
-      navigate("/websiteDoAn/Login");
+      navigate(`${BASE_PATH}/Login`);
     } catch (error) {
       if (error.name === "ValidationError") {
         const newErrors = error.inner.reduce((acc, err) => {

@@ -1,16 +1,17 @@
 import SearchIcon from "@mui/icons-material/Search";
 import {
-    Box,
-    Button,
-    InputAdornment,
-    TextField,
-    Typography
+  Box,
+  Button,
+  InputAdornment,
+  TextField,
+  Typography
 } from "@mui/material";
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { categoryThunk } from "../../../../services/redux/thunks/thunk";
-import "./assets/css/style.scss";
+import { categoryThunk } from "../../../../../services/redux/thunks/thunk";
+import "../assets/css/style.scss";
 import CategoryTable from "./CategoryTable";
+import DeleteDialog from "./DeleteDialog";
 
 function AdminCategory({ setActiveComponent, showAlert }) {
   /*------- State & Hooks -------*/
@@ -141,14 +142,11 @@ function AdminCategory({ setActiveComponent, showAlert }) {
         </Box>
 
         <CategoryTable
-        products={filteredCategories}
-        onViewProduct={(id) =>
-          setActiveComponent({ name: "AdminViewCategory", props: { id } })
-        }
-        onEditProduct={(id) =>
+        categories={filteredCategories}
+        onEditCategory={(id) =>
           setActiveComponent({ name: "AdminEditCategory", props: { id } })
         }
-        onDeleteProduct={handleOpenDialog}
+        onDeleteCategory={handleOpenDialog}
         />
 
        </Box>

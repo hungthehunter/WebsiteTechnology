@@ -112,7 +112,7 @@ const SLIDER = ({ images, activeSlide, onChangeSlide }) => {
             </Typography>
             <SliderButton
               component={Link}
-              to={'/websiteDoAn/Shop'}
+              to={'/%PUBLIC_URL%/Shop'}
               variant="contained"
               size="medium"
               sx={{ fontSize: 20, marginTop: 2, textTransform: 'none' , fontWeight: 'normal' }}

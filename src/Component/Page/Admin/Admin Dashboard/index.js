@@ -20,53 +20,54 @@ import {
   summaryThunk,
   userThunk,
 } from "../../../../services/redux/thunks/thunk";
-import AdminAccess from "./Access";
-import AdminAddAccess from "./AddAccess";
-import AdminAddCategory from "./AddCategory";
-import AdminAddCustomer from "./AddCustomer";
-import AdminAddExport from "./AddExport";
-import AdminAddImport from "./AddImport";
-import AdminAddManufacturer from "./AddManufacturer";
-import AdminAddProduct from "./AddProduct";
-import AdminAddPromotion from "./AddPromotion";
-import AdminAddStaff from "./AddStaff";
+import { BASE_PATH } from "../../../Config/config";
+import AdminAccess from "./Access/Access";
+import AdminAddAccess from "./Access/AddAccess";
+import AdminEditAccess from "./Access/EditAccess";
 import "./assets/css/style.scss";
 import AdminAddBanner from "./Banner/AddBanner";
 import AdminBanner from "./Banner/Banner";
 import AdminEditBanner from "./Banner/EditBanner";
 import AdminViewBanner from "./Banner/ViewBanner";
-import AdminCategory from "./Category";
+import AdminAddCategory from "./Category/AddCategory";
+import AdminCategory from "./Category/Category";
+import AdminEditCategory from "./Category/EditCategory";
+import AdminViewCategory from "./Category/ViewCategory";
 import AdminChart from "./Chart";
-import AdminCustomer from "./Customer";
+import AdminAddCustomer from "./Customer/AddCustomer";
+import AdminCustomer from "./Customer/Customer";
+import AdminEditCustomer from "./Customer/EditCustomer";
+import AdminViewCustomer from "./Customer/ViewCustomer";
 import AdminDashboard from "./Dashboard";
-import AdminEditAccess from "./EditAccess";
-import AdminEditCategory from "./EditCategory";
-import AdminEditCustomer from "./EditCustomer";
-import AdminEditExport from "./EditExport";
-import AdminEditImport from "./EditImport";
-import AdminEditManufacturer from "./EditManufacturer";
-import AdminEditOrder from "./EditOrder";
-import AdminEditProduct from "./EditProduct";
-import AdminEditPromotion from "./EditPromotion";
-import AdminEditStaff from "./EditStaff";
-import AdminExport from "./Export";
+import AdminAddExport from "./Export/AddExport";
+import AdminEditExport from "./Export/EditExport";
+import AdminExport from "./Export/Export";
+import AdminViewExport from "./Export/ViewExport";
 import AdminHeader from "./Header";
-import AdminImport from "./Import";
-import AdminManufacturer from "./Manufacturer";
-import AdminOrder from "./Order";
+import AdminAddImport from "./Import/AddImport";
+import AdminEditImport from "./Import/EditImport";
+import AdminImport from "./Import/Import";
+import AdminViewImport from "./Import/ViewImport";
+import AdminAddManufacturer from "./Manufacturer/AddManufacturer";
+import AdminEditManufacturer from "./Manufacturer/EditManufacturer";
+import AdminManufacturer from "./Manufacturer/Manufacturer";
+import AdminViewManufacturer from "./Manufacturer/ViewManufacturer";
+import AdminEditOrder from "./Order/EditOrder";
+import AdminOrder from "./Order/Order";
+import AdminViewOrder from "./Order/ViewOrder";
+import AdminAddProduct from "./Product/AddProduct";
+import AdminEditProduct from "./Product/EditProduct";
 import AdminProduct from "./Product/Product";
-import AdminPromotion from "./Promotion";
+import AdminViewProduct from "./Product/ViewProduct";
+import AdminAddPromotion from "./Promotion/AddPromotion";
+import AdminEditPromotion from "./Promotion/EditPromotion";
+import AdminPromotion from "./Promotion/Promotion";
+import AdminViewPromotion from "./Promotion/ViewPromotion";
 import SidebarAdmin from "./Sidebar";
-import AdminStaff from "./Staff";
-import AdminViewCategory from "./ViewCategory";
-import AdminViewCustomer from "./ViewCustomer";
-import AdminViewExport from "./ViewExport";
-import AdminViewImport from "./ViewImport";
-import AdminViewManufacturer from "./ViewManufacturer";
-import AdminViewOrder from "./ViewOrder";
-import AdminViewProduct from "./ViewProduct";
-import AdminViewPromotion from "./ViewPromotion";
-import AdminViewStaff from "./ViewStaff";
+import AdminAddStaff from "./Staff/AddStaff";
+import AdminEditStaff from "./Staff/EditStaff";
+import AdminStaff from "./Staff/Staff";
+import AdminViewStaff from "./Staff/ViewStaff";
 import NotAllowedPage from "./warning/NotAllowPage";
 // Tạo theme tùy chỉnh
 const theme = createTheme({
@@ -529,7 +530,7 @@ function AdminPage() {
       !userCurrentLogged ||
       (userCurrentLogged.role !== "Employee" && userCurrentLogged.role !== "Admin")
     ) {
-      navigate("/websiteDoAn/**");
+      navigate(`${BASE_PATH}/**`);
     }
   }, [userCurrentLogged, navigate]);
 

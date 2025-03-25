@@ -1,3 +1,4 @@
+import { BASE_PATH } from "../Component/Config/config.js";
 import BodyOnly from "../Component/Layout/Component/BodyOnly/index.js";
 import HeaderOnly from "../Component/Layout/Component/HeaderOnly/index.js";
 import AccountAddress from "../Component/Page/Account_History/AccountAddress.js";
@@ -6,35 +7,35 @@ import AccountHeader from "../Component/Page/Account_History/AccountHeader.js";
 import AccountOrder from "../Component/Page/Account_History/AccountOrder.js";
 import AccountProductHistory from "../Component/Page/Account_History/AccountProductHistory.js";
 import AccountHistory from "../Component/Page/Account_History/index.js";
-import AdminAccess from "../Component/Page/Admin/Admin Dashboard/Access.js";
-import AdminAddAccess from "../Component/Page/Admin/Admin Dashboard/AddAccess.js";
-import AdminAddCategory from "../Component/Page/Admin/Admin Dashboard/AddCategory.js";
-import AdminAddManufacturer from "../Component/Page/Admin/Admin Dashboard/AddManufacturer.js";
-import AdminAddStaff from "../Component/Page/Admin/Admin Dashboard/AddStaff.js";
-import AdminCategory from "../Component/Page/Admin/Admin Dashboard/Category.js";
+import AdminAccess from "../Component/Page/Admin/Admin Dashboard/Access/Access.js";
+import AdminAddAccess from "../Component/Page/Admin/Admin Dashboard/Access/AddAccess.js";
+import AdminEditAccess from "../Component/Page/Admin/Admin Dashboard/Access/EditAccess.js";
+import AdminAddCategory from "../Component/Page/Admin/Admin Dashboard/Category/AddCategory.js";
+import AdminCategory from "../Component/Page/Admin/Admin Dashboard/Category/Category.js";
+import AdminEditCategory from "../Component/Page/Admin/Admin Dashboard/Category/EditCategory.js";
+import AdminViewCategory from "../Component/Page/Admin/Admin Dashboard/Category/ViewCategory.js";
 import AdminChart from "../Component/Page/Admin/Admin Dashboard/Chart.js";
-import AdminCustomer from "../Component/Page/Admin/Admin Dashboard/Customer.js";
-import AdminEditAccess from "../Component/Page/Admin/Admin Dashboard/EditAccess.js";
-import AdminEditCategory from "../Component/Page/Admin/Admin Dashboard/EditCategory.js";
-import AdminEditExport from "../Component/Page/Admin/Admin Dashboard/EditExport.js";
-import AdminEditImport from "../Component/Page/Admin/Admin Dashboard/EditImport.js";
-import AdminEditManufacturer from "../Component/Page/Admin/Admin Dashboard/EditManufacturer.js";
-import AdminEditOrder from "../Component/Page/Admin/Admin Dashboard/EditOrder.js";
-import AdminEditStaff from "../Component/Page/Admin/Admin Dashboard/EditStaff.js";
-import AdminExport from "../Component/Page/Admin/Admin Dashboard/Export.js";
-import AdminImport from "../Component/Page/Admin/Admin Dashboard/Import.js";
+import AdminCustomer from "../Component/Page/Admin/Admin Dashboard/Customer/Customer.js";
+import AdminViewCustomer from "../Component/Page/Admin/Admin Dashboard/Customer/ViewCustomer.js";
+import AdminEditExport from "../Component/Page/Admin/Admin Dashboard/Export/EditExport.js";
+import AdminExport from "../Component/Page/Admin/Admin Dashboard/Export/Export.js";
+import AdminEditImport from "../Component/Page/Admin/Admin Dashboard/Import/EditImport.js";
+import AdminImport from "../Component/Page/Admin/Admin Dashboard/Import/Import.js";
+import AdminAddManufacturer from "../Component/Page/Admin/Admin Dashboard/Manufacturer/AddManufacturer.js";
+import AdminEditManufacturer from "../Component/Page/Admin/Admin Dashboard/Manufacturer/EditManufacturer.js";
 import {
   default as AdminDecentralization,
   default as AdminManufacturer,
-} from "../Component/Page/Admin/Admin Dashboard/Manufacturer.js";
-import AdminOrder from "../Component/Page/Admin/Admin Dashboard/Order.js";
+} from "../Component/Page/Admin/Admin Dashboard/Manufacturer/Manufacturer.js";
+import AdminViewManufacturer from "../Component/Page/Admin/Admin Dashboard/Manufacturer/ViewManufacturer.js";
+import AdminEditOrder from "../Component/Page/Admin/Admin Dashboard/Order/EditOrder.js";
+import AdminOrder from "../Component/Page/Admin/Admin Dashboard/Order/Order.js";
+import AdminViewOrder from "../Component/Page/Admin/Admin Dashboard/Order/ViewOrder.js";
 import AdminProduct from "../Component/Page/Admin/Admin Dashboard/Product/Product.js";
-import AdminStaff from "../Component/Page/Admin/Admin Dashboard/Staff.js";
-import AdminViewCategory from "../Component/Page/Admin/Admin Dashboard/ViewCategory.js";
-import AdminViewCustomer from "../Component/Page/Admin/Admin Dashboard/ViewCustomer.js";
-import AdminViewManufacturer from "../Component/Page/Admin/Admin Dashboard/ViewManufacturer.js";
-import AdminViewOrder from "../Component/Page/Admin/Admin Dashboard/ViewOrder.js";
-import AdminViewStaff from "../Component/Page/Admin/Admin Dashboard/ViewStaff.js";
+import AdminAddStaff from "../Component/Page/Admin/Admin Dashboard/Staff/AddStaff.js";
+import AdminEditStaff from "../Component/Page/Admin/Admin Dashboard/Staff/EditStaff.js";
+import AdminStaff from "../Component/Page/Admin/Admin Dashboard/Staff/Staff.js";
+import AdminViewStaff from "../Component/Page/Admin/Admin Dashboard/Staff/ViewStaff.js";
 import {
   default as AdminDashboard,
   default as AdminPage,
@@ -50,12 +51,10 @@ import SignUp from "../Component/Page/LoginSignup/SignUp.js";
 import NVDIA_STORE_MAIN from "../Component/Page/Main/NVDIA_STORE_MAIN.js";
 import Policy from "../Component/Page/Policy/index.js";
 import ProductDetail from "../Component/Page/Products/DetailProducts/product-detail-card-slider-master/index.js";
-import Products from "../Component/Page/Products/Products.js";
-import ImageUpload from "../Component/Page/Products/index.js";
 import ProductReview from "../Component/Page/Review/Review.js";
+import ProductDetailll from "../Component/Page/Searching/index.js";
 import Shop from "../Component/Page/Shop/index.js";
 import SuccessOrder from "../Component/Page/Success/index.js";
-const BASE_PATH = "/WebsiteTechnology";
 
 // Routes với tiền tố BASE_PATH
 const publicRoutes = [
@@ -77,10 +76,6 @@ const publicRoutes = [
     component: NVDIA_STORE_MAIN,
   },
   {
-    path: `${BASE_PATH}/Products`,
-    component: Products,
-  },
-  {
     path: `${BASE_PATH}/Policy`,
     component: Policy,
   },
@@ -88,11 +83,6 @@ const publicRoutes = [
     path: `${BASE_PATH}/Login`,
     component: Login,
     layout: HeaderOnly,
-  },
-  {
-    path: `${BASE_PATH}/ImageUpload`,
-    component: ImageUpload,
-    layout: BodyOnly,
   },
   {
     path: `${BASE_PATH}/AdminDashboard`,
@@ -140,7 +130,7 @@ const publicRoutes = [
     layout: BodyOnly,
   },
   {
-    path: `${BASE_PATH}/ProductDetail/:id`,
+    path: `${BASE_PATH}/ProductDetail/:productName`,
     component: ProductDetail,
   },
   {
@@ -298,6 +288,12 @@ const publicRoutes = [
   {
     path: `${BASE_PATH}/OrderDetail`,
     component: OrderDetail,
+    layout: BodyOnly,
+  },
+
+  {
+    path: `${BASE_PATH}/ProductDetailll/:productName`,
+    component: ProductDetailll,
     layout: BodyOnly,
   },
   {

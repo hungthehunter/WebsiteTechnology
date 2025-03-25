@@ -6,6 +6,7 @@ const initialState = {
     selectedPromotion: null,
     isLoading: false,
     isError: false,
+    shouldReload: false,
 };
 
 const promotionSlice = createSlice({
@@ -21,6 +22,12 @@ const promotionSlice = createSlice({
             if (promotionIndex !== -1) {
               state.listPromotion[promotionIndex] = updatedPromotion;
             }
+          },
+          triggerReload: (state) => {
+            state.shouldReload = true; // Đặt trạng thái cần reload
+          },
+          resetReload: (state) => {
+            state.shouldReload = false; // Reset trạng thái sau khi reload
           },
     },
     extraReducers: (builder) => {
@@ -112,5 +119,5 @@ const promotionSlice = createSlice({
     },
 });
 
-export const { clearSelectedPromotionId , updatePromotion } = promotionSlice.actions;
+export const { clearSelectedPromotionId , updatePromotion , resetReload,triggerReload } = promotionSlice.actions;
 export default promotionSlice.reducer;

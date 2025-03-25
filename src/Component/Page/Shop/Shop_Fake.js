@@ -4,7 +4,9 @@ import ReactPaginate from "react-paginate";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { cartThunk, productThunk } from "../../../services/redux/thunks/thunk";
+import { toSlug } from "../../../services/slug";
 import { productValidation } from "../../../services/yup/Shop/ShopValidation";
+import { BASE_PATH } from "../../Config/config";
 import "../Shop/Shop.scss";
 
 const Shop_Fake = ({ isGridView, searchItem, categoryFilters, isLoading }) => {
@@ -56,7 +58,7 @@ const Shop_Fake = ({ isGridView, searchItem, categoryFilters, isLoading }) => {
     (product, userCurrentLogged) => {
       if (!userCurrentLogged) {
         toast.error("Bạn cần đăng nhập để thêm sản phẩm vào giỏ hàng.");
-        return navigate(`/websiteDoAn/Login`);
+        return navigate(`/${BASE_PATH}/Login`);
       }
 
       if (cartItems?.length >= 3) {
@@ -128,17 +130,28 @@ const Shop_Fake = ({ isGridView, searchItem, categoryFilters, isLoading }) => {
   const endIndex = startIndex + itemsPerPage;
 
   const filteredItems = listProduct.filter((item) => {
+    // Kiểm tra nếu sản phẩm khớp với từ khóa tìm kiếm
     const matchesSearch = item.productName
       .toLowerCase()
       .includes(searchItem.toLowerCase());
-
+  
+    // Kiểm tra nếu có bất kỳ bộ lọc nào được chọn
+    const hasActiveFilters =
+      Object.values(categoryFilters).some((value) => value === true) ||
+      Object.values(categoryFilters.prices).some((value) => value === true);
+  
+    // Nếu không có bộ lọc nào được chọn, hiển thị tất cả sản phẩm
+    if (!hasActiveFilters) {
+      return matchesSearch;
+    }
+  
     // Kiểm tra nếu sản phẩm thuộc một trong các category được chọn
     const matchesCategory = listCategory.some(
       (category) =>
         categoryFilters[category.name] &&
         item.category?.name.toLowerCase() === category.name.toLowerCase()
     );
-
+  
     // Kiểm tra nếu sản phẩm thuộc một trong các manufacturer được chọn
     const matchesManufacturer = listManufacturer.some(
       (manufacturer) =>
@@ -146,48 +159,32 @@ const Shop_Fake = ({ isGridView, searchItem, categoryFilters, isLoading }) => {
         item.manufacturer?.name.toLowerCase() ===
           manufacturer.name.toLowerCase()
     );
-
+  
     // Kiểm tra mức giá theo priceFilter
-    const matchesPrice = (priceFilter) => {
-      switch (priceFilter) {
-        case "under500":
-          return item.unitPrice <= 500;
-        case "averagePrice":
-          return item.unitPrice > 500 && item.unitPrice <= 1000;
-        case "over1000":
-          return item.unitPrice > 1000 && item.unitPrice <= 2000;
-        case "over2000":
-          return item.unitPrice >= 2000;
-        default:
-          return true;
-      }
-    };
-
-    const matchesPriceFilter = Object.entries(categoryFilters).some(
-      ([key, value]) => {
-        if (value) {
-          if (
-            key === "under500" ||
-            key === "averagePrice" ||
-            key === "over1000" ||
-            key === "over2000"
-          ) {
-            return matchesPrice(key);
-          }
+    const matchesPrice = Object.entries(categoryFilters.prices).some(
+      ([priceKey, isActive]) => {
+        if (!isActive) return false;
+  
+        switch (priceKey) {
+          case "under500":
+            return item.unitPrice <= 500;
+          case "averagePrice":
+            return item.unitPrice > 500 && item.unitPrice <= 1000;
+          case "over1000":
+            return item.unitPrice > 1000 && item.unitPrice <= 2000;
+          case "over2000":
+            return item.unitPrice > 2000;
+          default:
+            return false;
         }
-        return false;
       }
     );
-
-    // Chỉ trả về những sản phẩm khớp với tìm kiếm và ít nhất một bộ lọc
-    return (
-      matchesSearch &&
-      (matchesCategory ||
-        matchesManufacturer ||
-        matchesPriceFilter ||
-        !Object.values(categoryFilters).includes(true))
-    );
+  
+    // Trả về sản phẩm khớp với tìm kiếm và ít nhất một bộ lọc
+    return matchesSearch && (matchesCategory || matchesManufacturer || matchesPrice);
   });
+  
+  
 
   const currentItems = filteredItems.slice(startIndex, endIndex);
 
@@ -200,8 +197,9 @@ const Shop_Fake = ({ isGridView, searchItem, categoryFilters, isLoading }) => {
     setCurrentPage(selected + 1);
   };
 
-  const handleProductClick = (productId) => {
-    navigate(`/websiteDoAn/ProductDetail/${productId}`);
+  const handleProductClick = (productName) => {
+    const slug = toSlug(productName);
+    navigate(`${BASE_PATH}/ProductDetail/${slug}`);
   };
 
   return (
@@ -274,7 +272,7 @@ const Shop_Fake = ({ isGridView, searchItem, categoryFilters, isLoading }) => {
                 </div>
                 <div className="buy-bfp">
                   <button
-                    onClick={() => handleProductClick(item.id)}
+                    onClick={() => handleProductClick(item.productName)}
                     className="buy-from-partner featured-buy-link no-brand"
                   >
                     Detail Product

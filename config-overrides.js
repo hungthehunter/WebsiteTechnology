@@ -11,25 +11,22 @@ module.exports = function override(config, env) {
     os: require.resolve('os-browserify'),
     url: require.resolve('url'),
     zlib: require.resolve('browserify-zlib'),
-    fs: require.resolve('browserify-fs'),
-    process: require.resolve('process/browser'),
+    fs: false, // browserify-fs có thể gây lỗi, nên tắt nếu không cần
+    process: false, // Không cần process/browser nữa
     buffer: require.resolve('buffer'),
-    net: require.resolve('net'),
+    net: false, // Không thể dùng net trong trình duyệt
     path: require.resolve('path-browserify'),
     querystring: require.resolve('querystring-es3'),
-    // Add fallback for async_hooks if needed
-    async_hooks: false, // Set to false to ignore `async_hooks`
+    async_hooks: false, // Không hỗ trợ trong trình duyệt
   };
 
   // Add ProvidePlugin to provide global variables
   config.plugins = (config.plugins || []).concat([
     new webpack.ProvidePlugin({
-      process: 'process/browser',
       Buffer: ['buffer', 'Buffer'],
     }),
-    // Optionally, add IgnorePlugin if async_hooks is not needed
-    new webpack.IgnorePlugin({
-      resourceRegExp: /async_hooks/,
+    new webpack.DefinePlugin({
+      'process.env': JSON.stringify(process.env), // Cung cấp process.env nhưng không dùng process/browser
     }),
   ]);
 

@@ -17,8 +17,7 @@ import icon from "../../../../Assests/ICON";
 function Sidebar({ show, onClose }) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-  const [toggle, setToggle] = useState(true);
-  const [color, setColor] = useState(false);
+  const [color] = useState(false);
   const dispatch = useDispatch();
   const sidebarColor = useRef(null);
   const userCurrentLogged = useSelector(

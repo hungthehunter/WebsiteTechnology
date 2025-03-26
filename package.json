@@ -1,5 +1,5 @@
 {
-  "homepage": "https://hungthehunter.github.io/WebsiteTechnology/",
+  "homepage": "/",
   "name": "website-technology",
   "version": "0.1.0",
   "private": true,
@@ -97,10 +97,7 @@
     "extends": [
       "react-app",
       "react-app/jest"
-    ],
-    "rules": {
-    "no-unused-vars": "warn"
-  }
+    ]
   },
   "browserslist": {
     "production": [

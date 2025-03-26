@@ -25,9 +25,6 @@ module.exports = function override(config, env) {
     new webpack.ProvidePlugin({
       Buffer: ['buffer', 'Buffer'],
     }),
-    new webpack.DefinePlugin({
-      'process.env': JSON.stringify(process.env), // Cung cấp process.env nhưng không dùng process/browser
-    }),
   ]);
 
   return config;

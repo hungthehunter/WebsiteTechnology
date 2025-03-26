@@ -1,1 +1,1 @@
-export const BASE_PATH = "/WebsiteTechnology";
+export const BASE_PATH = "/";

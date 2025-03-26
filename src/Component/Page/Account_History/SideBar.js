@@ -46,7 +46,7 @@ const SidebarAccountHistory = ({ activeIndex, menuActive, handleMouseOver, setAc
                         className={activeIndex === index ? "hovered" : ""}
                         onMouseOver={() => handleMouseOver(index)}
                     >
-                        <a href="#" onClick={() => setActiveComponent({ name: item.component })}>
+                        <a onClick={() => setActiveComponent({ name: item.component })}>
                             <span className="icon">
                                 <IonIcon icon={item.icon} style={{ fontSize: "2.5rem" }} />
                             </span>
@@ -59,7 +59,7 @@ const SidebarAccountHistory = ({ activeIndex, menuActive, handleMouseOver, setAc
                     className={activeIndex === 9 ? "hovered" : ""}
                     onClick={handleLoginLogout}
                 >
-                    <a href="#">
+                    <a>
                         <span className="icon" style={{ lineHeight: "60px" }}>
                             <IonIcon icon={logOutOutline} style={{ fontSize: "2.5rem" }} />
                         </span>

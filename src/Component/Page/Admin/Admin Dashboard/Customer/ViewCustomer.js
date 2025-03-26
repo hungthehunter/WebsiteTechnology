@@ -58,7 +58,7 @@ function AdminViewCustomer({ id, setActiveComponent }) {
       setAddresses(listAddress || []);
         //  setAddresses(selectedUser?.addresses || [])
     }
-  }, [selectedUser]);
+  }, [selectedUser,listAddress]);
 
   if (isLoading) {
     return (

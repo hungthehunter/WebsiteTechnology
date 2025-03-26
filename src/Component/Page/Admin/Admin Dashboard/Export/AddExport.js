@@ -47,7 +47,7 @@ function AdminAddExport({ setActiveComponent, showAlert }) {
   useEffect(() => {
     dispatch(orderThunk.getOrderById(formData.order.id));
     dispatch(orderThunk.getAllOrders())
-  }, [formData.order.id]);
+  }, [formData.order.id,dispatch]);
 
   const selectedOrder = useSelector((state) => state.order.selectedOrder);
 

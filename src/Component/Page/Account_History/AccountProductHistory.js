@@ -76,7 +76,7 @@ const AccountProductHistory = ({ setActiveComponent }) => {
     if (userCurrentLogged) {
       loadUserHistoryProducts();
     }
-  }, [userCurrentLogged]);
+  }, [userCurrentLogged,loadUserHistoryProducts]);
 
   const loadUserHistoryProducts = () => {
     // Lọc các đơn hàng của người dùng hiện tại

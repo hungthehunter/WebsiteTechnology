@@ -67,7 +67,7 @@ function AdminEditCustomer({ id, setActiveComponent, showAlert }) {
       setDecentralization(selectedUser?.decentralization?.access.id );
       setAddresses(listAddress || []); 
     }
-  }, [selectedUser]);
+  }, [selectedUser,listAddress]);
 
   const handleAddressChange = (index, event) => {
     const { name, value } = event.target;
